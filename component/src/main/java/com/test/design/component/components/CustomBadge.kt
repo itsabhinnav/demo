@@ -18,8 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.test.design.component.theme.OemCarAccent
+import com.test.design.component.theme.OemError
+import com.test.design.component.theme.OemGray
+import com.test.design.component.theme.OemGrayLight
+import com.test.design.component.theme.OemInfo
 import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSuccess
+import com.test.design.component.theme.OemWarning
 
 @Composable
 fun CustomBadge(
@@ -93,8 +98,8 @@ fun CustomStatusIndicator(
 
 @Composable
 private fun statusColor(level: StatusLevel): Color = when (level) {
-    StatusLevel.Normal -> Color(0xFF4CAF50)
-    StatusLevel.Warning -> Color(0xFFFFB300)
-    StatusLevel.Critical -> MaterialTheme.colorScheme.error
-    StatusLevel.Info -> OemCarAccent
+    StatusLevel.Normal -> OemSuccess
+    StatusLevel.Warning -> OemWarning
+    StatusLevel.Critical -> OemError
+    StatusLevel.Info -> OemInfo
 }

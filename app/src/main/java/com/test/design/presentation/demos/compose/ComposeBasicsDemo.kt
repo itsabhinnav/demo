@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import com.test.design.component.components.CustomListTile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,12 +95,10 @@ private fun ModifierSection() {
 
 @Composable
 private fun ConceptRow(term: String, definition: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = OemSpacing.sm),
-    ) {
-        Text(text = term, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-        Text(text = definition, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    CustomListTile(
+        title = term,
+        subtitle = definition,
+        showChevron = false,
+        modifier = Modifier.padding(vertical = OemSpacing.xs),
+    )
 }

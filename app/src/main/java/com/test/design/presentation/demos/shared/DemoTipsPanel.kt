@@ -6,6 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.test.design.component.components.CustomCard
+import com.test.design.component.components.CustomSectionHeader
+import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 
 @Composable
@@ -14,18 +17,16 @@ fun DemoTipsPanel(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Text(
-            text = "Tips",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        tips.forEach { tip ->
-            Text(
-                text = "• $tip",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = OemSpacing.sm),
-            )
+        CustomSectionHeader(title = "Tips")
+        CustomCard(modifier = Modifier.padding(top = OemSpacing.sm)) {
+            tips.forEach { tip ->
+                Text(
+                    text = "• $tip",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OemOnSurfaceVariant,
+                    modifier = Modifier.padding(vertical = OemSpacing.xs),
+                )
+            }
         }
     }
 }

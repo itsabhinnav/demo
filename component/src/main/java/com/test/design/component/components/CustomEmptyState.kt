@@ -61,9 +61,9 @@ fun CustomMetricCard(
 ) {
     CustomCard(modifier = modifier, onClick = onClick) {
         Text(
-            text = label.uppercase(),
+            text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = value,

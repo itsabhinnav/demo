@@ -1,17 +1,26 @@
 package com.test.design.component.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.test.design.component.core.oemTouchTarget
+import com.test.design.component.theme.OemOnPrimary
+import com.test.design.component.theme.OemPrimary
 import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemVisuals
 
 enum class FabSize { Standard, Large }
 
@@ -23,25 +32,32 @@ fun CustomFab(
     modifier: Modifier = Modifier,
     size: FabSize = FabSize.Standard,
 ) {
-    when (size) {
-        FabSize.Standard -> FloatingActionButton(
-            onClick = onClick,
-            modifier = modifier.oemTouchTarget(),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Icon(icon, contentDescription)
-        }
-        FabSize.Large -> LargeFloatingActionButton(
-            onClick = onClick,
-            modifier = modifier.oemTouchTarget(),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Icon(icon, contentDescription)
-        }
+    val fabSize = when (size) {
+        FabSize.Standard -> OemSpacing.minTouchTarget
+        FabSize.Large -> OemSpacing.minTouchTarget + OemSpacing.md
+    }
+    val shape = OemVisuals.fabShape
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            .size(fabSize)
+            .clip(shape)
+            .background(OemPrimary)
+            .oemTouchTarget()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = OemOnPrimary,
+            modifier = Modifier.size(OemSpacing.lg),
+        )
     }
 }
 
@@ -52,17 +68,27 @@ fun CustomExtendedFab(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ExtendedFloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        shape = MaterialTheme.shapes.large,
+    val shape = OemVisuals.fabShape
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Row(
+        modifier = modifier
+            .clip(shape)
+            .background(OemPrimary)
+            .oemTouchTarget()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = OemSpacing.lg, vertical = OemSpacing.md),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = null)
+        Icon(icon, contentDescription = null, tint = OemOnPrimary)
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
+            color = OemOnPrimary,
             modifier = Modifier.padding(start = OemSpacing.sm),
         )
     }

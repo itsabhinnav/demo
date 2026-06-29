@@ -49,6 +49,8 @@ import com.test.design.component.components.CustomSuggestionChip
 import com.test.design.component.components.CustomSwitch
 import com.test.design.component.components.CustomTabs
 import com.test.design.component.components.CustomTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
@@ -71,7 +73,7 @@ fun ComponentsGalleryDemo(
                     "76dp minimum touch targets (AAOS, not phone 48dp)",
                     "20sp body text minimum for in-car legibility",
                     "4.5:1 contrast ratio for legibility while driving",
-                    "Use color sparingly — Oem Red for primary actions",
+                    "Use color sparingly — white for primary actions",
                     "Limit animations; prefer instant state changes",
                     "One primary action per screen zone",
                 ),
@@ -96,7 +98,7 @@ fun ComponentsGalleryDemo(
 
 @Composable
 private fun ButtonsSection() {
-    CustomSectionHeader(title = "Buttons", subtitle = "OEM capsule buttons with gradient primary and accent outline")
+    CustomSectionHeader(title = "Buttons", subtitle = "Rounded monochrome button variants")
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
@@ -280,12 +282,12 @@ private fun CardsAndTabsSection() {
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
         CustomCard(modifier = Modifier.weight(1f), onClick = {}) {
-            androidx.compose.material3.Text("Climate", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
-            androidx.compose.material3.Text("22°C", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+            Text("Climate", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text("22°C", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
         }
         CustomCard(modifier = Modifier.weight(1f), onClick = {}) {
-            androidx.compose.material3.Text("Battery", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
-            androidx.compose.material3.Text("87%", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+            Text("Battery", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text("87%", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
     CustomTabs(

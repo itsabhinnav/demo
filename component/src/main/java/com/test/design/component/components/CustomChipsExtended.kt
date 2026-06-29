@@ -22,15 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import com.test.design.component.core.oemTouchTarget
 import com.test.design.component.theme.OemBorder
+import com.test.design.component.theme.OemOnSurface
 import com.test.design.component.theme.OemOnSurfaceVariant
-import com.test.design.component.theme.OemRed
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemSurfaceElevated
+import com.test.design.component.theme.OemSurfaceVariant
 import com.test.design.component.theme.OemVisuals
 import com.test.design.component.theme.oemSurfaceBorder
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomAssistChip(
@@ -57,9 +58,9 @@ fun CustomAssistChip(
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
         leadingIcon?.let {
-            Icon(it, contentDescription = null, tint = OemRed, modifier = Modifier.size(OemSpacing.lg))
+            Icon(it, contentDescription = null, tint = OemOnSurface, modifier = Modifier.size(OemSpacing.lg))
         }
-        Text(label.uppercase(), style = MaterialTheme.typography.labelLarge, color = OemRed)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = OemOnSurface)
     }
 }
 
@@ -120,13 +121,13 @@ fun CustomListTile(
                     modifier = Modifier
                         .size(OemSpacing.xl)
                         .clip(OemVisuals.iconContainerShape)
-                        .background(OemVisuals.iconGradient),
+                        .background(OemSurfaceVariant),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null,
-                        tint = OemRed,
+                        tint = OemOnSurface,
                         modifier = Modifier.size(OemSpacing.lg),
                     )
                 }
@@ -142,9 +143,30 @@ fun CustomListTile(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = OemRed.copy(alpha = 0.7f),
+                    tint = OemOnSurfaceVariant,
                 )
             }
         }
+    }
+}
+
+@Composable
+fun CustomStatRow(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    CustomCard(modifier = modifier.padding(vertical = OemSpacing.xs), style = CardStyle.Filled) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = OemOnSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = OemOnSurface,
+            modifier = Modifier.padding(top = OemSpacing.xs),
+        )
     }
 }
