@@ -1,0 +1,9 @@
+com.test.design.component-pngs-0 C:\workspace\sources\Design\component\build\generated\res\pngs\debug
+com.test.design.component-updated_navigation_xml-1 C:\workspace\sources\Design\component\build\generated\updated_navigation_xml\debug
+com.test.design.component-mergeDebugResources-2 C:\workspace\sources\Design\component\build\intermediates\incremental\debug\mergeDebugResources\merged.dir
+com.test.design.component-mergeDebugResources-3 C:\workspace\sources\Design\component\build\intermediates\incremental\debug\mergeDebugResources\stripped.dir
+com.test.design.component-debug-4 C:\workspace\sources\Design\component\build\intermediates\merged_res\debug\mergeDebugResources
+com.test.design.component-debug-5 C:\workspace\sources\Design\component\build\intermediates\packaged_res\debug\packageDebugResources
+com.test.design.component-debug-6 C:\workspace\sources\Design\component\src\debug\res
+com.test.design.component-main-7 C:\workspace\sources\Design\component\src\main\res
+gradleHome-0 C:\Users\abhin\.gradle
