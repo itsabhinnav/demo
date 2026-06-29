@@ -6,6 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.test.design.component.core.RestrictedComponentPolicy
+import com.test.design.component.core.currentDrivingUxState
 
 @Composable
 fun CustomDialog(
@@ -17,6 +19,9 @@ fun CustomDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val drivingState = currentDrivingUxState()
+    if (!RestrictedComponentPolicy.allowsDialogs(drivingState)) return
+
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = modifier,

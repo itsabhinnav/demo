@@ -18,7 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.component.preview.AutomotivePreviews
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemTheme
 
 @Composable
 fun CustomImage(
@@ -55,7 +55,7 @@ fun CustomImage(
 @AutomotivePreviews
 @Composable
 private fun CustomImagePreview() {
-    NissanTheme {
+    OemTheme {
         CustomImage(
             contentDescription = "Placeholder",
             painter = rememberVectorPainter(Icons.Default.Image),

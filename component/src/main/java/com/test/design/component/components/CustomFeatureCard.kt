@@ -15,9 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemOnSurface
+import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSurfaceVariant
+import com.test.design.component.theme.OemVisuals
 
 @Composable
 fun CustomFeatureCard(
@@ -39,54 +44,52 @@ fun CustomFeatureCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(NissanSpacing.xl + NissanSpacing.sm)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                        shape = MaterialTheme.shapes.small,
-                    ),
+                    .size(OemSpacing.xl + OemSpacing.sm)
+                    .clip(OemVisuals.iconContainerShape)
+                    .background(OemSurfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(NissanSpacing.lg),
+                    tint = OemOnSurface,
+                    modifier = Modifier.size(OemSpacing.lg),
                 )
             }
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = NissanSpacing.md),
+                    .padding(start = OemSpacing.md),
             ) {
                 Text(
-                    text = categoryLabel.uppercase(),
+                    text = categoryLabel,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = OemOnSurfaceVariant,
                 )
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = OemOnSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = NissanSpacing.xs),
+                    modifier = Modifier.padding(top = OemSpacing.xs),
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = OemOnSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = NissanSpacing.xs),
+                    modifier = Modifier.padding(top = OemSpacing.xs),
                 )
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = OemOnSurfaceVariant,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
-                    .size(NissanSpacing.lg),
+                    .size(OemSpacing.lg),
             )
         }
     }

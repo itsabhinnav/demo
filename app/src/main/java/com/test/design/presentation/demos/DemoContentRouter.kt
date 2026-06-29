@@ -7,6 +7,7 @@ import com.test.design.presentation.demos.compose.ComposeBasicsDemo
 import com.test.design.presentation.demos.components.ComponentsGalleryDemo
 import com.test.design.presentation.demos.designsystem.DesignSystemDemo
 import com.test.design.presentation.demos.lists.ListsGridsDemo
+import com.test.design.presentation.demos.restricted.RestrictedUxDemo
 import com.test.design.presentation.demos.tabs.TabsDemo
 
 @Composable
@@ -22,6 +23,7 @@ fun DemoContentRouter(
         "adaptive-layouts" -> AdaptiveLayoutsDemo(onBack = onNavigateBack, modifier = modifier)
         "lists-grids" -> ListsGridsDemo(onBack = onNavigateBack, modifier = modifier)
         "tabs-demo" -> TabsDemo(onBack = onNavigateBack, modifier = modifier)
+        "driving-ux" -> RestrictedUxDemo(onBack = onNavigateBack, modifier = modifier)
         else -> ComposeBasicsDemo(onBack = onNavigateBack, modifier = modifier)
     }
 }

@@ -1,12 +1,17 @@
 package com.test.design.component.tokens
 
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 object DesignTokens {
-    val spacing = NissanSpacing
+    val spacing = OemSpacing
     const val minContrastRatio = 4.5f
-    const val minTouchTargetDp = 48
+    const val minTouchTargetDp = 76
+    const val drivingTouchTargetDp = 84
+    const val restrictedTouchTargetDp = 88
+    const val minBodyTextSp = 20
+    const val minCaptionTextSp = 16
     const val maxDrivingAnimationMs = 200
+    const val restrictedAnimationMs = 0
     const val leftColumnWeight = 0.7f
     const val rightColumnWeight = 0.3f
     const val blueZoneHeightFraction = 0.11f

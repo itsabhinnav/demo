@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.test.design.component.core.oemTouchTarget
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 enum class FabSize { Standard, Large }
 
@@ -63,7 +63,7 @@ fun CustomExtendedFab(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(start = NissanSpacing.sm),
+            modifier = Modifier.padding(start = OemSpacing.sm),
         )
     }
 }

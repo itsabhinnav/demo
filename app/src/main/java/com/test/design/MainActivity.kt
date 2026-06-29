@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.Modifier
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemTheme
 import com.test.design.presentation.navigation.AppNavGraph
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NissanTheme {
+            OemTheme {
                 AppNavGraph(
                     modifier = Modifier
                         .fillMaxSize()

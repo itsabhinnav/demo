@@ -10,7 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.core.RestrictedComponentPolicy
+import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.core.oemDrivingTouchTarget
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomLinearProgress(
@@ -24,14 +27,14 @@ fun CustomLinearProgress(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = NissanSpacing.sm),
+                modifier = Modifier.padding(bottom = OemSpacing.sm),
             )
         }
         LinearProgressIndicator(
             progress = progress,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(NissanSpacing.sm),
+                .height(OemSpacing.sm),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
@@ -48,7 +51,7 @@ fun CustomCircularProgress(
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.padding(NissanSpacing.md),
+            modifier = Modifier.padding(OemSpacing.md),
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
@@ -70,22 +73,28 @@ fun CustomSlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..100f,
     label: String = "Value",
     steps: Int = 0,
+    enabled: Boolean = true,
 ) {
+    val drivingState = currentDrivingUxState()
+    val fineControlsAllowed = RestrictedComponentPolicy.allowsFineControls(drivingState)
+    val sliderEnabled = enabled && fineControlsAllowed
+
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "$label: ${value.toInt()}",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = NissanSpacing.sm),
+            modifier = Modifier.padding(bottom = OemSpacing.sm),
         )
         androidx.compose.material3.Slider(
             value = value,
             onValueChange = onValueChange,
             valueRange = valueRange,
             steps = steps,
+            enabled = sliderEnabled,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(NissanSpacing.minTouchTarget),
+                .oemDrivingTouchTarget(),
             colors = androidx.compose.material3.SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
                 activeTrackColor = MaterialTheme.colorScheme.primary,

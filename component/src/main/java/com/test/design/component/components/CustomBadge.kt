@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.test.design.component.theme.NissanCarAccent
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemCarAccent
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomBadge(
@@ -54,7 +54,7 @@ fun CustomBadgedIcon(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(NissanSpacing.lg),
+            modifier = Modifier.size(OemSpacing.lg),
         )
     }
 }
@@ -86,7 +86,7 @@ fun CustomStatusIndicator(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = NissanSpacing.sm),
+            modifier = Modifier.padding(start = OemSpacing.sm),
         )
     }
 }
@@ -96,5 +96,5 @@ private fun statusColor(level: StatusLevel): Color = when (level) {
     StatusLevel.Normal -> Color(0xFF4CAF50)
     StatusLevel.Warning -> Color(0xFFFFB300)
     StatusLevel.Critical -> MaterialTheme.colorScheme.error
-    StatusLevel.Info -> NissanCarAccent
+    StatusLevel.Info -> OemCarAccent
 }

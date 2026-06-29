@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomColorSwatch(
@@ -43,7 +43,7 @@ fun CustomColorSwatch(
             text = name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = NissanSpacing.sm),
+            modifier = Modifier.padding(top = OemSpacing.sm),
         )
         Text(
             text = hexValue,

@@ -4,7 +4,7 @@ import com.test.design.domain.model.DemoCategory
 import com.test.design.domain.model.FeatureDemo
 
 data class HomeState(
-    val title: String = "Nissan Design Playground",
+    val title: String = "Oem Design Playground",
     val subtitle: String = "Explore AAOS UI components, tokens, and adaptive layouts",
     val features: List<FeatureDemo> = emptyList(),
     val filteredFeatures: List<FeatureDemo> = emptyList(),

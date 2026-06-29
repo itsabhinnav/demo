@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun YellowZone(
@@ -38,7 +38,7 @@ fun YellowZone(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(NissanSpacing.md),
+                    .padding(OemSpacing.md),
             ) {
                 content()
             }

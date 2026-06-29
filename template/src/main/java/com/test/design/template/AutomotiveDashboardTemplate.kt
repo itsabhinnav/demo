@@ -15,8 +15,8 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.test.design.component.components.CustomTopBar
-import com.test.design.component.theme.NissanSpacing
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemTheme
 import com.test.design.template.adaptive.AutomotiveWindowInfo
 import com.test.design.template.adaptive.rememberAutomotiveWindowInfo
 import com.test.design.template.preview.AutomotivePreviews
@@ -40,29 +40,33 @@ fun AutomotiveDashboardTemplate(
         val blueZoneHeight = (maxHeight * windowInfo.blueZoneHeightFraction).coerceAtLeast(96.dp)
 
         CompositionLocalProvider(LocalAutomotiveWindowInfo provides windowInfo) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.weight(windowInfo.leftColumnWeight)) {
-                    BlueZone(
-                        modifier = Modifier
-                            .height(blueZoneHeight)
-                            .fillMaxWidth(),
-                    ) {
-                        blueZone()
-                    }
+            Column(modifier = Modifier.fillMaxSize()) {
+                BlueZone(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(blueZoneHeight),
+                ) {
+                    blueZone()
+                }
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                ) {
                     GreenZone(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
+                            .weight(windowInfo.leftColumnWeight)
+                            .fillMaxHeight(),
                     ) {
                         greenZone()
                     }
-                }
-                YellowZone(
-                    modifier = Modifier
-                        .weight(windowInfo.rightColumnWeight)
-                        .fillMaxHeight(),
-                ) {
-                    yellowZone()
+                    YellowZone(
+                        modifier = Modifier
+                            .weight(windowInfo.rightColumnWeight)
+                            .fillMaxHeight(),
+                    ) {
+                        yellowZone()
+                    }
                 }
             }
         }
@@ -72,19 +76,19 @@ fun AutomotiveDashboardTemplate(
 @AutomotivePreviews
 @Composable
 private fun AutomotiveDashboardTemplatePreview() {
-    NissanTheme {
+    OemTheme {
         AutomotiveDashboardTemplate(
             blueZone = { CustomTopBar(title = "Feature Playground") },
             greenZone = {
                 Text(
                     text = "Green Zone — main content area",
-                    modifier = Modifier.padding(NissanSpacing.md),
+                    modifier = Modifier.padding(OemSpacing.md),
                 )
             },
             yellowZone = {
                 Text(
                     text = "Yellow Zone — supplementary controls",
-                    modifier = Modifier.padding(NissanSpacing.md),
+                    modifier = Modifier.padding(OemSpacing.md),
                 )
             },
         )

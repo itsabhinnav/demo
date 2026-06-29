@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomEmptyState(
@@ -24,29 +24,29 @@ fun CustomEmptyState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(NissanSpacing.xl),
+            .padding(OemSpacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(NissanSpacing.xl * 2),
+            modifier = Modifier.size(OemSpacing.xl * 2),
         )
         Text(
             text = title,
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = NissanSpacing.md),
+            modifier = Modifier.padding(top = OemSpacing.md),
         )
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = NissanSpacing.sm),
+            modifier = Modifier.padding(top = OemSpacing.sm),
         )
         action?.let {
-            Column(modifier = Modifier.padding(top = NissanSpacing.lg)) { it() }
+            Column(modifier = Modifier.padding(top = OemSpacing.lg)) { it() }
         }
     }
 }
@@ -69,7 +69,7 @@ fun CustomMetricCard(
             text = value,
             style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = NissanSpacing.xs),
+            modifier = Modifier.padding(top = OemSpacing.xs),
         )
         Text(
             text = unit,

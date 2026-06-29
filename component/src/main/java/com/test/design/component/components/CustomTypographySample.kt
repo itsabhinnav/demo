@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomTypographySample(
@@ -25,7 +25,7 @@ fun CustomTypographySample(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = NissanSpacing.sm),
+            .padding(vertical = OemSpacing.sm),
     ) {
         Text(
             text = label,
@@ -36,7 +36,7 @@ fun CustomTypographySample(
             text = sampleText,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = NissanSpacing.xs),
+            modifier = Modifier.padding(top = OemSpacing.xs),
         )
     }
 }
@@ -50,7 +50,7 @@ fun CustomSpacingSample(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = NissanSpacing.xs),
+            .padding(vertical = OemSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -62,7 +62,7 @@ fun CustomSpacingSample(
         Box(
             modifier = Modifier
                 .width(size)
-                .height(NissanSpacing.sm)
+                .height(OemSpacing.sm)
                 .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.extraSmall),
         )
     }

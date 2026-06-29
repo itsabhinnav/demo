@@ -13,7 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.core.RestrictedComponentPolicy
+import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.core.oemDrivingTouchTarget
+import com.test.design.component.theme.OemOnSurfaceVariant
 
 @Composable
 fun CustomTextField(
@@ -26,13 +29,26 @@ fun CustomTextField(
     singleLine: Boolean = true,
     onDone: () -> Unit = {},
 ) {
+    val drivingState = currentDrivingUxState()
+    val keyboardAllowed = RestrictedComponentPolicy.allowsKeyboardInput(drivingState)
+    val blockedMessage = RestrictedComponentPolicy.keyboardBlockedMessage(drivingState)
+    val fieldEnabled = enabled && keyboardAllowed
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .oemDrivingTouchTarget(),
         label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
-        placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyMedium) },
-        enabled = enabled,
+        placeholder = {
+            Text(
+                if (!keyboardAllowed && blockedMessage != null) blockedMessage else placeholder,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (!keyboardAllowed) OemOnSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        enabled = fieldEnabled,
         singleLine = singleLine,
         shape = MaterialTheme.shapes.medium,
         colors = OutlinedTextFieldDefaults.colors(
@@ -54,11 +70,23 @@ fun CustomSearchBar(
     placeholder: String,
     modifier: Modifier = Modifier,
 ) {
+    val drivingState = currentDrivingUxState()
+    val keyboardAllowed = RestrictedComponentPolicy.allowsKeyboardInput(drivingState)
+    val blockedMessage = RestrictedComponentPolicy.keyboardBlockedMessage(drivingState)
+
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier.fillMaxWidth(),
-        placeholder = { Text(placeholder, style = MaterialTheme.typography.bodyLarge) },
+        modifier = modifier
+            .fillMaxWidth()
+            .oemDrivingTouchTarget(),
+        placeholder = {
+            Text(
+                if (!keyboardAllowed && blockedMessage != null) blockedMessage else placeholder,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
+        enabled = keyboardAllowed,
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
         },

@@ -5,7 +5,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.test.design.component.components.CustomTopBar
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.template.AutomotiveDashboardTemplate
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +33,7 @@ fun DemoScaffold(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(bottom = NissanSpacing.lg),
+                    .padding(bottom = OemSpacing.lg),
             ) {
                 content()
             }

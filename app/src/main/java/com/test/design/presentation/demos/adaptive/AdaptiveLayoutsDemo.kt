@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalDensity
 import com.test.design.component.components.CustomSectionHeader
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
 import com.test.design.presentation.home.mapper.mapToSystemInfoUiState
@@ -53,11 +53,11 @@ private fun AdaptiveLayoutInfoPanel() {
 
     Column {
         Text("Live Display", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
-        Text(info.displayLabel, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = NissanSpacing.sm))
-        Text(info.layoutLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = NissanSpacing.xs))
+        Text(info.displayLabel, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = OemSpacing.sm))
+        Text(info.layoutLabel, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = OemSpacing.xs))
         DemoTipsPanel(
             tips = listOf("70/30 split on standard displays", "75/25 on 15.3\"+ screens"),
-            modifier = Modifier.padding(top = NissanSpacing.lg),
+            modifier = Modifier.padding(top = OemSpacing.lg),
         )
     }
 }
@@ -68,7 +68,7 @@ private fun ZoneDiagram() {
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(vertical = NissanSpacing.lg),
+            .padding(vertical = OemSpacing.lg),
     ) {
         Column(modifier = Modifier.weight(0.7f).fillMaxHeight()) {
             ZoneBlock("Blue Zone", "Title, tabs, navigation", MaterialTheme.colorScheme.surfaceVariant, Modifier.height(56.dp))
@@ -90,7 +90,7 @@ private fun ZoneBlock(
             .fillMaxWidth()
             .background(color)
             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-            .padding(NissanSpacing.md),
+            .padding(OemSpacing.md),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -113,7 +113,7 @@ private fun ProfileRow(size: String, resolution: String, split: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = NissanSpacing.sm),
+            .padding(vertical = OemSpacing.sm),
     ) {
         Text(size, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
         Text(resolution, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))

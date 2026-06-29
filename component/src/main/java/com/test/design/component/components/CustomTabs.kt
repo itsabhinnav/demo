@@ -1,18 +1,32 @@
 package com.test.design.component.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.test.design.component.preview.AutomotivePreviews
-import com.test.design.component.theme.NissanSpacing
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemBorder
+import com.test.design.component.theme.OemOnPrimary
+import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.theme.OemPrimary
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSurface
+import com.test.design.component.theme.OemTheme
+import com.test.design.component.theme.OemVisuals
+import com.test.design.component.theme.oemSurfaceBorder
 
 @Composable
 fun CustomTabs(
@@ -22,62 +36,64 @@ fun CustomTabs(
     modifier: Modifier = Modifier,
     scrollable: Boolean = false,
 ) {
-    val tabModifier = modifier
-        .fillMaxWidth()
-        .height(NissanSpacing.minTouchTarget)
+    val containerShape = OemVisuals.tabContainerShape
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(OemSpacing.minTouchTarget)
+            .clip(containerShape)
+            .background(OemSurface)
+            .oemSurfaceBorder(containerShape, OemBorder)
+            .padding(OemSpacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+    ) {
+        tabs.forEachIndexed { index, title ->
+            OemTabItem(
+                title = title,
+                selected = selectedIndex == index,
+                onClick = { onTabSelected(index) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
 
-    if (scrollable) {
-        ScrollableTabRow(
-            selectedTabIndex = selectedIndex,
-            modifier = tabModifier,
-            edgePadding = NissanSpacing.md,
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            divider = {},
-            indicator = {},
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedIndex == index,
-                    onClick = { onTabSelected(index) },
-                    text = {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    },
-                )
-            }
-        }
-    } else {
-        TabRow(
-            selectedTabIndex = selectedIndex,
-            modifier = tabModifier,
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            divider = {},
-            indicator = {},
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedIndex == index,
-                    onClick = { onTabSelected(index) },
-                    text = {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    },
-                )
-            }
-        }
+@Composable
+private fun OemTabItem(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = OemVisuals.chipShape
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            .height(OemSpacing.minTouchTarget - OemSpacing.sm)
+            .clip(shape)
+            .then(
+                if (selected) Modifier.background(OemPrimary) else Modifier,
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (selected) OemOnPrimary else OemOnSurfaceVariant,
+        )
     }
 }
 
 @AutomotivePreviews
 @Composable
 private fun CustomTabsPreview() {
-    NissanTheme {
+    OemTheme {
         CustomTabs(
             tabs = listOf("Home", "Components", "Layouts"),
             selectedIndex = 0,

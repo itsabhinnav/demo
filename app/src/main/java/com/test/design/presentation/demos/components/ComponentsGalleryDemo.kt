@@ -52,7 +52,7 @@ import com.test.design.component.components.CustomTextField
 import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
 
@@ -68,9 +68,10 @@ fun ComponentsGalleryDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "48dp minimum touch targets on all controls",
+                    "76dp minimum touch targets (AAOS, not phone 48dp)",
+                    "20sp body text minimum for in-car legibility",
                     "4.5:1 contrast ratio for legibility while driving",
-                    "Use color sparingly — Nissan Red for primary actions",
+                    "Use color sparingly — Oem Red for primary actions",
                     "Limit animations; prefer instant state changes",
                     "One primary action per screen zone",
                 ),
@@ -95,10 +96,10 @@ fun ComponentsGalleryDemo(
 
 @Composable
 private fun ButtonsSection() {
-    CustomSectionHeader(title = "Buttons", subtitle = "Material 3 button variants — OEM styled")
+    CustomSectionHeader(title = "Buttons", subtitle = "OEM capsule buttons with gradient primary and accent outline")
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.sm),
+        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
         CustomButton(text = "Primary", onClick = {}, style = ButtonStyle.Primary)
         CustomButton(text = "Tonal", onClick = {}, style = ButtonStyle.Tonal)
@@ -112,8 +113,8 @@ private fun ButtonsSection() {
 private fun IconButtonsSection() {
     CustomSectionHeader(title = "Icon Buttons", subtitle = "Standard, filled, and tonal")
     Row(
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
         CustomIconButton(Icons.Default.Settings, "Settings", {}, style = IconButtonStyle.Standard)
         CustomIconButton(Icons.Default.Navigation, "Nav", {}, style = IconButtonStyle.Filled)
@@ -126,8 +127,8 @@ private fun IconButtonsSection() {
 private fun FabSection() {
     CustomSectionHeader(title = "FABs", subtitle = "Floating action buttons")
     Row(
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.lg),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
     ) {
         CustomFab(Icons.Default.Add, "Add", {}, size = FabSize.Standard)
         CustomFab(Icons.Default.Add, "Add large", {}, size = FabSize.Large)
@@ -143,16 +144,16 @@ private fun ChipsSection() {
 
     CustomSectionHeader(title = "Chips", subtitle = "Filter, assist, suggestion, and input chips")
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = NissanSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.sm),
+        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
         filters.forEachIndexed { i, label ->
             CustomChip(label = label, selected = filterIndex == i, onClick = { filterIndex = i })
         }
     }
     Row(
-        modifier = Modifier.padding(vertical = NissanSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.sm),
+        modifier = Modifier.padding(vertical = OemSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
         CustomAssistChip("Add stop", {}, leadingIcon = Icons.Default.Add)
         CustomSuggestionChip("Home", {})
@@ -189,14 +190,14 @@ private fun InputsSection() {
         onQueryChange = { search = it },
         onSearch = {},
         placeholder = "Search destinations",
-        modifier = Modifier.padding(vertical = NissanSpacing.sm),
+        modifier = Modifier.padding(vertical = OemSpacing.sm),
     )
     CustomTextField(
         value = text,
         onValueChange = { text = it },
         label = "Destination",
         placeholder = "Enter address",
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
     )
 }
 
@@ -205,7 +206,7 @@ private fun ProgressSection() {
     var sliderValue by remember { mutableFloatStateOf(22f) }
     CustomSectionHeader(title = "Progress & Sliders", subtitle = "Temperature, volume, loading states")
     CustomSlider(value = sliderValue, onValueChange = { sliderValue = it }, label = "Temperature °C", valueRange = 16f..30f)
-    CustomLinearProgress(progress = { 0.65f }, label = "Battery charge", modifier = Modifier.padding(vertical = NissanSpacing.md))
+    CustomLinearProgress(progress = { 0.65f }, label = "Battery charge", modifier = Modifier.padding(vertical = OemSpacing.md))
     CustomCircularProgress(label = "Syncing…")
 }
 
@@ -213,8 +214,8 @@ private fun ProgressSection() {
 private fun MetricsSection() {
     CustomSectionHeader(title = "Metric Cards", subtitle = "OEM dashboard value displays")
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.md),
+        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
         CustomMetricCard("Range", "287", "km", modifier = Modifier.weight(1f))
         CustomMetricCard("Speed", "65", "km/h", modifier = Modifier.weight(1f))
@@ -233,8 +234,8 @@ private fun ListsSection() {
 private fun StatusSection() {
     CustomSectionHeader(title = "Status Indicators", subtitle = "Vehicle and system state")
     Row(
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.lg),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
     ) {
         CustomStatusIndicator("Systems OK", StatusLevel.Normal)
         CustomStatusIndicator("Low tire", StatusLevel.Warning)
@@ -261,7 +262,7 @@ private fun FeedbackSection() {
     CustomSnackbarMessage(
         message = "Route updated",
         actionLabel = "Undo",
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
     )
     CustomEmptyState(
         icon = Icons.Default.Search,
@@ -275,8 +276,8 @@ private fun CardsAndTabsSection() {
     var tabIndex by remember { mutableIntStateOf(0) }
     CustomSectionHeader(title = "Cards & Tabs", subtitle = "Content containers and navigation")
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.md),
+        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
         CustomCard(modifier = Modifier.weight(1f), onClick = {}) {
             androidx.compose.material3.Text("Climate", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
@@ -291,7 +292,7 @@ private fun CardsAndTabsSection() {
         tabs = listOf("Overview", "Details", "Settings"),
         selectedIndex = tabIndex,
         onTabSelected = { tabIndex = it },
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
     )
 }
 
@@ -299,10 +300,10 @@ private fun CardsAndTabsSection() {
 private fun ImagesSection() {
     CustomSectionHeader(title = "Images", subtitle = "Placeholder and vector images")
     Row(
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.lg),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
     ) {
-        CustomImage(contentDescription = "Placeholder", size = NissanSpacing.xl * 2)
-        CustomImage(contentDescription = "Vehicle", painter = rememberVectorPainter(Icons.Default.DirectionsCar), size = NissanSpacing.xl * 2)
+        CustomImage(contentDescription = "Placeholder", size = OemSpacing.xl * 2)
+        CustomImage(contentDescription = "Vehicle", painter = rememberVectorPainter(Icons.Default.DirectionsCar), size = OemSpacing.xl * 2)
     }
 }

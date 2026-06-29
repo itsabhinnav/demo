@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import com.test.design.component.components.CustomFeatureCard
 import com.test.design.component.components.CustomTopBar
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.domain.model.FeatureDemo
 import com.test.design.presentation.home.component.HomeBrandingPanel
 import com.test.design.presentation.home.component.HomeCategoryChips
@@ -36,12 +36,12 @@ fun HomeScreen(
         modifier = modifier,
         blueZone = {
             Column(modifier = Modifier.fillMaxSize()) {
-                CustomTopBar(title = "Nissan AAOS")
+                CustomTopBar(title = "Oem AAOS")
                 HomeCategoryChips(
                     categories = state.categories,
                     selectedCategory = state.selectedCategory,
                     onCategorySelected = onCategorySelected,
-                    modifier = Modifier.padding(horizontal = NissanSpacing.md),
+                    modifier = Modifier.padding(horizontal = OemSpacing.md),
                 )
             }
         },
@@ -64,11 +64,11 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = NissanSpacing.xl * 8),
+        columns = GridCells.Adaptive(minSize = OemSpacing.xl * 8),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = NissanSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(NissanSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(NissanSpacing.md),
+        contentPadding = PaddingValues(bottom = OemSpacing.md),
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             HomeHeroSection(
@@ -101,7 +101,7 @@ private fun HomeYellowPanel(state: HomeState) {
         )
         SystemInfoPanel(
             state = systemInfo,
-            modifier = Modifier.padding(top = NissanSpacing.lg),
+            modifier = Modifier.padding(top = OemSpacing.lg),
         )
     }
 }

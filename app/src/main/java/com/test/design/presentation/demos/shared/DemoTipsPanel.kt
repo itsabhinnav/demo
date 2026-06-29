@@ -6,7 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun DemoTipsPanel(
@@ -24,7 +24,7 @@ fun DemoTipsPanel(
                 text = "• $tip",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = NissanSpacing.sm),
+                modifier = Modifier.padding(top = OemSpacing.sm),
             )
         }
     }

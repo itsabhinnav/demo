@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomTabs
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
 
@@ -57,7 +57,7 @@ private fun FixedTabsSection() {
         tabs = tabs,
         selectedIndex = selected,
         onTabSelected = { selected = it },
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
     )
     TabContent(text = contents[selected])
 }
@@ -73,7 +73,7 @@ private fun ScrollableTabsSection() {
         selectedIndex = selected,
         onTabSelected = { selected = it },
         scrollable = true,
-        modifier = Modifier.padding(vertical = NissanSpacing.md),
+        modifier = Modifier.padding(vertical = OemSpacing.md),
     )
     TabContent(text = "Content for ${tabs[selected]} settings and controls.")
 }
@@ -83,7 +83,7 @@ private fun TabContent(text: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = NissanSpacing.lg),
+            .padding(bottom = OemSpacing.lg),
     ) {
         Text(
             text = text,

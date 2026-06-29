@@ -1,7 +1,7 @@
 package com.test.design.presentation.home
 
 import androidx.compose.runtime.Composable
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemTheme
 import com.test.design.domain.model.DemoCategory
 import com.test.design.domain.model.FeatureDemo
 import com.test.design.template.preview.AutomotivePreviews
@@ -9,7 +9,7 @@ import com.test.design.template.preview.AutomotivePreviews
 @AutomotivePreviews
 @Composable
 private fun HomeScreenPreview() {
-    NissanTheme {
+    OemTheme {
         HomeScreen(
             state = HomeState(
                 features = listOf(

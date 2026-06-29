@@ -1,6 +1,8 @@
 package com.test.design.component.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,16 +11,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import com.test.design.component.preview.AutomotivePreviews
-import com.test.design.component.theme.NissanSpacing
-import com.test.design.component.theme.NissanTheme
+import com.test.design.component.theme.OemBorder
+import com.test.design.component.theme.OemOnSurface
+import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSurfaceElevated
+import com.test.design.component.theme.OemTheme
+import com.test.design.component.theme.OemVisuals
+import com.test.design.component.theme.oemSurfaceBorder
 
 enum class ListItemStyle {
     Standard,
@@ -37,31 +46,36 @@ fun <T> CustomList(
     modifier: Modifier = Modifier,
     key: ((T) -> Any)? = null,
     style: ListItemStyle = ListItemStyle.Standard,
+    scrollable: Boolean = true,
     onItemClick: ((T) -> Unit)? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(NissanSpacing.xs),
-    ) {
-        if (key != null) {
-            items(items, key = key) { item ->
-                CustomListItemContainer(
-                    style = style,
-                    onClick = onItemClick?.let { { it(item) } },
-                ) {
-                    itemContent(item)
-                }
+    val renderItem: @Composable (T) -> Unit = { item ->
+        CustomListItemContainer(
+            style = style,
+            onClick = onItemClick?.let { { it(item) } },
+        ) {
+            itemContent(item)
+        }
+    }
+
+    if (scrollable) {
+        LazyColumn(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+        ) {
+            if (key != null) {
+                items(items, key = key) { item -> renderItem(item) }
+            } else {
+                items(items) { item -> renderItem(item) }
             }
-        } else {
-            items(items) { item ->
-                CustomListItemContainer(
-                    style = style,
-                    onClick = onItemClick?.let { { it(item) } },
-                ) {
-                    itemContent(item)
-                }
-            }
+        }
+    } else {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+        ) {
+            items.forEach { item -> renderItem(item) }
         }
     }
 }
@@ -107,11 +121,17 @@ private fun CustomListItemContainer(
     content: @Composable () -> Unit,
 ) {
     val height = when (style) {
-        ListItemStyle.Standard -> NissanSpacing.listItemHeight
-        ListItemStyle.Compact -> NissanSpacing.minTouchTarget
+        ListItemStyle.Standard -> OemSpacing.listItemHeight
+        ListItemStyle.Compact -> OemSpacing.minTouchTarget
     }
+    val shape = OemVisuals.cardShape
+    val interactionSource = remember { MutableInteractionSource() }
     val clickableModifier = if (onClick != null) {
-        Modifier.clickable(onClick = onClick)
+        Modifier.clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            onClick = onClick,
+        )
     } else {
         Modifier
     }
@@ -119,18 +139,21 @@ private fun CustomListItemContainer(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(vertical = OemSpacing.xs)
+            .clip(shape)
+            .background(OemSurfaceElevated)
+            .oemSurfaceBorder(shape, OemBorder)
             .then(clickableModifier),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(height)
-                .padding(horizontal = NissanSpacing.md, vertical = NissanSpacing.sm),
+                .padding(horizontal = OemSpacing.md, vertical = OemSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             content()
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     }
 }
 
@@ -139,9 +162,9 @@ private fun CustomListItemContainer(
 private fun CustomListPreview() {
     val items = listOf(
         CustomListItem("1", "Compose Basics", "Introduction to Jetpack Compose"),
-        CustomListItem("2", "Design System", "Nissan OEM tokens and theming"),
+        CustomListItem("2", "Design System", "Oem tokens and theming"),
     )
-    NissanTheme {
+    OemTheme {
         CustomList(
             items = items,
             key = { it.id },

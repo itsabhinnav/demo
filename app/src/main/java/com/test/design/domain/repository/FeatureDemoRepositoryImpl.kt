@@ -9,7 +9,7 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         FeatureDemo(
             id = "design-system",
             title = "Design System",
-            description = "Nissan color palette, typography, spacing, and shape tokens built for AAOS.",
+            description = "Oem color palette, typography, spacing, and shape tokens built for AAOS.",
             category = DemoCategory.DesignSystem,
             tagline = "OEM tokens & theming",
         ),
@@ -19,6 +19,13 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             description = "Interactive showcase of buttons, cards, chips, lists, tabs, and images.",
             category = DemoCategory.Components,
             tagline = "Reusable UI kit",
+        ),
+        FeatureDemo(
+            id = "driving-ux",
+            title = "Driving UX & Restrictions",
+            description = "Google Design for Driving — enlarged targets, UXR-blocked inputs, and glanceable restricted variants.",
+            category = DemoCategory.DesignSystem,
+            tagline = "Distraction-safe UI",
         ),
         FeatureDemo(
             id = "compose-basics",

@@ -1,7 +1,10 @@
 package com.test.design.component.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,22 +13,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.test.design.component.core.oemTouchTarget
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemBorder
+import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.theme.OemRed
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSurfaceElevated
+import com.test.design.component.theme.OemVisuals
+import com.test.design.component.theme.oemSurfaceBorder
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomAssistChip(
@@ -34,18 +39,28 @@ fun CustomAssistChip(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
 ) {
-    AssistChip(
-        onClick = onClick,
-        label = { Text(label, style = MaterialTheme.typography.labelLarge) },
-        modifier = modifier.oemTouchTarget(),
-        leadingIcon = leadingIcon?.let {
-            { Icon(it, contentDescription = null, modifier = Modifier.size(NissanSpacing.lg)) }
-        },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            labelColor = MaterialTheme.colorScheme.onSurface,
-        ),
-    )
+    val shape = OemVisuals.chipShape
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(
+        modifier = modifier
+            .oemTouchTarget()
+            .clip(shape)
+            .background(OemSurfaceElevated)
+            .oemSurfaceBorder(shape, OemBorder)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(horizontal = OemSpacing.md, vertical = OemSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+    ) {
+        leadingIcon?.let {
+            Icon(it, contentDescription = null, tint = OemRed, modifier = Modifier.size(OemSpacing.lg))
+        }
+        Text(label.uppercase(), style = MaterialTheme.typography.labelLarge, color = OemRed)
+    }
 }
 
 @Composable
@@ -54,15 +69,7 @@ fun CustomSuggestionChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SuggestionChip(
-        onClick = onClick,
-        label = { Text(label, style = MaterialTheme.typography.labelLarge) },
-        modifier = modifier.oemTouchTarget(),
-        colors = SuggestionChipDefaults.suggestionChipColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-    )
+    CustomChip(label = label, selected = false, onClick = onClick, modifier = modifier)
 }
 
 @Composable
@@ -72,16 +79,7 @@ fun CustomInputChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    InputChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label, style = MaterialTheme.typography.labelLarge) },
-        modifier = modifier.oemTouchTarget(),
-        colors = InputChipDefaults.inputChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primary,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-        ),
-    )
+    CustomChip(label = label, selected = selected, onClick = onClick, modifier = modifier)
 }
 
 @Composable
@@ -93,44 +91,60 @@ fun CustomListTile(
     showChevron: Boolean = true,
     onClick: (() -> Unit)? = null,
 ) {
-    val rowModifier = if (onClick != null) {
-        Modifier.clickable(onClick = onClick)
+    val shape = OemVisuals.cardShape
+    val interactionSource = remember { MutableInteractionSource() }
+    val clickableModifier = if (onClick != null) {
+        Modifier.clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            onClick = onClick,
+        )
     } else {
         Modifier
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth().padding(vertical = OemSpacing.xs)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(NissanSpacing.listItemHeight)
-                .then(rowModifier)
-                .padding(horizontal = NissanSpacing.md, vertical = NissanSpacing.sm),
+                .height(OemSpacing.listItemHeight)
+                .clip(shape)
+                .background(OemSurfaceElevated)
+                .oemSurfaceBorder(shape, OemBorder)
+                .then(clickableModifier)
+                .padding(horizontal = OemSpacing.md, vertical = OemSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (leadingIcon != null) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                Box(
                     modifier = Modifier
-                        .size(NissanSpacing.lg)
-                        .padding(end = NissanSpacing.md),
-                )
+                        .size(OemSpacing.xl)
+                        .clip(OemVisuals.iconContainerShape)
+                        .background(OemVisuals.iconGradient),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = OemRed,
+                        modifier = Modifier.size(OemSpacing.lg),
+                    )
+                }
             }
             CustomListItemRow(
                 title = title,
                 subtitle = subtitle,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = if (leadingIcon != null) OemSpacing.md else 0.dp),
             )
             if (showChevron && onClick != null) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = OemRed.copy(alpha = 0.7f),
                 )
             }
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     }
 }

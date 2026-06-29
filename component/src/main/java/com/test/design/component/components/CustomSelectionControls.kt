@@ -18,7 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 
 @Composable
 fun CustomSwitch(
@@ -31,14 +31,14 @@ fun CustomSwitch(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(NissanSpacing.listItemHeight)
+            .height(OemSpacing.listItemHeight)
             .toggleable(
                 value = checked,
                 role = Role.Switch,
                 enabled = enabled,
                 onValueChange = onCheckedChange,
             )
-            .padding(horizontal = NissanSpacing.sm),
+            .padding(horizontal = OemSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -70,14 +70,14 @@ fun CustomCheckbox(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(NissanSpacing.listItemHeight)
+            .height(OemSpacing.listItemHeight)
             .toggleable(
                 value = checked,
                 role = Role.Checkbox,
                 enabled = enabled,
                 onValueChange = onCheckedChange,
             )
-            .padding(horizontal = NissanSpacing.sm),
+            .padding(horizontal = OemSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
@@ -90,7 +90,7 @@ fun CustomCheckbox(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = NissanSpacing.sm),
+            modifier = Modifier.padding(start = OemSpacing.sm),
         )
     }
 }
@@ -106,14 +106,14 @@ fun CustomRadioButton(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(NissanSpacing.listItemHeight)
+            .height(OemSpacing.listItemHeight)
             .toggleable(
                 value = selected,
                 role = Role.RadioButton,
                 enabled = enabled,
                 onValueChange = { if (!selected) onClick() },
             )
-            .padding(horizontal = NissanSpacing.sm),
+            .padding(horizontal = OemSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
@@ -126,7 +126,7 @@ fun CustomRadioButton(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = NissanSpacing.sm),
+            modifier = Modifier.padding(start = OemSpacing.sm),
         )
     }
 }

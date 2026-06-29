@@ -1,12 +1,11 @@
 package com.test.design.presentation.demos.lists
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.Map
@@ -24,10 +23,9 @@ import com.test.design.component.components.CustomList
 import com.test.design.component.components.CustomListItemRow
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.ListItemStyle
-import com.test.design.component.theme.NissanSpacing
+import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
-import androidx.compose.ui.unit.dp
 
 private data class AppItem(val id: String, val title: String, val subtitle: String, val icon: ImageVector)
 
@@ -59,7 +57,8 @@ fun ListsGridsDemo(
             items = listItems,
             key = { it.id },
             style = ListItemStyle.Standard,
-            modifier = Modifier.padding(vertical = NissanSpacing.md),
+            scrollable = false,
+            modifier = Modifier.padding(vertical = OemSpacing.md),
         ) { item ->
             CustomListItemRow(
                 title = item.title,
@@ -71,26 +70,12 @@ fun ListsGridsDemo(
         }
 
         CustomSectionHeader(title = "Grid", subtitle = "Adaptive grid for app shortcuts")
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
+        StaticAppGrid(
+            items = gridItems,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = NissanSpacing.md),
-            contentPadding = PaddingValues(vertical = NissanSpacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(NissanSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(NissanSpacing.md),
-        ) {
-            items(gridItems, key = { it.id }) { item ->
-                CustomCard(onClick = {}) {
-                    Icon(item.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = NissanSpacing.sm),
-                    )
-                }
-            }
-        }
+                .padding(vertical = OemSpacing.md),
+        )
     }
 }
 
@@ -101,6 +86,42 @@ private fun rememberListItems(): List<AppItem> = listOf(
     AppItem("3", "Phone", "No device connected", Icons.Default.Phone),
     AppItem("4", "Settings", "Vehicle preferences", Icons.Default.Settings),
 )
+
+@Composable
+private fun StaticAppGrid(
+    items: List<AppItem>,
+    modifier: Modifier = Modifier,
+    columnCount: Int = 3,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
+    ) {
+        items.chunked(columnCount).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
+            ) {
+                rowItems.forEach { item ->
+                    CustomCard(
+                        onClick = {},
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(item.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = OemSpacing.sm),
+                        )
+                    }
+                }
+                repeat(columnCount - rowItems.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun rememberGridItems(): List<AppItem> = listOf(
