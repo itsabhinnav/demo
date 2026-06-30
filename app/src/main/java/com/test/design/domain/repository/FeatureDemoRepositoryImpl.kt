@@ -21,6 +21,13 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             tagline = "Reusable UI kit",
         ),
         FeatureDemo(
+            id = "component-playground",
+            title = "Component Playground",
+            description = "Drag and drop components onto a live canvas to prototype screens at runtime. Hide the palette for full-screen preview.",
+            category = DemoCategory.Components,
+            tagline = "Runtime screen builder",
+        ),
+        FeatureDemo(
             id = "driving-ux",
             title = "Driving UX & Restrictions",
             description = "Google Design for Driving — enlarged targets, UXR-blocked inputs, and glanceable restricted variants.",
