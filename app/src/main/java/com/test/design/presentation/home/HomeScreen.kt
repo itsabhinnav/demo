@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -63,14 +61,12 @@ private fun HomeContent(
     onFeatureClick: (FeatureDemo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = OemSpacing.xl * 8),
+    LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = OemSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
         verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item {
             HomeHeroSection(
                 title = state.title,
                 subtitle = state.subtitle,

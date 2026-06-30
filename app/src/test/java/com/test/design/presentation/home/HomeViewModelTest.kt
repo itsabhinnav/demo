@@ -28,9 +28,9 @@ class HomeViewModelTest {
 
         val state = viewModel.state.value
         assertFalse(state.isLoading)
-        assertEquals(2, state.features.size)
-        assertEquals(2, state.filteredFeatures.size)
-        assertEquals("Compose Basics", state.features.first().title)
+        assertEquals(1, state.features.size)
+        assertEquals(1, state.filteredFeatures.size)
+        assertEquals("Components", state.features.first().title)
     }
 
     @Test
@@ -51,17 +51,16 @@ class HomeViewModelTest {
             viewModel.effect.collect { effects.add(it) }
         }
 
-        viewModel.onIntent(HomeIntent.FeatureSelected("compose-basics"))
+        viewModel.onIntent(HomeIntent.FeatureSelected("components-gallery"))
         advanceUntilIdle()
 
         assertEquals(1, effects.size)
-        assertEquals(HomeEffect.NavigateToDemo("compose-basics"), effects.first())
+        assertEquals(HomeEffect.NavigateToDemo("components-gallery"), effects.first())
         job.cancel()
     }
 
     private class FakeFeatureDemoRepository : FeatureDemoRepository {
         private val demos = listOf(
-            FeatureDemo("compose-basics", "Compose Basics", "Intro", DemoCategory.Compose, "Compose"),
             FeatureDemo("components-gallery", "Components", "Gallery", DemoCategory.Components, "UI"),
         )
 
