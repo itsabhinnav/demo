@@ -2,10 +2,10 @@ package com.test.design.domain.model
 
 enum class DemoCategory(val label: String) {
     All("All"),
-    Compose("Compose"),
     DesignSystem("Design System"),
     Components("Components"),
     Layouts("Layouts"),
+    Vehicle("Vehicle"),
 }
 
 data class FeatureDemo(

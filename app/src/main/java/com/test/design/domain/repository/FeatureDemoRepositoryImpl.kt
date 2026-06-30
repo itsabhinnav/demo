@@ -28,13 +28,6 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             tagline = "Distraction-safe UI",
         ),
         FeatureDemo(
-            id = "compose-basics",
-            title = "Compose Basics",
-            description = "State, recomposition, modifiers, and composable building blocks.",
-            category = DemoCategory.Compose,
-            tagline = "Jetpack Compose 101",
-        ),
-        FeatureDemo(
             id = "adaptive-layouts",
             title = "Adaptive Layouts",
             description = "Blue, green, and yellow zones that scale across 12.3\" to 15.3\" displays.",
@@ -54,6 +47,27 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             description = "Top tab patterns, scrollable tabs, and in-car navigation UX.",
             category = DemoCategory.Components,
             tagline = "Navigation patterns",
+        ),
+        FeatureDemo(
+            id = "ev-dashboard",
+            title = "EV Dashboard",
+            description = "Battery state, range metrics, drive modes, and charging actions for electric vehicles.",
+            category = DemoCategory.Vehicle,
+            tagline = "Battery & charging",
+        ),
+        FeatureDemo(
+            id = "software-update",
+            title = "Software Update",
+            description = "OTA download progress, release notes, and install scheduling for in-vehicle firmware.",
+            category = DemoCategory.Vehicle,
+            tagline = "OTA updates",
+        ),
+        FeatureDemo(
+            id = "telematics",
+            title = "Telematics",
+            description = "Live vehicle data, trip history, and alerts using connected-car telematics feeds.",
+            category = DemoCategory.Vehicle,
+            tagline = "Connected vehicle",
         ),
     )
 
