@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomAssistChip
 import com.test.design.component.components.CustomBadge
@@ -70,9 +72,37 @@ data class PlacedComponent(
     val yDp: Float = 32f,
     /** Null = wrap content; otherwise fraction of canvas width (0.1–1.0). */
     val widthFraction: Float? = null,
+    /** Editable copy for text typography components. */
+    val textContent: String? = null,
 )
 
+enum class PlaygroundTextStyle(
+    val id: String,
+    val label: String,
+    val sample: String,
+) {
+    Display("text-display", "Display", "287 km"),
+    HeadlineLarge("text-headline-lg", "Headline Large", "Climate control"),
+    HeadlineMedium("text-headline-md", "Headline Medium", "Navigation"),
+    TitleLarge("text-title-lg", "Title Large", "Vehicle settings"),
+    TitleMedium("text-title-md", "Title Medium", "Battery status"),
+    BodyLarge("text-body-lg", "Body Large", "Range updated for current drive mode."),
+    BodyMedium("text-body-md", "Body Medium", "Estimated arrival in 12 minutes."),
+    LabelLarge("text-label-lg", "Label Large", "DRIVE MODE"),
+    LabelMedium("text-label-md", "Label Medium", "Eco · Sport · Snow"),
+    ;
+
+    companion object {
+        val entriesList = entries.toList()
+
+        fun fromComponentId(id: String): PlaygroundTextStyle? =
+            entries.find { it.id == id }
+    }
+}
+
 object PlaygroundCatalog {
+    val categories: List<String> = DesignTokens.componentCategories + "Text"
+
     val components: List<PlaygroundComponentDefinition> = listOf(
         PlaygroundComponentDefinition("button-primary", "Primary Button", "Actions", Icons.Default.Add),
         PlaygroundComponentDefinition("button-tonal", "Tonal Button", "Actions", Icons.Default.Add),
@@ -102,9 +132,20 @@ object PlaygroundCatalog {
         PlaygroundComponentDefinition("snackbar", "Snackbar", "Feedback", Icons.Default.Notifications),
         PlaygroundComponentDefinition("empty-state", "Empty State", "Feedback", Icons.Default.Search),
         PlaygroundComponentDefinition("dialog-trigger", "Dialog", "Feedback", Icons.Default.Notifications),
-    )
+    ) + PlaygroundTextStyle.entriesList.map { style ->
+        PlaygroundComponentDefinition(
+            id = style.id,
+            name = style.label,
+            category = "Text",
+            icon = Icons.Default.TextFields,
+        )
+    }
 
-    val categories: List<String> = DesignTokens.componentCategories
+    fun isTextComponent(componentId: String): Boolean =
+        componentId.startsWith("text-")
+
+    fun defaultTextContent(componentId: String): String =
+        PlaygroundTextStyle.fromComponentId(componentId)?.sample ?: "Text"
 
     fun findById(id: String): PlaygroundComponentDefinition? = components.find { it.id == id }
 
@@ -116,7 +157,17 @@ object PlaygroundCatalog {
 fun PlaygroundComponentRenderer(
     componentId: String,
     modifier: Modifier = Modifier,
+    textContent: String? = null,
 ) {
+    PlaygroundTextStyle.fromComponentId(componentId)?.let { style ->
+        PlaygroundTextRenderer(
+            style = style,
+            text = textContent ?: style.sample,
+            modifier = modifier,
+        )
+        return
+    }
+
     when (componentId) {
         "button-primary" -> CustomButton(text = "Primary", onClick = {}, style = ButtonStyle.Primary, modifier = modifier)
         "button-tonal" -> CustomButton(text = "Tonal", onClick = {}, style = ButtonStyle.Tonal, modifier = modifier)
@@ -243,4 +294,31 @@ fun PlaygroundComponentRenderer(
             }
         }
     }
+}
+
+@Composable
+private fun PlaygroundTextRenderer(
+    style: PlaygroundTextStyle,
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    val textStyle = when (style) {
+        PlaygroundTextStyle.Display -> MaterialTheme.typography.displayLarge
+        PlaygroundTextStyle.HeadlineLarge -> MaterialTheme.typography.headlineLarge
+        PlaygroundTextStyle.HeadlineMedium -> MaterialTheme.typography.headlineMedium
+        PlaygroundTextStyle.TitleLarge -> MaterialTheme.typography.titleLarge
+        PlaygroundTextStyle.TitleMedium -> MaterialTheme.typography.titleMedium
+        PlaygroundTextStyle.BodyLarge -> MaterialTheme.typography.bodyLarge
+        PlaygroundTextStyle.BodyMedium -> MaterialTheme.typography.bodyMedium
+        PlaygroundTextStyle.LabelLarge -> MaterialTheme.typography.labelLarge
+        PlaygroundTextStyle.LabelMedium -> MaterialTheme.typography.labelMedium
+    }
+    Text(
+        text = text,
+        style = textStyle,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = modifier,
+        maxLines = 5,
+        overflow = TextOverflow.Ellipsis,
+    )
 }
