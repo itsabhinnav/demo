@@ -72,6 +72,12 @@ data class PlacedComponent(
     val yDp: Float = 32f,
     /** Null = wrap content; otherwise fraction of canvas width (0.1–1.0). */
     val widthFraction: Float? = null,
+    /** Null = wrap content; otherwise fraction of canvas height (0.08–1.0). */
+    val heightFraction: Float? = null,
+    /** Outer spacing around the component (dp). */
+    val marginDp: Float = 0f,
+    /** Inner spacing around the component content (dp). */
+    val paddingDp: Float = 0f,
     /** Editable copy for text typography components. */
     val textContent: String? = null,
 )

@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -88,6 +89,9 @@ private val DragGhostSize = 56.dp
 private val ResizeHandleWidth = 12.dp
 private val MinWidthFraction = 0.12f
 private val MaxWidthFraction = 1f
+private val MinHeightFraction = 0.08f
+private val MaxHeightFraction = 1f
+private val MaxLayoutSpacingDp = 48f
 
 @Composable
 fun ComponentPlaygroundDemo(
@@ -261,6 +265,24 @@ fun ComponentPlaygroundDemo(
                                         textContent = current.textContent
                                             ?: PlaygroundCatalog.defaultTextContent(styleId),
                                     )
+                                }
+                            },
+                            onHeightFractionChange = { fraction ->
+                                updatePlaced(placed.instanceId) { it.copy(heightFraction = fraction) }
+                            },
+                            onWrapContentHeightToggle = { wrap ->
+                                updatePlaced(placed.instanceId) {
+                                    it.copy(heightFraction = if (wrap) null else 0.25f)
+                                }
+                            },
+                            onMarginChange = { margin ->
+                                updatePlaced(placed.instanceId) {
+                                    it.copy(marginDp = margin.coerceIn(0f, MaxLayoutSpacingDp))
+                                }
+                            },
+                            onPaddingChange = { padding ->
+                                updatePlaced(placed.instanceId) {
+                                    it.copy(paddingDp = padding.coerceIn(0f, MaxLayoutSpacingDp))
                                 }
                             },
                             onDelete = { removeComponent(placed.instanceId) },
@@ -437,14 +459,20 @@ private fun ComponentConfigBar(
     placed: PlacedComponent,
     onWidthFractionChange: (Float) -> Unit,
     onWrapContentToggle: (Boolean) -> Unit,
+    onHeightFractionChange: (Float) -> Unit,
+    onWrapContentHeightToggle: (Boolean) -> Unit,
+    onMarginChange: (Float) -> Unit,
+    onPaddingChange: (Float) -> Unit,
     onTextContentChange: (String) -> Unit,
     onTextStyleChange: (String) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val definition = PlaygroundCatalog.findById(placed.componentId)
-    val isWrapContent = placed.widthFraction == null
+    val isWrapContentWidth = placed.widthFraction == null
     val widthValue = placed.widthFraction ?: 0.4f
+    val isWrapContentHeight = placed.heightFraction == null
+    val heightValue = placed.heightFraction ?: 0.25f
     val isText = PlaygroundCatalog.isTextComponent(placed.componentId)
     val textStyle = PlaygroundTextStyle.fromComponentId(placed.componentId)
 
@@ -517,13 +545,18 @@ private fun ComponentConfigBar(
                 }
             }
 
+            CustomSectionHeader(
+                title = "Layout",
+                subtitle = "Size and spacing",
+            )
+
             CustomSwitch(
                 label = "Wrap content width",
-                checked = isWrapContent,
+                checked = isWrapContentWidth,
                 onCheckedChange = onWrapContentToggle,
             )
 
-            if (!isWrapContent) {
+            if (!isWrapContentWidth) {
                 CustomSlider(
                     value = widthValue,
                     onValueChange = onWidthFractionChange,
@@ -531,14 +564,58 @@ private fun ComponentConfigBar(
                     valueRange = MinWidthFraction..MaxWidthFraction,
                 )
                 Text(
-                    text = "${(widthValue * 100).roundToInt()}% of canvas",
+                    text = "${(widthValue * 100).roundToInt()}% of canvas width",
                     style = MaterialTheme.typography.bodySmall,
                     color = OemOnSurfaceVariant,
                 )
             }
 
+            CustomSwitch(
+                label = "Wrap content height",
+                checked = isWrapContentHeight,
+                onCheckedChange = onWrapContentHeightToggle,
+            )
+
+            if (!isWrapContentHeight) {
+                CustomSlider(
+                    value = heightValue,
+                    onValueChange = onHeightFractionChange,
+                    label = "Height",
+                    valueRange = MinHeightFraction..MaxHeightFraction,
+                )
+                Text(
+                    text = "${(heightValue * 100).roundToInt()}% of canvas height",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OemOnSurfaceVariant,
+                )
+            }
+
+            CustomSlider(
+                value = placed.marginDp,
+                onValueChange = onMarginChange,
+                label = "Margin",
+                valueRange = 0f..MaxLayoutSpacingDp,
+            )
             Text(
-                text = "Drag the component on canvas to reposition. Drag the right edge handle to resize.",
+                text = "${placed.marginDp.roundToInt()}dp outer spacing",
+                style = MaterialTheme.typography.bodySmall,
+                color = OemOnSurfaceVariant,
+            )
+
+            CustomSlider(
+                value = placed.paddingDp,
+                onValueChange = onPaddingChange,
+                label = "Padding",
+                valueRange = 0f..MaxLayoutSpacingDp,
+            )
+            Text(
+                text = "${placed.paddingDp.roundToInt()}dp inner spacing",
+                style = MaterialTheme.typography.bodySmall,
+                color = OemOnSurfaceVariant,
+            )
+
+            Text(
+                text = "Drag to reposition. Drag the right edge to resize width.",
                 style = MaterialTheme.typography.bodySmall,
                 color = OemOnSurfaceVariant,
             )
@@ -722,6 +799,7 @@ private fun PlaygroundCanvas(
                 ),
         ) {
             val canvasWidthDp = maxWidth.value
+            val canvasHeightDp = maxHeight.value
 
             if (placedComponents.isEmpty()) {
                 EmptyCanvasHint(isDropTargetActive = isDropTargetActive, isPreviewMode = isPreviewMode)
@@ -732,6 +810,7 @@ private fun PlaygroundCanvas(
                             placed = placed,
                             isSelected = selectedInstanceId == placed.instanceId && !isPreviewMode,
                             canvasWidthDp = canvasWidthDp,
+                            canvasHeightDp = canvasHeightDp,
                             onSelect = { onSelect(placed.instanceId) },
                             onMove = { deltaXDp, deltaYDp -> onMove(placed.instanceId, deltaXDp, deltaYDp) },
                             onResize = { deltaFraction -> onResize(placed.instanceId, deltaFraction) },
@@ -748,6 +827,7 @@ private fun CanvasPlacedComponent(
     placed: PlacedComponent,
     isSelected: Boolean,
     canvasWidthDp: Float,
+    canvasHeightDp: Float,
     onSelect: () -> Unit,
     onMove: (deltaXDp: Float, deltaYDp: Float) -> Unit,
     onResize: (deltaFraction: Float) -> Unit,
@@ -758,64 +838,87 @@ private fun CanvasPlacedComponent(
     } else {
         Modifier.wrapContentWidth()
     }
+    val heightModifier = if (placed.heightFraction != null) {
+        Modifier.height((canvasHeightDp * placed.heightFraction).dp)
+    } else {
+        Modifier.wrapContentHeight()
+    }
+    val contentModifier = when {
+        placed.widthFraction != null && placed.heightFraction != null -> Modifier.fillMaxSize()
+        placed.widthFraction != null -> Modifier.fillMaxWidth()
+        placed.heightFraction != null -> Modifier.fillMaxHeight()
+        else -> Modifier
+    }
 
     Box(
-        modifier = Modifier
-            .offset {
-                IntOffset(
-                    with(density) { placed.xDp.dp.roundToPx() },
-                    with(density) { placed.yDp.dp.roundToPx() },
-                )
-            }
-            .then(widthModifier)
-            .then(
-                if (isSelected) {
-                    Modifier.border(1.dp, MaterialTheme.colorScheme.onSurface, OemVisuals.chipShape)
-                } else {
-                    Modifier
-                },
+        modifier = Modifier.offset {
+            IntOffset(
+                with(density) { placed.xDp.dp.roundToPx() },
+                with(density) { placed.yDp.dp.roundToPx() },
             )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onSelect,
-            )
-            .pointerInput(placed.instanceId) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    val deltaXDp = with(density) { dragAmount.x.toDp().value }
-                    val deltaYDp = with(density) { dragAmount.y.toDp().value }
-                    onMove(deltaXDp, deltaYDp)
-                }
-            },
+        },
     ) {
-        PlaygroundComponentRenderer(
-            componentId = placed.componentId,
-            textContent = placed.textContent,
-            modifier = if (placed.widthFraction != null) Modifier.fillMaxWidth() else Modifier,
-        )
-
-        if (isSelected) {
+        Box(
+            modifier = Modifier
+                .padding(placed.marginDp.dp)
+                .then(widthModifier)
+                .then(heightModifier)
+                .then(
+                    if (isSelected) {
+                        Modifier.border(1.dp, MaterialTheme.colorScheme.onSurface, OemVisuals.chipShape)
+                    } else {
+                        Modifier
+                    },
+                )
+                .clip(OemVisuals.chipShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onSelect,
+                )
+                .pointerInput(placed.instanceId) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val deltaXDp = with(density) { dragAmount.x.toDp().value }
+                        val deltaYDp = with(density) { dragAmount.y.toDp().value }
+                        onMove(deltaXDp, deltaYDp)
+                    }
+                },
+        ) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .width(ResizeHandleWidth)
-                    .height(OemSpacing.minTouchTarget)
-                    .pointerInput(placed.instanceId) {
-                        detectHorizontalDragGestures { change, dragAmount ->
-                            change.consume()
-                            val deltaFraction = dragAmount / (canvasWidthDp * density.density)
-                            onResize(deltaFraction)
-                        }
-                    },
-                contentAlignment = Alignment.Center,
+                    .padding(placed.paddingDp.dp)
+                    .then(contentModifier),
             ) {
+                PlaygroundComponentRenderer(
+                    componentId = placed.componentId,
+                    textContent = placed.textContent,
+                    modifier = contentModifier,
+                )
+            }
+
+            if (isSelected) {
                 Box(
                     modifier = Modifier
-                        .size(width = 4.dp, height = OemSpacing.lg)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.onSurface),
-                )
+                        .align(Alignment.CenterEnd)
+                        .width(ResizeHandleWidth)
+                        .height(OemSpacing.minTouchTarget)
+                        .pointerInput(placed.instanceId) {
+                            detectHorizontalDragGestures { change, dragAmount ->
+                                change.consume()
+                                val deltaFraction = dragAmount / (canvasWidthDp * density.density)
+                                onResize(deltaFraction)
+                            }
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 4.dp, height = OemSpacing.lg)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(MaterialTheme.colorScheme.onSurface),
+                    )
+                }
             }
         }
     }
