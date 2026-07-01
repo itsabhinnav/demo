@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.test.design.component.components.CustomTopBar
 import com.test.design.component.theme.OemSpacing
+import com.test.design.presentation.shared.GlobalDrivingUxPanel
 import com.test.design.template.AutomotiveDashboardTemplate
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ fun DemoScaffold(
     title: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showGlobalDrivingUxPanel: Boolean = true,
     yellowContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -38,6 +40,16 @@ fun DemoScaffold(
                 content()
             }
         },
-        yellowZone = yellowContent,
+        yellowZone = {
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (showGlobalDrivingUxPanel) {
+                    GlobalDrivingUxPanel(
+                        compact = true,
+                        modifier = Modifier.padding(bottom = OemSpacing.md),
+                    )
+                }
+                yellowContent()
+            }
+        },
     )
 }

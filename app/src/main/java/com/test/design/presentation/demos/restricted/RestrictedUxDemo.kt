@@ -63,6 +63,7 @@ fun RestrictedUxDemo(
         title = "Driving UX & Restrictions",
         onBack = onBack,
         modifier = modifier,
+        showGlobalDrivingUxPanel = false,
         yellowContent = {
             DemoTipsPanel(
                 tips = RestrictedComponentPolicy.restrictionSummary(selectedState) + listOf(

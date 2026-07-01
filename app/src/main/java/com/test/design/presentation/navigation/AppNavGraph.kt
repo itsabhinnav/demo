@@ -4,6 +4,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -18,8 +19,17 @@ import com.test.design.presentation.home.HomeRoute
 fun AppNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    startDemoId: String? = null,
 ) {
     val drivingState = currentDrivingUxState()
+
+    LaunchedEffect(startDemoId) {
+        if (!startDemoId.isNullOrBlank()) {
+            navController.navigate(Routes.demo(startDemoId)) {
+                popUpTo(Routes.HOME)
+            }
+        }
+    }
 
     NavHost(
         navController = navController,

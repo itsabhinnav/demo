@@ -20,6 +20,7 @@ import com.test.design.presentation.home.component.HomeHeroSection
 import com.test.design.presentation.home.component.SystemInfoPanel
 import com.test.design.presentation.home.mapper.mapFeatureIcon
 import com.test.design.presentation.home.mapper.mapToSystemInfoUiState
+import com.test.design.presentation.shared.GlobalDrivingUxPanel
 import com.test.design.template.AutomotiveDashboardTemplate
 import com.test.design.template.LocalAutomotiveWindowInfo
 
@@ -91,6 +92,7 @@ private fun HomeYellowPanel(state: HomeState) {
     val systemInfo = mapToSystemInfoUiState(windowInfo, density)
 
     Column(modifier = Modifier.fillMaxSize()) {
+        GlobalDrivingUxPanel(modifier = Modifier.padding(bottom = OemSpacing.lg))
         HomeBrandingPanel(
             demoCount = state.features.size,
             selectedCategory = state.selectedCategory,
