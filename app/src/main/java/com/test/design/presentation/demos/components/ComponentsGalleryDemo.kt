@@ -1,6 +1,5 @@
 package com.test.design.presentation.demos.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -89,8 +87,8 @@ fun ComponentsGalleryDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "Tap Customize or long-press a preview to open the editor",
-                    "Customize labels, states, and values then tap Save",
+                    "Long-press any highlighted component to open the editor",
+                    "Customize labels, appearance, and values then tap Save",
                     "76dp minimum touch targets (AAOS, not phone 48dp)",
                     "20sp body text minimum for in-car legibility",
                     "4.5:1 contrast ratio for legibility while driving",
@@ -115,39 +113,26 @@ fun ComponentsGalleryDemo(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun GalleryComponentSlot(
     componentId: String,
     onCustomize: (String) -> Unit,
     modifier: Modifier = Modifier,
-    /** When false, preview stays interactive and only the Customize chip opens the editor. */
-    interceptPreviewGestures: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier.padding(vertical = OemSpacing.xs),
-        verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+        contentAlignment = Alignment.TopStart,
     ) {
-        Box(contentAlignment = Alignment.TopStart) {
-            content()
-            if (interceptPreviewGestures) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .pointerInput(componentId) {
-                            detectTapGestures(
-                                onLongPress = { onCustomize(componentId) },
-                                onTap = { onCustomize(componentId) },
-                            )
-                        },
-                )
-            }
-        }
-        CustomAssistChip(
-            label = "Customize",
-            onClick = { onCustomize(componentId) },
-            leadingIcon = Icons.Default.Tune,
+        content()
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .pointerInput(componentId) {
+                    detectTapGestures(
+                        onLongPress = { onCustomize(componentId) },
+                    )
+                },
         )
     }
 }
@@ -217,7 +202,7 @@ private fun ChipsSection(onCustomize: (String) -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.sm),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
-        GalleryComponentSlot("filter-chip", onCustomize, interceptPreviewGestures = false) {
+        GalleryComponentSlot("filter-chip", onCustomize) {
             filters.forEachIndexed { i, label ->
                 CustomChip(label = label, selected = filterIndex == i, onClick = { filterIndex = i })
             }
@@ -233,7 +218,7 @@ private fun ChipsSection(onCustomize: (String) -> Unit) {
         GalleryComponentSlot("suggestion-chip", onCustomize) {
             CustomSuggestionChip("Home", {})
         }
-        GalleryComponentSlot("input-chip", onCustomize, interceptPreviewGestures = false) {
+        GalleryComponentSlot("input-chip", onCustomize) {
             CustomInputChip("Eco Mode", inputSelected, { inputSelected = !inputSelected })
         }
     }
@@ -247,17 +232,17 @@ private fun SelectionControlsSection(onCustomize: (String) -> Unit) {
     var segmentIndex by remember { mutableIntStateOf(0) }
 
     CustomSectionHeader(title = "Selection", subtitle = "Switch, checkbox, radio, segmented button")
-    GalleryComponentSlot("switch", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("switch", onCustomize) {
         CustomSwitch("Auto climate", switchOn, { switchOn = it })
     }
-    GalleryComponentSlot("checkbox", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("checkbox", onCustomize) {
         CustomCheckbox("Heated seats", checked, { checked = it })
     }
-    GalleryComponentSlot("radio", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("radio", onCustomize) {
         CustomRadioButton("Standard mode", radioIndex == 0, { radioIndex = 0 })
     }
     CustomRadioButton("Sport mode", radioIndex == 1, { radioIndex = 1 })
-    GalleryComponentSlot("segmented-button", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("segmented-button", onCustomize) {
         CustomSegmentedButtonRow(
             options = listOf("Off", "Auto", "Max"),
             selectedIndex = segmentIndex,
@@ -271,7 +256,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
     CustomSectionHeader(title = "Text Inputs", subtitle = "Outlined fields and search for in-car forms")
-    GalleryComponentSlot("search-bar", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("search-bar", onCustomize) {
         CustomSearchBar(
             query = search,
             onQueryChange = { search = it },
@@ -280,7 +265,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
             modifier = Modifier.padding(vertical = OemSpacing.sm),
         )
     }
-    GalleryComponentSlot("text-field", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("text-field", onCustomize) {
         CustomTextField(
             value = text,
             onValueChange = { text = it },
@@ -295,7 +280,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
 private fun ProgressSection(onCustomize: (String) -> Unit) {
     var sliderValue by remember { mutableFloatStateOf(22f) }
     CustomSectionHeader(title = "Progress & Sliders", subtitle = "Temperature, volume, loading states")
-    GalleryComponentSlot("slider", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("slider", onCustomize) {
         CustomSlider(value = sliderValue, onValueChange = { sliderValue = it }, label = "Temperature °C", valueRange = 16f..30f)
     }
     GalleryComponentSlot("linear-progress", onCustomize) {
@@ -350,7 +335,7 @@ private fun StatusSection(onCustomize: (String) -> Unit) {
 private fun FeedbackSection(onCustomize: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     CustomSectionHeader(title = "Feedback", subtitle = "Dialogs, snackbars, empty states")
-    GalleryComponentSlot("dialog-trigger", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("dialog-trigger", onCustomize) {
         CustomButton(text = "Show dialog", onClick = { showDialog = true })
         if (showDialog) {
             CustomDialog(
@@ -398,7 +383,7 @@ private fun CardsAndTabsSection(onCustomize: (String) -> Unit) {
             Text("87%", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
-    GalleryComponentSlot("tabs", onCustomize, interceptPreviewGestures = false) {
+    GalleryComponentSlot("tabs", onCustomize) {
         CustomTabs(
             tabs = listOf("Overview", "Details", "Settings"),
             selectedIndex = tabIndex,
