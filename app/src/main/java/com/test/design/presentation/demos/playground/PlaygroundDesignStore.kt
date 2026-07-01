@@ -7,6 +7,7 @@ import org.json.JSONObject
 data class PlaygroundDesignSnapshot(
     val components: List<PlacedComponent>,
     val nextInstanceId: Int,
+    val backgroundColorArgb: Long? = null,
 )
 
 class PlaygroundDesignStore(context: Context) {
@@ -18,8 +19,8 @@ class PlaygroundDesignStore(context: Context) {
         return runCatching { decode(raw) }.getOrNull()
     }
 
-    fun save(components: List<PlacedComponent>, nextInstanceId: Int) {
-        val encoded = encode(components, nextInstanceId)
+    fun save(components: List<PlacedComponent>, nextInstanceId: Int, backgroundColorArgb: Long) {
+        val encoded = encode(components, nextInstanceId, backgroundColorArgb)
         prefs.edit().putString(KEY_DESIGN, encoded).apply()
     }
 
@@ -27,9 +28,14 @@ class PlaygroundDesignStore(context: Context) {
         prefs.edit().remove(KEY_DESIGN).apply()
     }
 
-    private fun encode(components: List<PlacedComponent>, nextInstanceId: Int): String {
+    private fun encode(
+        components: List<PlacedComponent>,
+        nextInstanceId: Int,
+        backgroundColorArgb: Long,
+    ): String {
         val root = JSONObject()
         root.put("nextInstanceId", nextInstanceId)
+        root.put("backgroundColorArgb", backgroundColorArgb)
         val array = JSONArray()
         components.forEach { component ->
             array.put(
@@ -53,6 +59,11 @@ class PlaygroundDesignStore(context: Context) {
     private fun decode(raw: String): PlaygroundDesignSnapshot {
         val root = JSONObject(raw)
         val nextInstanceId = root.optInt("nextInstanceId", 0)
+        val backgroundColorArgb = if (root.has("backgroundColorArgb")) {
+            root.getLong("backgroundColorArgb")
+        } else {
+            null
+        }
         val array = root.optJSONArray("components") ?: JSONArray()
         val components = buildList {
             for (index in 0 until array.length()) {
@@ -72,7 +83,11 @@ class PlaygroundDesignStore(context: Context) {
                 )
             }
         }
-        return PlaygroundDesignSnapshot(components = components, nextInstanceId = nextInstanceId)
+        return PlaygroundDesignSnapshot(
+            components = components,
+            nextInstanceId = nextInstanceId,
+            backgroundColorArgb = backgroundColorArgb,
+        )
     }
 
     /** Supports legacy absolute dp positions by converting with a reference canvas size. */
