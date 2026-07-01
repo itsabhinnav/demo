@@ -1,7 +1,7 @@
 package com.test.design.presentation.demos.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomAssistChip
@@ -58,7 +61,6 @@ import com.test.design.component.components.CustomTextField
 import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
-import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.playground.ComponentDetailEditor
 import com.test.design.presentation.demos.shared.DemoScaffold
@@ -87,7 +89,7 @@ fun ComponentsGalleryDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "Long-press any component to open the detail editor",
+                    "Tap Customize or long-press a preview to open the editor",
                     "Customize labels, states, and values then tap Save",
                     "76dp minimum touch targets (AAOS, not phone 48dp)",
                     "20sp body text minimum for in-car legibility",
@@ -119,24 +121,33 @@ private fun GalleryComponentSlot(
     componentId: String,
     onCustomize: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** When false, preview stays interactive and only the Customize chip opens the editor. */
+    interceptPreviewGestures: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Column(
         modifier = modifier.padding(vertical = OemSpacing.xs),
         verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
     ) {
-        Box(
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = { onCustomize(componentId) },
-            ),
-        ) {
+        Box(contentAlignment = Alignment.TopStart) {
             content()
+            if (interceptPreviewGestures) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .pointerInput(componentId) {
+                            detectTapGestures(
+                                onLongPress = { onCustomize(componentId) },
+                                onTap = { onCustomize(componentId) },
+                            )
+                        },
+                )
+            }
         }
-        Text(
-            text = "Long-press to customize",
-            style = MaterialTheme.typography.labelSmall,
-            color = OemOnSurfaceVariant,
+        CustomAssistChip(
+            label = "Customize",
+            onClick = { onCustomize(componentId) },
+            leadingIcon = Icons.Default.Tune,
         )
     }
 }
@@ -206,7 +217,7 @@ private fun ChipsSection(onCustomize: (String) -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.sm),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
     ) {
-        GalleryComponentSlot("filter-chip", onCustomize) {
+        GalleryComponentSlot("filter-chip", onCustomize, interceptPreviewGestures = false) {
             filters.forEachIndexed { i, label ->
                 CustomChip(label = label, selected = filterIndex == i, onClick = { filterIndex = i })
             }
@@ -222,7 +233,7 @@ private fun ChipsSection(onCustomize: (String) -> Unit) {
         GalleryComponentSlot("suggestion-chip", onCustomize) {
             CustomSuggestionChip("Home", {})
         }
-        GalleryComponentSlot("input-chip", onCustomize) {
+        GalleryComponentSlot("input-chip", onCustomize, interceptPreviewGestures = false) {
             CustomInputChip("Eco Mode", inputSelected, { inputSelected = !inputSelected })
         }
     }
@@ -236,17 +247,17 @@ private fun SelectionControlsSection(onCustomize: (String) -> Unit) {
     var segmentIndex by remember { mutableIntStateOf(0) }
 
     CustomSectionHeader(title = "Selection", subtitle = "Switch, checkbox, radio, segmented button")
-    GalleryComponentSlot("switch", onCustomize) {
+    GalleryComponentSlot("switch", onCustomize, interceptPreviewGestures = false) {
         CustomSwitch("Auto climate", switchOn, { switchOn = it })
     }
-    GalleryComponentSlot("checkbox", onCustomize) {
+    GalleryComponentSlot("checkbox", onCustomize, interceptPreviewGestures = false) {
         CustomCheckbox("Heated seats", checked, { checked = it })
     }
-    GalleryComponentSlot("radio", onCustomize) {
+    GalleryComponentSlot("radio", onCustomize, interceptPreviewGestures = false) {
         CustomRadioButton("Standard mode", radioIndex == 0, { radioIndex = 0 })
     }
     CustomRadioButton("Sport mode", radioIndex == 1, { radioIndex = 1 })
-    GalleryComponentSlot("segmented-button", onCustomize) {
+    GalleryComponentSlot("segmented-button", onCustomize, interceptPreviewGestures = false) {
         CustomSegmentedButtonRow(
             options = listOf("Off", "Auto", "Max"),
             selectedIndex = segmentIndex,
@@ -260,7 +271,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
     CustomSectionHeader(title = "Text Inputs", subtitle = "Outlined fields and search for in-car forms")
-    GalleryComponentSlot("search-bar", onCustomize) {
+    GalleryComponentSlot("search-bar", onCustomize, interceptPreviewGestures = false) {
         CustomSearchBar(
             query = search,
             onQueryChange = { search = it },
@@ -269,7 +280,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
             modifier = Modifier.padding(vertical = OemSpacing.sm),
         )
     }
-    GalleryComponentSlot("text-field", onCustomize) {
+    GalleryComponentSlot("text-field", onCustomize, interceptPreviewGestures = false) {
         CustomTextField(
             value = text,
             onValueChange = { text = it },
@@ -284,7 +295,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
 private fun ProgressSection(onCustomize: (String) -> Unit) {
     var sliderValue by remember { mutableFloatStateOf(22f) }
     CustomSectionHeader(title = "Progress & Sliders", subtitle = "Temperature, volume, loading states")
-    GalleryComponentSlot("slider", onCustomize) {
+    GalleryComponentSlot("slider", onCustomize, interceptPreviewGestures = false) {
         CustomSlider(value = sliderValue, onValueChange = { sliderValue = it }, label = "Temperature °C", valueRange = 16f..30f)
     }
     GalleryComponentSlot("linear-progress", onCustomize) {
@@ -339,7 +350,7 @@ private fun StatusSection(onCustomize: (String) -> Unit) {
 private fun FeedbackSection(onCustomize: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     CustomSectionHeader(title = "Feedback", subtitle = "Dialogs, snackbars, empty states")
-    GalleryComponentSlot("dialog-trigger", onCustomize) {
+    GalleryComponentSlot("dialog-trigger", onCustomize, interceptPreviewGestures = false) {
         CustomButton(text = "Show dialog", onClick = { showDialog = true })
         if (showDialog) {
             CustomDialog(
@@ -387,7 +398,7 @@ private fun CardsAndTabsSection(onCustomize: (String) -> Unit) {
             Text("87%", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
-    GalleryComponentSlot("tabs", onCustomize) {
+    GalleryComponentSlot("tabs", onCustomize, interceptPreviewGestures = false) {
         CustomTabs(
             tabs = listOf("Overview", "Details", "Settings"),
             selectedIndex = tabIndex,
