@@ -10,7 +10,7 @@ object DesignTokens {
     const val restrictedTouchTargetDp = 88
     const val minBodyTextSp = 20
     const val minCaptionTextSp = 16
-    const val maxDrivingAnimationMs = 200
+    const val maxDrivingAnimationMs = 250
     const val restrictedAnimationMs = 0
     const val leftColumnWeight = 0.7f
     const val rightColumnWeight = 0.3f

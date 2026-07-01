@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.test.design.component.core.oemTouchTarget
+import com.test.design.component.motion.oemInteractiveMotion
 import com.test.design.component.theme.OemBorder
 import com.test.design.component.theme.OemOnPrimary
 import com.test.design.component.theme.OemOnSurface
@@ -54,6 +55,7 @@ fun CustomIconButton(
     Box(
         modifier = modifier
             .oemTouchTarget()
+            .oemInteractiveMotion(interactionSource, enabled)
             .clip(shape)
             .then(backgroundModifier)
             .then(

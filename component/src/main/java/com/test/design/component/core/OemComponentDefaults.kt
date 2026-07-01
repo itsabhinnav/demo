@@ -11,7 +11,7 @@ import com.test.design.component.theme.OemSpacing
 object OemComponentDefaults {
     val minTouchTarget = OemSpacing.minTouchTarget
     const val minContrastRatio = 4.5f
-    const val maxAnimationDurationMs = 200
+    const val maxAnimationDurationMs = 250
 }
 
 @Composable

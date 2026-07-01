@@ -1,5 +1,12 @@
 package com.test.design.presentation.demos.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +67,8 @@ import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
 import com.test.design.component.theme.OemSpacing
+import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.motion.OemMotion
 import com.test.design.presentation.demos.playground.ComponentDetailEditor
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
@@ -70,24 +79,60 @@ fun ComponentsGalleryDemo(
     modifier: Modifier = Modifier,
 ) {
     var editingComponentId by remember { mutableStateOf<String?>(null) }
+    val drivingState = currentDrivingUxState()
 
-    if (editingComponentId != null) {
-        ComponentDetailEditor(
-            componentId = editingComponentId!!,
-            onBack = { editingComponentId = null },
-            modifier = modifier,
-        )
-        return
+    AnimatedContent(
+        targetState = editingComponentId,
+        modifier = modifier,
+        transitionSpec = {
+            val openDuration = OemMotion.durationMs(
+                state = drivingState,
+                opening = targetState != null,
+                requestedMs = if (targetState != null) {
+                    OemMotion.DetailOpenDurationMs
+                } else {
+                    OemMotion.DetailCloseDurationMs
+                },
+            )
+            if (openDuration == 0) {
+                fadeIn() togetherWith fadeOut()
+            } else {
+                val spec = tween<Float>(durationMillis = openDuration, easing = OemMotion.StandardEasing)
+                if (targetState != null) {
+                    (scaleIn(initialScale = 0.94f, animationSpec = spec) + fadeIn(spec)) togetherWith
+                        fadeOut(spec)
+                } else {
+                    fadeIn(spec) togetherWith
+                        (scaleOut(targetScale = 0.94f, animationSpec = spec) + fadeOut(spec))
+                }
+            }
+        },
+        label = "galleryDetailEditor",
+    ) { componentId ->
+        if (componentId != null) {
+            ComponentDetailEditor(
+                componentId = componentId,
+                onBack = { editingComponentId = null },
+            )
+        } else {
+            GalleryContent(onBack = onBack, onCustomize = { editingComponentId = it })
+        }
     }
+}
 
+@Composable
+private fun GalleryContent(
+    onBack: () -> Unit,
+    onCustomize: (String) -> Unit,
+) {
     DemoScaffold(
         title = "Components Gallery",
         onBack = onBack,
-        modifier = modifier,
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
                     "Long-press any highlighted component to open the editor",
+                    "Motion follows AAOS patterns: fast-out-slow-in easing, short durations",
                     "Customize labels, appearance, and values then tap Save",
                     "76dp minimum touch targets (AAOS, not phone 48dp)",
                     "20sp body text minimum for in-car legibility",
@@ -97,19 +142,19 @@ fun ComponentsGalleryDemo(
             )
         },
     ) {
-        ButtonsSection(onCustomize = { editingComponentId = it })
-        IconButtonsSection(onCustomize = { editingComponentId = it })
-        FabSection(onCustomize = { editingComponentId = it })
-        ChipsSection(onCustomize = { editingComponentId = it })
-        SelectionControlsSection(onCustomize = { editingComponentId = it })
-        InputsSection(onCustomize = { editingComponentId = it })
-        ProgressSection(onCustomize = { editingComponentId = it })
-        MetricsSection(onCustomize = { editingComponentId = it })
-        ListsSection(onCustomize = { editingComponentId = it })
-        StatusSection(onCustomize = { editingComponentId = it })
-        FeedbackSection(onCustomize = { editingComponentId = it })
-        CardsAndTabsSection(onCustomize = { editingComponentId = it })
-        ImagesSection(onCustomize = { editingComponentId = it })
+        ButtonsSection(onCustomize = onCustomize)
+        IconButtonsSection(onCustomize = onCustomize)
+        FabSection(onCustomize = onCustomize)
+        ChipsSection(onCustomize = onCustomize)
+        SelectionControlsSection(onCustomize = onCustomize)
+        InputsSection(onCustomize = onCustomize)
+        ProgressSection(onCustomize = onCustomize)
+        MetricsSection(onCustomize = onCustomize)
+        ListsSection(onCustomize = onCustomize)
+        StatusSection(onCustomize = onCustomize)
+        FeedbackSection(onCustomize = onCustomize)
+        CardsAndTabsSection(onCustomize = onCustomize)
+        ImagesSection(onCustomize = onCustomize)
     }
 }
 

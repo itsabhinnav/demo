@@ -97,6 +97,8 @@ import com.test.design.component.theme.OemSurfaceVariant
 import com.test.design.component.theme.OemVisuals
 import com.test.design.component.theme.OemWhite
 import com.test.design.component.theme.oemSurfaceBorder
+import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.motion.OemMotion
 import kotlin.math.roundToInt
 
 private val PaletteWidth = 280.dp
@@ -159,8 +161,12 @@ fun ComponentPlaygroundDemo(
     var canvasBackgroundColor by remember { mutableStateOf(OemBackground) }
 
     val isPreviewMode = !paletteVisible
+    val drivingState = currentDrivingUxState()
     val paletteWidth by animateDpAsState(
         targetValue = if (paletteVisible) PaletteWidth else 0.dp,
+        animationSpec = OemMotion.spec(
+            OemMotion.durationMs(drivingState, opening = paletteVisible, OemMotion.SameLevelDurationMs),
+        ),
         label = "paletteWidth",
     )
 

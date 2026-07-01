@@ -19,6 +19,7 @@ import com.test.design.component.theme.OemSurfaceElevated
 import com.test.design.component.theme.OemVisuals
 import com.test.design.component.theme.oemCardSurface
 import com.test.design.component.theme.oemSurfaceBorder
+import com.test.design.component.motion.oemInteractiveMotion
 
 enum class CardStyle {
     Elevated,
@@ -48,11 +49,13 @@ fun CustomCard(
     }
 
     val clickableModifier = if (onClick != null) {
-        Modifier.clickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick,
-        )
+        Modifier
+            .oemInteractiveMotion(interactionSource)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
     } else {
         Modifier
     }
@@ -60,8 +63,8 @@ fun CustomCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .then(clickableModifier)
-            .then(surfaceModifier),
+            .then(surfaceModifier)
+            .then(clickableModifier),
     ) {
         Column(
             Modifier.padding(OemSpacing.md),

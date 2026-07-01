@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.test.design.component.core.oemTouchTarget
+import com.test.design.component.motion.oemInteractiveMotion
 import com.test.design.component.theme.OemOnPrimary
 import com.test.design.component.theme.OemPrimary
 import com.test.design.component.theme.OemSpacing
@@ -42,6 +43,7 @@ fun CustomFab(
     Box(
         modifier = modifier
             .size(fabSize)
+            .oemInteractiveMotion(interactionSource)
             .clip(shape)
             .background(OemPrimary)
             .oemTouchTarget()
@@ -73,6 +75,7 @@ fun CustomExtendedFab(
 
     Row(
         modifier = modifier
+            .oemInteractiveMotion(interactionSource)
             .clip(shape)
             .background(OemPrimary)
             .oemTouchTarget()

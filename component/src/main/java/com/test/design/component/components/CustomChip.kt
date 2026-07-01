@@ -23,6 +23,7 @@ import com.test.design.component.theme.OemPrimary
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemSurfaceVariant
 import com.test.design.component.theme.OemVisuals
+import com.test.design.component.motion.oemInteractiveMotion
 
 @Composable
 fun CustomChip(
@@ -38,6 +39,7 @@ fun CustomChip(
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = OemSpacing.minTouchTarget)
+            .oemInteractiveMotion(interactionSource, enabled)
             .clip(shape)
             .then(
                 when {

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.test.design.component.core.RestrictedComponentPolicy
 import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.core.oemDrivingTouchTarget
+import com.test.design.component.motion.oemInteractiveMotion
 import com.test.design.component.preview.AutomotivePreviews
 import com.test.design.component.theme.OemBorder
 import com.test.design.component.theme.OemError
@@ -59,6 +60,7 @@ fun CustomButton(
     val interactionSource = remember { MutableInteractionSource() }
     val sizedModifier = modifier
         .oemDrivingTouchTarget()
+        .oemInteractiveMotion(interactionSource, isEnabled)
         .clip(shape)
         .then(
             if (isEnabled) {

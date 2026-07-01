@@ -41,7 +41,7 @@ object RestrictedComponentPolicy {
     }
 
     fun maxAnimationDurationMs(state: DrivingUxState): Int = when (state) {
-        DrivingUxState.Parked -> 200
+        DrivingUxState.Parked -> 250
         DrivingUxState.Driving -> 0
         DrivingUxState.Restricted -> 0
     }
