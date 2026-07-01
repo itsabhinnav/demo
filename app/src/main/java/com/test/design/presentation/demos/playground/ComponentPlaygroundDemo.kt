@@ -88,12 +88,16 @@ import com.test.design.component.components.CustomSlider
 import com.test.design.component.components.CustomSwitch
 import com.test.design.component.components.CustomTopBar
 import com.test.design.component.components.CustomTextField
+import com.test.design.component.theme.OemBackground
 import com.test.design.component.theme.OemBorder
+import com.test.design.component.theme.OemGrayDark
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemSurface
 import com.test.design.component.theme.OemSurfaceElevated
+import com.test.design.component.theme.OemSurfaceVariant
 import com.test.design.component.theme.OemVisuals
+import com.test.design.component.theme.OemWhite
 import com.test.design.component.theme.oemSurfaceBorder
 import kotlin.math.roundToInt
 
@@ -111,6 +115,24 @@ private const val PreviewControlsHideDelayMs = 2000L
 private val PreviewControlsHotspotHeight = 120.dp
 private val CanvasGridMinorStep = OemSpacing.sm
 private val CanvasGridMajorStep = OemSpacing.md
+
+private data class PlaygroundBackgroundOption(
+    val label: String,
+    val color: Color,
+)
+
+private val PlaygroundBackgroundOptions = listOf(
+    PlaygroundBackgroundOption("Black", OemBackground),
+    PlaygroundBackgroundOption("Surface", OemSurface),
+    PlaygroundBackgroundOption("Elevated", OemSurfaceElevated),
+    PlaygroundBackgroundOption("Variant", OemSurfaceVariant),
+    PlaygroundBackgroundOption("Gray", OemGrayDark),
+    PlaygroundBackgroundOption("White", OemWhite),
+)
+
+private fun Color.encodeForStorage(): Long = value.toLong()
+
+private fun Long.decodeToColor(): Color = Color(toULong())
 
 private enum class SaveStatus { Saved }
 
@@ -134,6 +156,7 @@ fun ComponentPlaygroundDemo(
     var canvasBounds by remember { mutableStateOf(Rect.Zero) }
     var canvasContentSize by remember { mutableStateOf(IntSize.Zero) }
     var isCanvasHovered by remember { mutableStateOf(false) }
+    var canvasBackgroundColor by remember { mutableStateOf(OemBackground) }
 
     val isPreviewMode = !paletteVisible
     val paletteWidth by animateDpAsState(
@@ -146,6 +169,7 @@ fun ComponentPlaygroundDemo(
             placedComponents.clear()
             placedComponents.addAll(snapshot.components)
             nextInstanceId = snapshot.nextInstanceId
+            canvasBackgroundColor = snapshot.backgroundColorArgb?.decodeToColor() ?: OemBackground
         }
     }
 
@@ -153,11 +177,11 @@ fun ComponentPlaygroundDemo(
         @OptIn(FlowPreview::class)
         run {
             snapshotFlow {
-                placedComponents.toList() to nextInstanceId
+                Triple(placedComponents.toList(), nextInstanceId, canvasBackgroundColor)
             }
                 .debounce(AutosaveDebounceMs)
-                .collect { (components, nextId) ->
-                    designStore.save(components, nextId)
+                .collect { (components, nextId, backgroundColor) ->
+                    designStore.save(components, nextId, backgroundColor.encodeForStorage())
                     saveStatus = SaveStatus.Saved
                 }
         }
@@ -225,6 +249,7 @@ fun ComponentPlaygroundDemo(
                         placedComponents.clear()
                         selectedInstanceId = null
                         nextInstanceId = 0
+                        canvasBackgroundColor = OemBackground
                     },
                     componentCount = placedComponents.size,
                     saveStatus = saveStatus,
@@ -271,6 +296,7 @@ fun ComponentPlaygroundDemo(
                     isDropTargetActive = activeDrag != null,
                     isHovered = isCanvasHovered,
                     isPreviewMode = isPreviewMode,
+                    backgroundColor = canvasBackgroundColor,
                     onBoundsChanged = { bounds, contentSize ->
                         canvasBounds = bounds
                         canvasContentSize = contentSize
@@ -300,26 +326,26 @@ fun ComponentPlaygroundDemo(
                 )
 
                 AnimatedVisibility(
-                    visible = selectedPlaced != null && !isPreviewMode,
+                    visible = !isPreviewMode,
                     enter = slideInHorizontally { it } + fadeIn(),
                     exit = slideOutHorizontally { it } + fadeOut(),
                 ) {
-                    selectedPlaced?.let { placed ->
+                    if (selectedPlaced != null) {
                         ComponentConfigBar(
-                            placed = placed,
+                            placed = selectedPlaced,
                             onWidthFractionChange = { fraction ->
-                                updatePlaced(placed.instanceId) { it.copy(widthFraction = fraction) }
+                                updatePlaced(selectedPlaced.instanceId) { it.copy(widthFraction = fraction) }
                             },
                             onWrapContentToggle = { wrap ->
-                                updatePlaced(placed.instanceId) {
+                                updatePlaced(selectedPlaced.instanceId) {
                                     it.copy(widthFraction = if (wrap) null else 0.4f)
                                 }
                             },
                             onTextContentChange = { content ->
-                                updatePlaced(placed.instanceId) { it.copy(textContent = content) }
+                                updatePlaced(selectedPlaced.instanceId) { it.copy(textContent = content) }
                             },
                             onTextStyleChange = { styleId ->
-                                updatePlaced(placed.instanceId) { current ->
+                                updatePlaced(selectedPlaced.instanceId) { current ->
                                     current.copy(
                                         componentId = styleId,
                                         textContent = current.textContent
@@ -328,24 +354,32 @@ fun ComponentPlaygroundDemo(
                                 }
                             },
                             onHeightFractionChange = { fraction ->
-                                updatePlaced(placed.instanceId) { it.copy(heightFraction = fraction) }
+                                updatePlaced(selectedPlaced.instanceId) { it.copy(heightFraction = fraction) }
                             },
                             onWrapContentHeightToggle = { wrap ->
-                                updatePlaced(placed.instanceId) {
+                                updatePlaced(selectedPlaced.instanceId) {
                                     it.copy(heightFraction = if (wrap) null else 0.25f)
                                 }
                             },
                             onMarginChange = { margin ->
-                                updatePlaced(placed.instanceId) {
+                                updatePlaced(selectedPlaced.instanceId) {
                                     it.copy(marginDp = margin.coerceIn(0f, MaxLayoutSpacingDp))
                                 }
                             },
                             onPaddingChange = { padding ->
-                                updatePlaced(placed.instanceId) {
+                                updatePlaced(selectedPlaced.instanceId) {
                                     it.copy(paddingDp = padding.coerceIn(0f, MaxLayoutSpacingDp))
                                 }
                             },
-                            onDelete = { removeComponent(placed.instanceId) },
+                            onDelete = { removeComponent(selectedPlaced.instanceId) },
+                            modifier = Modifier
+                                .width(ConfigBarWidth)
+                                .fillMaxHeight(),
+                        )
+                    } else {
+                        CanvasConfigBar(
+                            selectedColor = canvasBackgroundColor,
+                            onColorSelected = { canvasBackgroundColor = it },
                             modifier = Modifier
                                 .width(ConfigBarWidth)
                                 .fillMaxHeight(),
@@ -363,6 +397,7 @@ fun ComponentPlaygroundDemo(
                     placedComponents.clear()
                     selectedInstanceId = null
                     nextInstanceId = 0
+                    canvasBackgroundColor = OemBackground
                 },
                 hasComponents = placedComponents.isNotEmpty(),
             )
@@ -575,6 +610,96 @@ private fun PlaygroundToolbarButton(
             contentDescription = contentDescription,
             tint = if (enabled) MaterialTheme.colorScheme.onSurface else OemOnSurfaceVariant,
             modifier = Modifier.size(OemSpacing.lg),
+        )
+    }
+}
+
+@Composable
+private fun CanvasConfigBar(
+    selectedColor: Color,
+    onColorSelected: (Color) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(modifier = modifier, color = OemSurface) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(OemSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
+        ) {
+            CustomSectionHeader(
+                title = "Screen",
+                subtitle = "Background color",
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
+                PlaygroundBackgroundOptions.chunked(2).forEach { rowOptions ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+                    ) {
+                        rowOptions.forEach { option ->
+                            val selected = selectedColor.value == option.color.value
+                            BackgroundColorSwatch(
+                                label = option.label,
+                                color = option.color,
+                                selected = selected,
+                                onClick = { onColorSelected(option.color) },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (rowOptions.size == 1) {
+                            Box(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+
+            Text(
+                text = "Tap a component to edit its properties",
+                style = MaterialTheme.typography.bodySmall,
+                color = OemOnSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BackgroundColorSwatch(
+    label: String,
+    color: Color,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = OemVisuals.chipShape
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clip(shape)
+                .background(color)
+                .oemSurfaceBorder(
+                    shape,
+                    if (selected) MaterialTheme.colorScheme.onSurface else OemBorder,
+                )
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                ),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (selected) MaterialTheme.colorScheme.onSurface else OemOnSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -887,6 +1012,7 @@ private fun PlaygroundCanvas(
     isDropTargetActive: Boolean,
     isHovered: Boolean,
     isPreviewMode: Boolean,
+    backgroundColor: Color,
     onBoundsChanged: (Rect, IntSize) -> Unit,
     onSelect: (Int) -> Unit,
     onDeselect: () -> Unit,
@@ -943,26 +1069,31 @@ private fun PlaygroundCanvas(
                 }
             }
 
-            Box(modifier = Modifier.fillMaxSize().then(guidesModifier)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor)
+                    .then(guidesModifier),
+            ) {
                 if (placedComponents.isEmpty()) {
-                EmptyCanvasHint(isDropTargetActive = isDropTargetActive, isPreviewMode = isPreviewMode)
-            } else {
-                placedComponents.forEach { placed ->
-                    key(placed.instanceId) {
-                        CanvasPlacedComponent(
-                            placed = placed,
-                            isSelected = selectedInstanceId == placed.instanceId && !isPreviewMode,
-                            canvasWidthDp = canvasWidthDp,
-                            canvasHeightDp = canvasHeightDp,
-                            onSelect = { onSelect(placed.instanceId) },
-                            onMove = { deltaXFraction, deltaYFraction ->
-                                onMove(placed.instanceId, deltaXFraction, deltaYFraction)
-                            },
-                            onResize = { deltaFraction -> onResize(placed.instanceId, deltaFraction) },
-                        )
+                    EmptyCanvasHint(isDropTargetActive = isDropTargetActive, isPreviewMode = isPreviewMode)
+                } else {
+                    placedComponents.forEach { placed ->
+                        key(placed.instanceId) {
+                            CanvasPlacedComponent(
+                                placed = placed,
+                                isSelected = selectedInstanceId == placed.instanceId && !isPreviewMode,
+                                canvasWidthDp = canvasWidthDp,
+                                canvasHeightDp = canvasHeightDp,
+                                onSelect = { onSelect(placed.instanceId) },
+                                onMove = { deltaXFraction, deltaYFraction ->
+                                    onMove(placed.instanceId, deltaXFraction, deltaYFraction)
+                                },
+                                onResize = { deltaFraction -> onResize(placed.instanceId, deltaFraction) },
+                            )
+                        }
                     }
                 }
-            }
             }
         }
     }
@@ -1175,7 +1306,7 @@ private fun EmptyCanvasHint(
                 color = if (isDropTargetActive) MaterialTheme.colorScheme.onSurface else OemOnSurfaceVariant,
             )
             Text(
-                text = "Tap or drag components from the palette",
+                text = "Tap canvas for screen background · drag from palette",
                 style = MaterialTheme.typography.bodyMedium,
                 color = OemOnSurfaceVariant,
             )
