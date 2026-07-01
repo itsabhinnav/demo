@@ -169,13 +169,29 @@ fun PlaygroundComponentRenderer(
     props: Map<String, String> = emptyMap(),
 ) {
     val mergedProps = PlaygroundComponentProps.mergeWithDefaults(componentId, props)
+
+    PlaygroundAppearance.Box(props = mergedProps, modifier = modifier) {
+        PlaygroundComponentBody(
+            componentId = componentId,
+            textContent = textContent,
+            mergedProps = mergedProps,
+        )
+    }
+}
+
+@Composable
+private fun PlaygroundComponentBody(
+    componentId: String,
+    textContent: String?,
+    mergedProps: Map<String, String>,
+) {
     val propsAccessor = PlaygroundComponentProps
 
     PlaygroundTextStyle.fromComponentId(componentId)?.let { style ->
         PlaygroundTextRenderer(
             style = style,
             text = textContent ?: propsAccessor.string(mergedProps, "textContent", style.sample),
-            modifier = modifier,
+            props = mergedProps,
         )
         return
     }
@@ -186,9 +202,9 @@ fun PlaygroundComponentRenderer(
             onClick = {},
             style = PlaygroundComponentProps.buttonStyle(componentId),
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
-        "icon-button" -> Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
+        "icon-button" -> Row(modifier = Modifier, horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
             CustomIconButton(
                 Icons.Default.Settings,
                 "Settings",
@@ -204,58 +220,58 @@ fun PlaygroundComponentRenderer(
             "Add",
             {},
             size = FabSize.Standard,
-            modifier = modifier,
+            modifier = Modifier,
         )
         "extended-fab" -> CustomExtendedFab(
             propsAccessor.string(mergedProps, "label", "Navigate"),
             Icons.Default.Navigation,
             {},
-            modifier = modifier,
+            modifier = Modifier,
         )
         "filter-chip" -> CustomChip(
             label = propsAccessor.string(mergedProps, "label", "Climate"),
             selected = propsAccessor.boolean(mergedProps, "selected", false),
             onClick = {},
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "assist-chip" -> CustomAssistChip(
             propsAccessor.string(mergedProps, "label", "Add stop"),
             {},
             leadingIcon = Icons.Default.Add,
-            modifier = modifier,
+            modifier = Modifier,
         )
         "suggestion-chip" -> CustomSuggestionChip(
             propsAccessor.string(mergedProps, "label", "Home"),
             {},
-            modifier = modifier,
+            modifier = Modifier,
         )
         "input-chip" -> CustomInputChip(
             propsAccessor.string(mergedProps, "label", "Eco Mode"),
             propsAccessor.boolean(mergedProps, "selected", false),
             {},
-            modifier = modifier,
+            modifier = Modifier,
         )
         "switch" -> CustomSwitch(
             propsAccessor.string(mergedProps, "label", "Auto climate"),
             propsAccessor.boolean(mergedProps, "checked", true),
             {},
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "checkbox" -> CustomCheckbox(
             propsAccessor.string(mergedProps, "label", "Heated seats"),
             propsAccessor.boolean(mergedProps, "checked", false),
             {},
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "radio" -> CustomRadioButton(
             propsAccessor.string(mergedProps, "label", "Standard mode"),
             propsAccessor.boolean(mergedProps, "selected", true),
             {},
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "segmented-button" -> {
             val options = propsAccessor.optionsList(mergedProps, "options", listOf("Off", "Auto", "Max"))
@@ -265,7 +281,7 @@ fun PlaygroundComponentRenderer(
                 options = options,
                 selectedIndex = selectedIndex,
                 onOptionSelected = {},
-                modifier = modifier,
+                modifier = Modifier,
             )
         }
         "text-field" -> CustomTextField(
@@ -274,14 +290,14 @@ fun PlaygroundComponentRenderer(
             label = propsAccessor.string(mergedProps, "fieldLabel", "Destination"),
             placeholder = propsAccessor.string(mergedProps, "placeholder", "Enter address"),
             enabled = propsAccessor.boolean(mergedProps, "enabled", true),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "search-bar" -> CustomSearchBar(
             query = propsAccessor.string(mergedProps, "query", ""),
             onQueryChange = {},
             onSearch = {},
             placeholder = propsAccessor.string(mergedProps, "placeholder", "Search destinations"),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "slider" -> {
             val min = propsAccessor.float(mergedProps, "valueMin", 16f)
@@ -292,10 +308,10 @@ fun PlaygroundComponentRenderer(
                 onValueChange = {},
                 label = propsAccessor.string(mergedProps, "label", "Temperature °C"),
                 valueRange = range,
-                modifier = modifier,
+                modifier = Modifier,
             )
         }
-        "card" -> CustomCard(modifier = modifier, onClick = {}) {
+        "card" -> CustomCard(modifier = Modifier, onClick = {}) {
             Text(
                 propsAccessor.string(mergedProps, "title", "Climate"),
                 style = MaterialTheme.typography.titleMedium,
@@ -311,7 +327,7 @@ fun PlaygroundComponentRenderer(
             propsAccessor.string(mergedProps, "label", "Range"),
             propsAccessor.string(mergedProps, "value", "287"),
             propsAccessor.string(mergedProps, "unit", "km"),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "list-tile" -> CustomListTile(
             propsAccessor.string(mergedProps, "title", "Navigation"),
@@ -319,11 +335,11 @@ fun PlaygroundComponentRenderer(
             leadingIcon = Icons.Default.Navigation,
             showChevron = propsAccessor.boolean(mergedProps, "showChevron", true),
             onClick = {},
-            modifier = modifier,
+            modifier = Modifier,
         )
         "image" -> CustomImage(
             contentDescription = propsAccessor.string(mergedProps, "contentDescription", "Vehicle"),
-            modifier = modifier,
+            modifier = Modifier,
             size = OemSpacing.xl * 2,
         )
         "tabs" -> {
@@ -334,40 +350,40 @@ fun PlaygroundComponentRenderer(
                 tabs = tabs,
                 selectedIndex = selectedIndex,
                 onTabSelected = {},
-                modifier = modifier,
+                modifier = Modifier,
             )
         }
         "status-indicator" -> CustomStatusIndicator(
             propsAccessor.string(mergedProps, "label", "Systems OK"),
             propsAccessor.statusLevel(mergedProps),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "linear-progress" -> CustomLinearProgress(
             progress = { propsAccessor.float(mergedProps, "progress", 0.65f).coerceIn(0f, 1f) },
             label = propsAccessor.string(mergedProps, "label", "Battery charge"),
-            modifier = modifier.padding(vertical = OemSpacing.sm),
+            modifier = Modifier.padding(vertical = OemSpacing.sm),
         )
         "circular-progress" -> CustomCircularProgress(
             label = propsAccessor.string(mergedProps, "label", "Syncing…"),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "snackbar" -> CustomSnackbarMessage(
             message = propsAccessor.string(mergedProps, "message", "Route updated"),
             actionLabel = propsAccessor.string(mergedProps, "actionLabel", "Undo"),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "empty-state" -> CustomEmptyState(
             icon = Icons.Default.Search,
             title = propsAccessor.string(mergedProps, "title", "No results"),
             message = propsAccessor.string(mergedProps, "message", "Try a different search term"),
-            modifier = modifier,
+            modifier = Modifier,
         )
         "dialog-trigger" -> {
             var show by remember { mutableStateOf(false) }
             CustomButton(
                 text = propsAccessor.string(mergedProps, "triggerLabel", "Show dialog"),
                 onClick = { show = true },
-                modifier = modifier,
+                modifier = Modifier,
             )
             if (show) {
                 CustomDialog(
@@ -391,9 +407,10 @@ fun PlaygroundComponentRenderer(
 private fun PlaygroundTextRenderer(
     style: PlaygroundTextStyle,
     text: String,
+    props: Map<String, String>,
     modifier: Modifier = Modifier,
 ) {
-    val textStyle = when (style) {
+    val baseStyle = when (style) {
         PlaygroundTextStyle.Display -> MaterialTheme.typography.displayLarge
         PlaygroundTextStyle.HeadlineLarge -> MaterialTheme.typography.headlineLarge
         PlaygroundTextStyle.HeadlineMedium -> MaterialTheme.typography.headlineMedium
@@ -406,8 +423,8 @@ private fun PlaygroundTextRenderer(
     }
     Text(
         text = text,
-        style = textStyle,
-        color = MaterialTheme.colorScheme.onSurface,
+        style = PlaygroundAppearance.textStyle(props, baseStyle),
+        color = PlaygroundAppearance.textColor(props),
         modifier = modifier,
         maxLines = 5,
         overflow = TextOverflow.Ellipsis,

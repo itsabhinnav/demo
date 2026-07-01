@@ -9,6 +9,7 @@ enum class PlaygroundPropertyType {
     Enum,
     Float,
     Int,
+    Color,
 }
 
 data class PlaygroundPropertyDefinition(
@@ -22,8 +23,10 @@ data class PlaygroundPropertyDefinition(
 
 object PlaygroundComponentProps {
 
-    fun schemaFor(componentId: String): List<PlaygroundPropertyDefinition> =
-        schemas[baseComponentId(componentId)].orEmpty()
+    fun schemaFor(componentId: String): List<PlaygroundPropertyDefinition> {
+        val componentSchema = schemas[baseComponentId(componentId)].orEmpty()
+        return componentSchema + PlaygroundAppearance.schema
+    }
 
     fun defaultProps(componentId: String): Map<String, String> =
         schemaFor(componentId).associate { it.key to it.defaultValue }
@@ -32,6 +35,9 @@ object PlaygroundComponentProps {
         val defaults = defaultProps(componentId)
         return defaults + props.filterKeys { key -> defaults.containsKey(key) }
     }
+
+    fun componentSchemaFor(componentId: String): List<PlaygroundPropertyDefinition> =
+        schemas[baseComponentId(componentId)].orEmpty()
 
     fun boolean(props: Map<String, String>, key: String, default: Boolean = false): Boolean =
         props[key]?.toBooleanStrictOrNull() ?: default
