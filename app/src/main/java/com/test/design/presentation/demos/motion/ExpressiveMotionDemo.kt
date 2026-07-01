@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +29,6 @@ import com.test.design.component.components.CustomCard
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomSegmentedButton
 import com.test.design.component.core.RestrictedComponentPolicy
-import com.test.design.component.motion.OemMotionScheme
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemSurfaceElevated
@@ -44,11 +44,6 @@ fun ExpressiveMotionDemo(
     var useExpressive by remember { mutableStateOf(true) }
     val drivingState = com.test.design.component.core.currentDrivingUxState()
     val animationsEnabled = RestrictedComponentPolicy.maxAnimationDurationMs(drivingState) > 0
-    val motionScheme = if (useExpressive) {
-        OemMotionScheme.expressive()
-    } else {
-        OemMotionScheme.standard()
-    }
 
     DemoScaffold(
         title = "Expressive Motion",
@@ -57,10 +52,11 @@ fun ExpressiveMotionDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "MotionScheme uses spring physics instead of fixed-duration easing",
+                    "MaterialTheme.motionScheme provides spring physics from material3",
                     "Spatial specs animate size, position, and bounds",
                     "Effects specs animate color, alpha, and elevation",
                     "Expressive = lower damping and more bounce for hero UI",
+                    "OemTheme uses expressive motion when parked, standard while driving",
                     if (animationsEnabled) {
                         "Tap the cards to compare standard vs expressive feel"
                     } else {
@@ -75,18 +71,24 @@ fun ExpressiveMotionDemo(
             onSchemeChanged = { useExpressive = it },
             animationsEnabled = animationsEnabled,
         )
-        SpatialMotionSection(
+
+        val motionScheme = if (useExpressive) {
+            MotionScheme.expressive()
+        } else {
+            MotionScheme.standard()
+        }
+
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme,
+            typography = MaterialTheme.typography,
+            shapes = MaterialTheme.shapes,
             motionScheme = motionScheme,
-            animationsEnabled = animationsEnabled,
-        )
-        EffectsMotionSection(
-            motionScheme = motionScheme,
-            animationsEnabled = animationsEnabled,
-        )
-        SpeedComparisonSection(
-            motionScheme = motionScheme,
-            animationsEnabled = animationsEnabled,
-        )
+        ) {
+            SpatialMotionSection(animationsEnabled = animationsEnabled)
+            EffectsMotionSection(animationsEnabled = animationsEnabled)
+            SpeedComparisonSection(animationsEnabled = animationsEnabled)
+            MaterialComponentsSection(animationsEnabled = animationsEnabled)
+        }
     }
 }
 
@@ -115,11 +117,9 @@ private fun SchemeSection(
 }
 
 @Composable
-private fun SpatialMotionSection(
-    motionScheme: OemMotionScheme,
-    animationsEnabled: Boolean,
-) {
+private fun SpatialMotionSection(animationsEnabled: Boolean) {
     var expanded by remember { mutableStateOf(false) }
+    val motionScheme = MaterialTheme.motionScheme
     val targetSize = if (expanded) 160.dp else 96.dp
     val size = animateDpWithPolicy(
         targetValue = targetSize,
@@ -130,7 +130,7 @@ private fun SpatialMotionSection(
 
     CustomSectionHeader(
         title = "Spatial Motion",
-        subtitle = "defaultSpatialSpec() — size and bounds changes",
+        subtitle = "MaterialTheme.motionScheme.defaultSpatialSpec()",
     )
     CustomCard(
         modifier = Modifier
@@ -161,11 +161,9 @@ private fun SpatialMotionSection(
 }
 
 @Composable
-private fun EffectsMotionSection(
-    motionScheme: OemMotionScheme,
-    animationsEnabled: Boolean,
-) {
+private fun EffectsMotionSection(animationsEnabled: Boolean) {
     var highlighted by remember { mutableStateOf(false) }
+    val motionScheme = MaterialTheme.motionScheme
     val containerColor by animateColorAsState(
         targetValue = if (highlighted) {
             MaterialTheme.colorScheme.primaryContainer
@@ -181,7 +179,7 @@ private fun EffectsMotionSection(
 
     CustomSectionHeader(
         title = "Effects Motion",
-        subtitle = "defaultEffectsSpec() — color and alpha changes",
+        subtitle = "MaterialTheme.motionScheme.defaultEffectsSpec()",
     )
     Box(
         modifier = Modifier
@@ -202,11 +200,9 @@ private fun EffectsMotionSection(
 }
 
 @Composable
-private fun SpeedComparisonSection(
-    motionScheme: OemMotionScheme,
-    animationsEnabled: Boolean,
-) {
+private fun SpeedComparisonSection(animationsEnabled: Boolean) {
     var activeIndex by remember { mutableStateOf(0) }
+    val motionScheme = MaterialTheme.motionScheme
     val specs = listOf(
         "Default" to motionScheme.defaultSpatialSpec<Dp>(),
         "Fast" to motionScheme.fastSpatialSpec<Dp>(),
@@ -250,6 +246,29 @@ private fun SpeedComparisonSection(
                 .size(48.dp)
                 .clip(OemVisuals.chipShape)
                 .background(MaterialTheme.colorScheme.secondary),
+        )
+    }
+}
+
+@Composable
+private fun MaterialComponentsSection(animationsEnabled: Boolean) {
+    var checked by remember { mutableStateOf(false) }
+
+    CustomSectionHeader(
+        title = "Material Components",
+        subtitle = "M3 controls inherit MaterialTheme.motionScheme automatically",
+    )
+    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
+        androidx.compose.material3.Switch(
+            checked = checked,
+            onCheckedChange = { if (animationsEnabled) checked = it },
+            enabled = animationsEnabled,
+        )
+        Text(
+            text = "Switch uses theme motion when toggled",
+            style = MaterialTheme.typography.bodyMedium,
+            color = OemOnSurfaceVariant,
+            modifier = Modifier.padding(top = OemSpacing.sm),
         )
     }
 }
