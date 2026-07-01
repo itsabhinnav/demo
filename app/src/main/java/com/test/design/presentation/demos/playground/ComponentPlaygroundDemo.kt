@@ -14,9 +14,7 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -112,7 +110,9 @@ private val MaxHeightFraction = 1f
 private val MaxLayoutSpacingDp = 48f
 private const val AutosaveDebounceMs = 400L
 private const val PreviewControlsHideDelayMs = 2000L
-private val PreviewControlsHotspotHeight = 120.dp
+private val PreviewCornerHotspotSize = OemSpacing.minTouchTarget
+private val PreviewEdgeSwipeWidth = 28.dp
+private const val PreviewEdgeSwipeThresholdDp = 72f
 private val CanvasGridMinorStep = OemSpacing.sm
 private val CanvasGridMajorStep = OemSpacing.md
 
@@ -393,13 +393,6 @@ fun ComponentPlaygroundDemo(
             PreviewModeOverlay(
                 onBack = onBack,
                 onExitPreview = { paletteVisible = true },
-                onClear = {
-                    placedComponents.clear()
-                    selectedInstanceId = null
-                    nextInstanceId = 0
-                    canvasBackgroundColor = OemBackground
-                },
-                hasComponents = placedComponents.isNotEmpty(),
             )
         }
 
@@ -468,21 +461,14 @@ private fun PlaygroundTopBar(
 private fun PreviewModeOverlay(
     onBack: () -> Unit,
     onExitPreview: () -> Unit,
-    onClear: () -> Unit,
-    hasComponents: Boolean,
 ) {
     var controlsVisible by remember { mutableStateOf(true) }
     var hideTimerGeneration by remember { mutableIntStateOf(0) }
-    val hotspotInteractionSource = remember { MutableInteractionSource() }
-    val isHotspotHovered by hotspotInteractionSource.collectIsHoveredAsState()
+    val density = LocalDensity.current
 
     fun revealControls() {
         controlsVisible = true
         hideTimerGeneration++
-    }
-
-    LaunchedEffect(isHotspotHovered) {
-        if (isHotspotHovered) revealControls()
     }
 
     LaunchedEffect(hideTimerGeneration) {
@@ -493,64 +479,63 @@ private fun PreviewModeOverlay(
     Box(modifier = Modifier.fillMaxSize().zIndex(5f)) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(PreviewControlsHotspotHeight)
-                .align(Alignment.TopCenter)
-                .hoverable(interactionSource = hotspotInteractionSource),
+                .fillMaxHeight()
+                .width(PreviewEdgeSwipeWidth)
+                .align(Alignment.CenterStart)
+                .pointerInput(Unit) {
+                    val swipeThresholdPx = with(density) { PreviewEdgeSwipeThresholdDp.dp.toPx() }
+                    var accumulatedSwipe = 0f
+                    detectHorizontalDragGestures(
+                        onDragStart = { accumulatedSwipe = 0f },
+                        onDragEnd = {
+                            if (accumulatedSwipe >= swipeThresholdPx) onExitPreview()
+                            accumulatedSwipe = 0f
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            if (dragAmount > 0f) accumulatedSwipe += dragAmount
+                        },
+                    )
+                },
         )
 
-        if (!controlsVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTapGestures { revealControls() }
-                    },
-            )
-        }
+        Box(
+            modifier = Modifier
+                .size(PreviewCornerHotspotSize)
+                .align(Alignment.TopStart)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = { revealControls() },
+                        onTap = { revealControls() },
+                    )
+                },
+        )
 
         AnimatedVisibility(
             visible = controlsVisible,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter),
+                .align(Alignment.TopStart)
+                .padding(OemSpacing.md),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(OemSpacing.md),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
-                    FloatingPlaygroundButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        onClick = {
-                            revealControls()
-                            onBack()
-                        },
-                    )
-                    FloatingPlaygroundButton(
-                        icon = Icons.AutoMirrored.Filled.ViewSidebar,
-                        contentDescription = "Exit preview",
-                        onClick = {
-                            revealControls()
-                            onExitPreview()
-                        },
-                    )
-                }
-                if (hasComponents) {
-                    FloatingPlaygroundButton(
-                        icon = Icons.Default.DeleteSweep,
-                        contentDescription = "Clear canvas",
-                        onClick = {
-                            revealControls()
-                            onClear()
-                        },
-                    )
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
+                FloatingPlaygroundButton(
+                    icon = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    onClick = {
+                        revealControls()
+                        onBack()
+                    },
+                )
+                FloatingPlaygroundButton(
+                    icon = Icons.AutoMirrored.Filled.ViewSidebar,
+                    contentDescription = "Exit preview",
+                    onClick = {
+                        revealControls()
+                        onExitPreview()
+                    },
+                )
             }
         }
     }
@@ -1027,6 +1012,7 @@ private fun PlaygroundCanvas(
     }
     val borderWidth = if (isHovered) 2.dp else if (isPreviewMode) 0.dp else 1.dp
     val canvasPadding = OemSpacing.sm
+    val canvasDeselectInteractionSource = remember { MutableInteractionSource() }
 
     Surface(
         modifier = modifier,
@@ -1046,10 +1032,16 @@ private fun PlaygroundCanvas(
                 }
                 .clip(if (isPreviewMode) RoundedCornerShape(0.dp) else OemVisuals.cardShape)
                 .border(borderWidth, borderColor, if (isPreviewMode) RoundedCornerShape(0.dp) else OemVisuals.cardShape)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onDeselect,
+                .then(
+                    if (isPreviewMode) {
+                        Modifier
+                    } else {
+                        Modifier.clickable(
+                            interactionSource = canvasDeselectInteractionSource,
+                            indication = null,
+                            onClick = onDeselect,
+                        )
+                    },
                 ),
         ) {
             val canvasWidthDp = maxWidth.value
@@ -1083,6 +1075,7 @@ private fun PlaygroundCanvas(
                             CanvasPlacedComponent(
                                 placed = placed,
                                 isSelected = selectedInstanceId == placed.instanceId && !isPreviewMode,
+                                isFrozen = isPreviewMode,
                                 canvasWidthDp = canvasWidthDp,
                                 canvasHeightDp = canvasHeightDp,
                                 onSelect = { onSelect(placed.instanceId) },
@@ -1178,6 +1171,7 @@ private fun DrawScope.drawPlaygroundGuides(
 private fun CanvasPlacedComponent(
     placed: PlacedComponent,
     isSelected: Boolean,
+    isFrozen: Boolean,
     canvasWidthDp: Float,
     canvasHeightDp: Float,
     onSelect: () -> Unit,
@@ -1204,6 +1198,29 @@ private fun CanvasPlacedComponent(
         else -> Modifier
     }
 
+    val selectionInteractionSource = remember { MutableInteractionSource() }
+    val interactionModifier = if (isFrozen) {
+        Modifier
+    } else {
+        Modifier
+            .clickable(
+                interactionSource = selectionInteractionSource,
+                indication = null,
+                onClick = onSelect,
+            )
+            .pointerInput(placed.instanceId) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    if (canvasWidthPx > 0f && canvasHeightPx > 0f) {
+                        onMove(
+                            dragAmount.x / canvasWidthPx,
+                            dragAmount.y / canvasHeightPx,
+                        )
+                    }
+                }
+            }
+    }
+
     Box(
         modifier = Modifier.offset {
             IntOffset(
@@ -1225,22 +1242,7 @@ private fun CanvasPlacedComponent(
                     },
                 )
                 .clip(OemVisuals.chipShape)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onSelect,
-                )
-                .pointerInput(placed.instanceId) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        if (canvasWidthPx > 0f && canvasHeightPx > 0f) {
-                            onMove(
-                                dragAmount.x / canvasWidthPx,
-                                dragAmount.y / canvasHeightPx,
-                            )
-                        }
-                    }
-                },
+                .then(interactionModifier),
         ) {
             Box(
                 modifier = Modifier
