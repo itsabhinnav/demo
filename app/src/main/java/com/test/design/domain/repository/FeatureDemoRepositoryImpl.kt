@@ -14,6 +14,13 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             tagline = "OEM tokens & theming",
         ),
         FeatureDemo(
+            id = "expressive-motion",
+            title = "Expressive Motion",
+            description = "Material 3 physics-based motion with standard and expressive MotionScheme springs.",
+            category = DemoCategory.DesignSystem,
+            tagline = "Spring physics & motion",
+        ),
+        FeatureDemo(
             id = "components-gallery",
             title = "Components Gallery",
             description = "Interactive showcase of buttons, cards, chips, lists, tabs, and images.",

@@ -8,6 +8,7 @@ import com.test.design.presentation.demos.components.ComponentsGalleryDemo
 import com.test.design.presentation.demos.playground.ComponentPlaygroundDemo
 import com.test.design.presentation.demos.designsystem.DesignSystemDemo
 import com.test.design.presentation.demos.lists.ListsGridsDemo
+import com.test.design.presentation.demos.motion.ExpressiveMotionDemo
 import com.test.design.presentation.demos.restricted.RestrictedUxDemo
 import com.test.design.presentation.demos.tabs.TabsDemo
 import com.test.design.presentation.demos.vehicle.EvDemo
@@ -22,6 +23,7 @@ fun DemoContentRouter(
 ) {
     when (demoId) {
         "design-system" -> DesignSystemDemo(onBack = onNavigateBack, modifier = modifier)
+        "expressive-motion" -> ExpressiveMotionDemo(onBack = onNavigateBack, modifier = modifier)
         "components-gallery" -> ComponentsGalleryDemo(onBack = onNavigateBack, modifier = modifier)
         "component-playground" -> ComponentPlaygroundDemo(onBack = onNavigateBack, modifier = modifier)
         "compose-basics" -> ComposeBasicsDemo(onBack = onNavigateBack, modifier = modifier)
