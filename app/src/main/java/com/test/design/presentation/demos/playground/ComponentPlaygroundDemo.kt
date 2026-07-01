@@ -59,8 +59,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -104,6 +108,8 @@ private val MaxLayoutSpacingDp = 48f
 private const val AutosaveDebounceMs = 400L
 private const val PreviewControlsHideDelayMs = 3000L
 private val PreviewControlsHotspotHeight = 120.dp
+private val CanvasGridMinorStep = OemSpacing.sm
+private val CanvasGridMajorStep = OemSpacing.md
 
 private enum class SaveStatus { Saved }
 
@@ -924,8 +930,23 @@ private fun PlaygroundCanvas(
         ) {
             val canvasWidthDp = maxWidth.value
             val canvasHeightDp = maxHeight.value
+            val guideColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            val guideMinorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
+            val guidesModifier = if (isPreviewMode) {
+                Modifier
+            } else {
+                Modifier.drawBehind {
+                    drawPlaygroundGuides(
+                        gridMinorColor = OemBorder.copy(alpha = 0.22f),
+                        gridMajorColor = OemBorder.copy(alpha = 0.38f),
+                        guideColor = guideColor,
+                        guideMinorColor = guideMinorColor,
+                    )
+                }
+            }
 
-            if (placedComponents.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().then(guidesModifier)) {
+                if (placedComponents.isEmpty()) {
                 EmptyCanvasHint(isDropTargetActive = isDropTargetActive, isPreviewMode = isPreviewMode)
             } else {
                 placedComponents.forEach { placed ->
@@ -944,7 +965,83 @@ private fun PlaygroundCanvas(
                     }
                 }
             }
+            }
         }
+    }
+}
+
+private fun DrawScope.drawPlaygroundGuides(
+    gridMinorColor: Color,
+    gridMajorColor: Color,
+    guideColor: Color,
+    guideMinorColor: Color,
+) {
+    val minorStepPx = CanvasGridMinorStep.toPx()
+    val majorEvery = (CanvasGridMajorStep / CanvasGridMinorStep).roundToInt().coerceAtLeast(1)
+    val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
+
+    var x = 0f
+    var column = 0
+    while (x <= size.width) {
+        val isMajor = column % majorEvery == 0
+        drawLine(
+            color = if (isMajor) gridMajorColor else gridMinorColor,
+            start = Offset(x, 0f),
+            end = Offset(x, size.height),
+            strokeWidth = if (isMajor) 1f else 0.5f,
+        )
+        x += minorStepPx
+        column++
+    }
+
+    var y = 0f
+    var row = 0
+    while (y <= size.height) {
+        val isMajor = row % majorEvery == 0
+        drawLine(
+            color = if (isMajor) gridMajorColor else gridMinorColor,
+            start = Offset(0f, y),
+            end = Offset(size.width, y),
+            strokeWidth = if (isMajor) 1f else 0.5f,
+        )
+        y += minorStepPx
+        row++
+    }
+
+    val centerX = size.width / 2f
+    val centerY = size.height / 2f
+    drawLine(
+        color = guideColor,
+        start = Offset(centerX, 0f),
+        end = Offset(centerX, size.height),
+        strokeWidth = 1.5f,
+        pathEffect = dashEffect,
+    )
+    drawLine(
+        color = guideColor,
+        start = Offset(0f, centerY),
+        end = Offset(size.width, centerY),
+        strokeWidth = 1.5f,
+        pathEffect = dashEffect,
+    )
+
+    listOf(size.width / 3f, size.width * 2f / 3f).forEach { guideX ->
+        drawLine(
+            color = guideMinorColor,
+            start = Offset(guideX, 0f),
+            end = Offset(guideX, size.height),
+            strokeWidth = 1f,
+            pathEffect = dashEffect,
+        )
+    }
+    listOf(size.height / 3f, size.height * 2f / 3f).forEach { guideY ->
+        drawLine(
+            color = guideMinorColor,
+            start = Offset(0f, guideY),
+            end = Offset(size.width, guideY),
+            strokeWidth = 1f,
+            pathEffect = dashEffect,
+        )
     }
 }
 
