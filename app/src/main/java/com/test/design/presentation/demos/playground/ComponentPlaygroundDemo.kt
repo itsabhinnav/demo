@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -436,21 +437,20 @@ private fun PreviewModeOverlay(
     hasComponents: Boolean,
 ) {
     var controlsVisible by remember { mutableStateOf(true) }
-    var hideGeneration by remember { mutableIntStateOf(0) }
+    var hideTimerGeneration by remember { mutableIntStateOf(0) }
     val hotspotInteractionSource = remember { MutableInteractionSource() }
     val isHotspotHovered by hotspotInteractionSource.collectIsHoveredAsState()
 
     fun revealControls() {
         controlsVisible = true
-        hideGeneration++
+        hideTimerGeneration++
     }
 
     LaunchedEffect(isHotspotHovered) {
         if (isHotspotHovered) revealControls()
     }
 
-    LaunchedEffect(hideGeneration, isHotspotHovered) {
-        if (!controlsVisible || isHotspotHovered) return@LaunchedEffect
+    LaunchedEffect(hideTimerGeneration) {
         delay(PreviewControlsHideDelayMs)
         controlsVisible = false
     }
@@ -468,11 +468,9 @@ private fun PreviewModeOverlay(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { revealControls() },
-                    ),
+                    .pointerInput(Unit) {
+                        detectTapGestures { revealControls() }
+                    },
             )
         }
 
