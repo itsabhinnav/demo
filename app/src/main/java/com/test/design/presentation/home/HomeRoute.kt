@@ -33,6 +33,9 @@ fun HomeRoute(
         onCategorySelected = { category ->
             viewModel.onIntent(HomeIntent.CategorySelected(category))
         },
+        onSearchQueryChanged = { query ->
+            viewModel.onIntent(HomeIntent.SearchQueryChanged(query))
+        },
         modifier = modifier,
     )
 }

@@ -100,6 +100,7 @@ import com.test.design.component.theme.oemSurfaceBorder
 import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.motion.OemMotion
 import com.test.design.core.export.DesignExportHelper
+import com.test.design.core.feedback.DesignFeedback
 import kotlin.math.roundToInt
 
 private val PaletteWidth = 280.dp
@@ -268,7 +269,7 @@ fun ComponentPlaygroundDemo(
                         saveStatus = SaveStatus.Saved
                     },
                     onExport = {
-                        DesignExportHelper.shareJson(
+                        val result = DesignExportHelper.shareJson(
                             context = context,
                             fileName = "playground-design.json",
                             json = designStore.exportJson(
@@ -278,6 +279,7 @@ fun ComponentPlaygroundDemo(
                             ),
                             chooserTitle = "Export playground design",
                         )
+                        DesignFeedback.showExportResult(context, result)
                     },
                     onClear = {
                         placedComponents.clear()

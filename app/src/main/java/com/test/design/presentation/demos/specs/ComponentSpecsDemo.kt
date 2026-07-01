@@ -99,10 +99,15 @@ private fun ComponentSpecCard(
                 modifier = Modifier.padding(top = OemSpacing.xs),
             )
             Text(
-                text = DesignExportHelper.buildDeepLink("component-playground"),
+                text = "Playground ID: $componentId",
                 style = MaterialTheme.typography.labelMedium,
                 color = OemOnSurfaceVariant,
                 modifier = Modifier.padding(top = OemSpacing.xs),
+            )
+            Text(
+                text = DesignExportHelper.buildDeepLink("components-gallery"),
+                style = MaterialTheme.typography.bodySmall,
+                color = OemOnSurfaceVariant,
             )
         }
     }

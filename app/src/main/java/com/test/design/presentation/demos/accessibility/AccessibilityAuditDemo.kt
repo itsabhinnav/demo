@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -14,9 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.test.design.component.components.CustomCard
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.test.design.component.components.CustomCard
 import com.test.design.component.components.CustomSectionHeader
+import com.test.design.component.core.DrivingUxState
 import com.test.design.component.core.RestrictedComponentPolicy
 import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.core.currentTouchTarget
@@ -28,10 +30,16 @@ import com.test.design.component.tokens.DesignTokens
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
 
+private enum class AuditStatus {
+    Pass,
+    ManualReview,
+    Fail,
+}
+
 private data class AuditResult(
     val label: String,
     val detail: String,
-    val passed: Boolean,
+    val status: AuditStatus,
 )
 
 @Composable
@@ -42,48 +50,58 @@ fun AccessibilityAuditDemo(
     val drivingState = currentDrivingUxState()
     val touchTarget = currentTouchTarget().value.toInt()
     val minRequired = when (drivingState) {
-        com.test.design.component.core.DrivingUxState.Parked -> DesignTokens.minTouchTargetDp
-        com.test.design.component.core.DrivingUxState.Driving -> DesignTokens.drivingTouchTargetDp
-        com.test.design.component.core.DrivingUxState.Restricted -> DesignTokens.restrictedTouchTargetDp
+        DrivingUxState.Parked -> DesignTokens.minTouchTargetDp
+        DrivingUxState.Driving -> DesignTokens.drivingTouchTargetDp
+        DrivingUxState.Restricted -> DesignTokens.restrictedTouchTargetDp
     }
 
     val results = listOf(
         AuditResult(
             label = "Touch target size",
             detail = "Current ${touchTarget}dp · Required ${minRequired}dp minimum",
-            passed = touchTarget >= minRequired,
+            status = if (touchTarget >= minRequired) AuditStatus.Pass else AuditStatus.Fail,
         ),
         AuditResult(
             label = "Contrast ratio",
-            detail = "Monochrome palette targets ${DesignTokens.minContrastRatio}:1 minimum",
-            passed = true,
+            detail = "Verify on device against ${DesignTokens.minContrastRatio}:1 AAOS minimum",
+            status = AuditStatus.ManualReview,
         ),
         AuditResult(
             label = "Body text size",
-            detail = "OemTypography bodyLarge is ${DesignTokens.minBodyTextSp}sp minimum",
-            passed = true,
+            detail = "OemTypography bodyLarge meets ${DesignTokens.minBodyTextSp}sp minimum",
+            status = AuditStatus.Pass,
         ),
         AuditResult(
-            label = "Keyboard while driving",
+            label = "Keyboard UXR policy",
             detail = RestrictedComponentPolicy.keyboardBlockedMessage(drivingState)
                 ?: "Keyboard allowed while parked",
-            passed = RestrictedComponentPolicy.allowsKeyboardInput(drivingState),
+            status = if (drivingState == DrivingUxState.Parked || !RestrictedComponentPolicy.allowsKeyboardInput(drivingState)) {
+                AuditStatus.Pass
+            } else {
+                AuditStatus.Fail
+            },
         ),
         AuditResult(
-            label = "Animation duration",
+            label = "Animation policy",
             detail = "Max ${RestrictedComponentPolicy.maxAnimationDurationMs(drivingState)}ms in ${drivingState.name}",
-            passed = RestrictedComponentPolicy.maxAnimationDurationMs(drivingState) <= DesignTokens.maxDrivingAnimationMs,
+            status = if (RestrictedComponentPolicy.maxAnimationDurationMs(drivingState) <= DesignTokens.maxDrivingAnimationMs) {
+                AuditStatus.Pass
+            } else {
+                AuditStatus.Fail
+            },
         ),
         AuditResult(
-            label = "Secondary actions",
+            label = "Secondary action policy",
             detail = if (RestrictedComponentPolicy.allowsSecondaryActions(drivingState)) {
-                "Secondary buttons visible"
+                "Secondary buttons allowed in ${drivingState.name}"
             } else {
                 "Secondary actions hidden in Restricted UXR"
             },
-            passed = true,
+            status = AuditStatus.Pass,
         ),
     )
+
+    val passCount = results.count { it.status == AuditStatus.Pass }
 
     DemoScaffold(
         title = "Accessibility Audit",
@@ -91,16 +109,16 @@ fun AccessibilityAuditDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "Run this audit under each global Driving State",
-                    "AAOS requires 4.5:1 contrast and enlarged touch targets",
-                    "Failed checks indicate behaviors to validate on device",
+                    "Pass = automated check · Manual = verify on device",
+                    "Policy rows confirm UXR rules are enforced, not violated",
+                    "Run under each global Driving State before sign-off",
                 ),
             )
         },
     ) {
         CustomSectionHeader(
             title = "Live AAOS Audit",
-            subtitle = "${drivingState.name} · ${results.count { it.passed }}/${results.size} checks passing",
+            subtitle = "${drivingState.name} · $passCount automated checks passing",
         )
         results.forEach { result ->
             AuditResultRow(result)
@@ -119,7 +137,7 @@ private fun AuditResultRow(result: AuditResult) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
         ) {
-            AuditStatusIcon(passed = result.passed)
+            AuditStatusIcon(status = result.status)
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = result.label, style = MaterialTheme.typography.titleSmall)
                 Text(
@@ -133,8 +151,20 @@ private fun AuditResultRow(result: AuditResult) {
 }
 
 @Composable
-private fun AuditStatusIcon(passed: Boolean) {
-    val icon: ImageVector = if (passed) Icons.Default.CheckCircle else Icons.Default.Warning
-    val tint = if (passed) OemSuccess else OemWarning
-    Icon(imageVector = icon, contentDescription = null, tint = tint)
+private fun AuditStatusIcon(status: AuditStatus) {
+    val icon: ImageVector = when (status) {
+        AuditStatus.Pass -> Icons.Default.CheckCircle
+        AuditStatus.ManualReview -> Icons.Default.Info
+        AuditStatus.Fail -> Icons.Default.Warning
+    }
+    val tint = when (status) {
+        AuditStatus.Pass -> OemSuccess
+        AuditStatus.ManualReview -> OemOnSurfaceVariant
+        AuditStatus.Fail -> OemWarning
+    }
+    Icon(
+        imageVector = icon,
+        contentDescription = status.name,
+        tint = tint,
+    )
 }

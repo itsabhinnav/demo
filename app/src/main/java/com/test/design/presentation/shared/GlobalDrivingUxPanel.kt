@@ -13,18 +13,19 @@ import com.test.design.component.components.CustomChip
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.core.DrivingUxState
 import com.test.design.component.core.RestrictedComponentPolicy
+import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.core.currentTouchTarget
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
-import com.test.design.core.driving.LocalDrivingUxController
+import com.test.design.core.driving.LocalDrivingUxUpdater
 
 @Composable
 fun GlobalDrivingUxPanel(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val controller = LocalDrivingUxController.current
-    val selectedState = controller.state
+    val selectedState = currentDrivingUxState()
+    val onUpdate = LocalDrivingUxUpdater.current
 
     Column(modifier = modifier) {
         CustomSectionHeader(
@@ -45,7 +46,7 @@ fun GlobalDrivingUxPanel(
                 CustomChip(
                     label = state.name,
                     selected = selectedState == state,
-                    onClick = { controller.update(state) },
+                    onClick = { onUpdate(state) },
                 )
             }
         }

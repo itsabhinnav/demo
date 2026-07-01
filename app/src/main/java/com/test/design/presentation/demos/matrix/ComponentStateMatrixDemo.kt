@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,8 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomSectionHeader
+import com.test.design.component.components.ButtonStyle
 import com.test.design.component.core.DrivingUxState
 import com.test.design.component.theme.OemBorder
 import com.test.design.component.theme.OemOnSurfaceVariant
@@ -34,6 +40,7 @@ import com.test.design.presentation.demos.shared.DemoTipsPanel
 private data class MatrixRow(
     val label: String,
     val componentId: String,
+    val staticPreview: Boolean = false,
 )
 
 private val matrixRows = listOf(
@@ -46,7 +53,7 @@ private val matrixRows = listOf(
     MatrixRow("Tabs", "tabs"),
     MatrixRow("List tile", "list-tile"),
     MatrixRow("Extended FAB", "extended-fab"),
-    MatrixRow("Dialog", "dialog-trigger"),
+    MatrixRow("Dialog", "dialog-trigger", staticPreview = true),
 )
 
 @Composable
@@ -54,6 +61,8 @@ fun ComponentStateMatrixDemo(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val horizontalScroll = rememberScrollState()
+
     DemoScaffold(
         title = "Component State Matrix",
         onBack = onBack,
@@ -61,21 +70,21 @@ fun ComponentStateMatrixDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "Use the global Driving State toggle to preview app-wide UXR",
-                    "Each column renders the same component under a different UXR level",
-                    "Compare touch targets, hidden actions, and blocked inputs side by side",
+                    "Columns are fixed to Parked, Driving, and Restricted for side-by-side comparison",
+                    "Use the global Driving State toggle for app-wide behavior outside this matrix",
+                    "Dialog cells use static previews to avoid modal distraction while driving",
                 ),
             )
         },
     ) {
         CustomSectionHeader(
             title = "UXR State Matrix",
-            subtitle = "Scroll horizontally to compare Parked, Driving, and Restricted behavior",
+            subtitle = "Compare component behavior across all restriction levels",
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
+                .horizontalScroll(horizontalScroll)
                 .padding(vertical = OemSpacing.md),
             horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
         ) {
@@ -84,18 +93,27 @@ fun ComponentStateMatrixDemo(
                 MatrixHeaderCell(state.name, isHeader = true)
             }
         }
-        matrixRows.forEach { row ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(bottom = OemSpacing.sm),
-                horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                MatrixHeaderCell(row.label)
-                DrivingUxState.entries.forEach { state ->
-                    MatrixPreviewCell(componentId = row.componentId, state = state)
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+        ) {
+            items(matrixRows, key = { it.componentId }) { row ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(horizontalScroll),
+                    horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    MatrixHeaderCell(row.label)
+                    DrivingUxState.entries.forEach { state ->
+                        MatrixPreviewCell(
+                            label = row.label,
+                            componentId = row.componentId,
+                            state = state,
+                            staticPreview = row.staticPreview,
+                        )
+                    }
                 }
             }
         }
@@ -124,8 +142,10 @@ private fun MatrixHeaderCell(label: String, isHeader: Boolean = false) {
 
 @Composable
 private fun MatrixPreviewCell(
+    label: String,
     componentId: String,
     state: DrivingUxState,
+    staticPreview: Boolean,
 ) {
     OemTheme(drivingUxState = state) {
         Box(
@@ -135,10 +155,22 @@ private fun MatrixPreviewCell(
                 .clip(OemVisuals.cardShape)
                 .background(OemSurfaceElevated)
                 .border(1.dp, OemBorder, OemVisuals.cardShape)
-                .padding(OemSpacing.sm),
+                .padding(OemSpacing.sm)
+                .semantics {
+                    contentDescription = "$label in ${state.name} UXR"
+                },
             contentAlignment = Alignment.Center,
         ) {
-            PlaygroundComponentRenderer(componentId = componentId)
+            if (staticPreview && componentId == "dialog-trigger") {
+                CustomButton(
+                    text = "Dialog preview",
+                    onClick = {},
+                    style = ButtonStyle.Secondary,
+                    enabled = false,
+                )
+            } else {
+                PlaygroundComponentRenderer(componentId = componentId)
+            }
         }
     }
 }

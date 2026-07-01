@@ -17,18 +17,19 @@ import com.test.design.presentation.home.HomeRoute
 
 @Composable
 fun AppNavGraph(
+    pendingNavigation: PendingNavigation?,
+    onPendingNavigationConsumed: () -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDemoId: String? = null,
 ) {
     val drivingState = currentDrivingUxState()
 
-    LaunchedEffect(startDemoId) {
-        if (!startDemoId.isNullOrBlank()) {
-            navController.navigate(Routes.demo(startDemoId)) {
-                popUpTo(Routes.HOME)
-            }
+    LaunchedEffect(pendingNavigation) {
+        val pending = pendingNavigation ?: return@LaunchedEffect
+        navController.navigate(Routes.demo(pending.demoId)) {
+            popUpTo(Routes.HOME)
         }
+        onPendingNavigationConsumed()
     }
 
     NavHost(

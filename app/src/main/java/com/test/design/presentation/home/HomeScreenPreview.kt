@@ -25,6 +25,7 @@ private fun HomeScreenPreview() {
             ),
             onFeatureClick = {},
             onCategorySelected = {},
+            onSearchQueryChanged = {},
         )
     }
 }

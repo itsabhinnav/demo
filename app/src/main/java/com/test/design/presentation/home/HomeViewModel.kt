@@ -14,6 +14,7 @@ class HomeViewModel(
             is HomeIntent.Load -> loadHome()
             is HomeIntent.FeatureSelected -> onFeatureSelected(intent.featureId)
             is HomeIntent.CategorySelected -> onCategorySelected(intent.category)
+            is HomeIntent.SearchQueryChanged -> onSearchQueryChanged(intent.query)
         }
     }
 
@@ -22,7 +23,7 @@ class HomeViewModel(
         updateState {
             copy(
                 features = features,
-                filteredFeatures = features,
+                filteredFeatures = applyFilters(features, selectedCategory, searchQuery),
                 categories = repository.getCategories(),
                 isLoading = false,
             )
@@ -30,16 +31,43 @@ class HomeViewModel(
     }
 
     private fun onCategorySelected(category: DemoCategory) {
-        val filtered = filterByCategory(state.value.features, category)
-        updateState { copy(selectedCategory = category, filteredFeatures = filtered) }
+        updateState {
+            copy(
+                selectedCategory = category,
+                filteredFeatures = applyFilters(features, category, searchQuery),
+            )
+        }
+    }
+
+    private fun onSearchQueryChanged(query: String) {
+        updateState {
+            copy(
+                searchQuery = query,
+                filteredFeatures = applyFilters(features, selectedCategory, query),
+            )
+        }
     }
 
     private fun onFeatureSelected(featureId: String) {
         emitEffect(HomeEffect.NavigateToDemo(featureId))
     }
 
-    private fun filterByCategory(features: List<FeatureDemo>, category: DemoCategory): List<FeatureDemo> {
-        if (category == DemoCategory.All) return features
-        return features.filter { it.category == category }
+    private fun applyFilters(
+        features: List<FeatureDemo>,
+        category: DemoCategory,
+        query: String,
+    ): List<FeatureDemo> {
+        val byCategory = if (category == DemoCategory.All) {
+            features
+        } else {
+            features.filter { it.category == category }
+        }
+        if (query.isBlank()) return byCategory
+        return byCategory.filter { feature ->
+            feature.title.contains(query, ignoreCase = true) ||
+                feature.description.contains(query, ignoreCase = true) ||
+                feature.tagline.contains(query, ignoreCase = true) ||
+                feature.id.contains(query, ignoreCase = true)
+        }
     }
 }

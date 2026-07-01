@@ -1,28 +1,29 @@
 package com.test.design.presentation.demos.flow
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomChip
 import com.test.design.component.components.CustomSectionHeader
+import com.test.design.component.components.CustomTextField
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.core.export.DesignExportHelper
+import com.test.design.presentation.demos.playground.PlaygroundCatalog
 import com.test.design.presentation.demos.playground.PlaygroundComponentRenderer
 import com.test.design.presentation.demos.shared.DemoScaffold
 import com.test.design.presentation.demos.shared.DemoTipsPanel
@@ -33,15 +34,11 @@ fun FlowBuilderDemo(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val store = remember { FlowDesignStore(context) }
-    var flow by remember { mutableStateOf(FlowDesignStore.defaultFlow()) }
-    var currentScreenIndex by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        store.load()?.let { flow = it }
-    }
-
-    val currentScreen = flow.screens.getOrNull(currentScreenIndex) ?: flow.screens.first()
+    val viewModel: FlowBuilderViewModel = viewModel(
+        factory = FlowBuilderViewModelFactory(FlowDesignStore(context)),
+    )
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+    val currentScreen = uiState.flow.screens[uiState.currentScreenIndex]
 
     DemoScaffold(
         title = "Flow Builder",
@@ -50,74 +47,141 @@ fun FlowBuilderDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = listOf(
-                    "Step through screens to preview multi-step flows with real navigation",
-                    "Export JSON for engineering handoff or share via deep link",
-                    "Global Driving State applies to every screen in the flow",
+                    "Add screens and components to prototype multi-step flows",
+                    "Changes autosave locally for handoff between sessions",
+                    "Export JSON or share the flow-builder deep link",
                 ),
             )
         },
     ) {
+        CustomTextField(
+            value = uiState.flow.title,
+            onValueChange = viewModel::updateFlowTitle,
+            label = "Flow title",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = OemSpacing.md),
+        )
         CustomSectionHeader(
-            title = flow.title,
-            subtitle = "Screen ${currentScreenIndex + 1} of ${flow.screens.size} · ${currentScreen.title}",
+            title = uiState.flow.title,
+            subtitle = buildString {
+                append("Screen ${uiState.currentScreenIndex + 1} of ${uiState.flow.screens.size}")
+                append(" · ")
+                append(currentScreen.title)
+                uiState.lastSavedAtMillis?.let { append(" · Saved") }
+            },
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = OemSpacing.md),
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = OemSpacing.sm),
             horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
         ) {
-            flow.screens.forEachIndexed { index, screen ->
+            uiState.flow.screens.forEachIndexed { index, screen ->
                 CustomChip(
                     label = screen.title,
-                    selected = index == currentScreenIndex,
-                    onClick = { currentScreenIndex = index },
+                    selected = index == uiState.currentScreenIndex,
+                    onClick = { viewModel.selectScreen(index) },
                 )
-            }
-        }
-        Column(
-            modifier = Modifier.padding(vertical = OemSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
-        ) {
-            currentScreen.componentIds.forEach { componentId ->
-                PlaygroundComponentRenderer(componentId = componentId)
             }
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = OemSpacing.md),
+                .padding(bottom = OemSpacing.md),
+            horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+        ) {
+            CustomButton(text = "Add screen", onClick = viewModel::addScreen, style = ButtonStyle.Tonal)
+            CustomButton(
+                text = "Remove screen",
+                onClick = viewModel::removeCurrentScreen,
+                style = ButtonStyle.Secondary,
+                enabled = uiState.flow.screens.size > 1,
+            )
+        }
+
+        CustomSectionHeader(title = "Preview", subtitle = "Live components for the selected screen")
+        Column(
+            modifier = Modifier.padding(vertical = OemSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
+        ) {
+            if (currentScreen.componentIds.isEmpty()) {
+                Text(
+                    text = "Add a component from the catalog below.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OemOnSurfaceVariant,
+                )
+            } else {
+                currentScreen.componentIds.forEach { componentId ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    ) {
+                        PlaygroundComponentRenderer(
+                            componentId = componentId,
+                            modifier = Modifier.weight(1f),
+                        )
+                        CustomButton(
+                            text = "Remove",
+                            onClick = { viewModel.removeComponentFromCurrentScreen(componentId) },
+                            style = ButtonStyle.Text,
+                        )
+                    }
+                }
+            }
+        }
+
+        CustomSectionHeader(title = "Component catalog", subtitle = "Tap to add to the current screen")
+        PlaygroundCatalog.categories.forEach { category ->
+            Text(
+                text = category,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(top = OemSpacing.sm, bottom = OemSpacing.xs),
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
+            ) {
+                PlaygroundCatalog.byCategory(category).take(8).forEach { definition ->
+                    CustomChip(
+                        label = definition.name,
+                        selected = definition.id in currentScreen.componentIds,
+                        onClick = { viewModel.addComponentToCurrentScreen(definition.id) },
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = OemSpacing.lg),
             horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
         ) {
             CustomButton(
                 text = "Previous",
-                onClick = { currentScreenIndex = (currentScreenIndex - 1).coerceAtLeast(0) },
+                onClick = viewModel::goToPreviousScreen,
                 style = ButtonStyle.Secondary,
-                enabled = currentScreenIndex > 0,
+                enabled = uiState.currentScreenIndex > 0,
             )
             CustomButton(
                 text = "Next",
-                onClick = {
-                    currentScreenIndex = (currentScreenIndex + 1).coerceAtMost(flow.screens.lastIndex)
-                },
+                onClick = viewModel::goToNextScreen,
                 style = ButtonStyle.Primary,
-                enabled = currentScreenIndex < flow.screens.lastIndex,
+                enabled = uiState.currentScreenIndex < uiState.flow.screens.lastIndex,
             )
             CustomButton(
-                text = "Save",
-                onClick = { store.save(flow) },
+                text = if (uiState.isSaving) "Saving…" else "Save",
+                onClick = viewModel::saveNow,
                 style = ButtonStyle.Tonal,
             )
             CustomButton(
                 text = "Export",
-                onClick = {
-                    DesignExportHelper.shareJson(
-                        context = context,
-                        fileName = "flow-design.json",
-                        json = store.exportJson(flow),
-                        chooserTitle = "Export flow design",
-                    )
-                },
+                onClick = { viewModel.export(context) },
                 style = ButtonStyle.Secondary,
             )
         }
@@ -125,7 +189,6 @@ fun FlowBuilderDemo(
             text = "Deep link: ${DesignExportHelper.buildDeepLink("flow-builder")}",
             style = MaterialTheme.typography.bodySmall,
             color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(top = OemSpacing.sm),
         )
     }
 }

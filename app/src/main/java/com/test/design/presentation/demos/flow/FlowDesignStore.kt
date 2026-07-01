@@ -1,8 +1,6 @@
 package com.test.design.presentation.demos.flow
 
 import android.content.Context
-import org.json.JSONArray
-import org.json.JSONObject
 
 data class FlowScreenDefinition(
     val id: String,
@@ -13,6 +11,7 @@ data class FlowScreenDefinition(
 data class FlowDesignSnapshot(
     val title: String,
     val screens: List<FlowScreenDefinition>,
+    val schemaVersion: Int = FlowDesignStore.CURRENT_SCHEMA_VERSION,
 )
 
 class FlowDesignStore(context: Context) {
@@ -21,58 +20,17 @@ class FlowDesignStore(context: Context) {
 
     fun load(): FlowDesignSnapshot? {
         val raw = prefs.getString(KEY_FLOW, null) ?: return null
-        return runCatching { decode(raw) }.getOrNull()
+        return runCatching { FlowDesignCodec.decode(raw) }.getOrNull()
     }
 
     fun save(snapshot: FlowDesignSnapshot) {
-        prefs.edit().putString(KEY_FLOW, encode(snapshot)).apply()
+        prefs.edit().putString(KEY_FLOW, FlowDesignCodec.encode(snapshot)).apply()
     }
 
-    fun exportJson(snapshot: FlowDesignSnapshot): String = encode(snapshot)
-
-    private fun encode(snapshot: FlowDesignSnapshot): String {
-        val root = JSONObject()
-        root.put("title", snapshot.title)
-        val screens = JSONArray()
-        snapshot.screens.forEach { screen ->
-            screens.put(
-                JSONObject().apply {
-                    put("id", screen.id)
-                    put("title", screen.title)
-                    put("components", JSONArray(screen.componentIds))
-                },
-            )
-        }
-        root.put("screens", screens)
-        return root.toString(2)
-    }
-
-    private fun decode(raw: String): FlowDesignSnapshot {
-        val root = JSONObject(raw)
-        val title = root.optString("title", "Untitled flow")
-        val screensArray = root.optJSONArray("screens") ?: JSONArray()
-        val screens = buildList {
-            for (index in 0 until screensArray.length()) {
-                val item = screensArray.getJSONObject(index)
-                val componentsArray = item.optJSONArray("components") ?: JSONArray()
-                val componentIds = buildList {
-                    for (componentIndex in 0 until componentsArray.length()) {
-                        add(componentsArray.getString(componentIndex))
-                    }
-                }
-                add(
-                    FlowScreenDefinition(
-                        id = item.getString("id"),
-                        title = item.getString("title"),
-                        componentIds = componentIds,
-                    ),
-                )
-            }
-        }
-        return FlowDesignSnapshot(title = title, screens = screens)
-    }
+    fun exportJson(snapshot: FlowDesignSnapshot): String = FlowDesignCodec.encode(snapshot)
 
     companion object {
+        const val CURRENT_SCHEMA_VERSION = 1
         private const val PREFS_NAME = "flow_builder"
         private const val KEY_FLOW = "saved_flow"
 
@@ -92,7 +50,7 @@ class FlowDesignStore(context: Context) {
                 FlowScreenDefinition(
                     id = "confirm",
                     title = "Confirm",
-                    componentIds = listOf("dialog-trigger", "button-secondary", "snackbar"),
+                    componentIds = listOf("button-primary", "button-secondary", "snackbar"),
                 ),
             ),
         )
