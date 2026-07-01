@@ -13,7 +13,9 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -72,6 +74,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomButton
@@ -99,6 +102,8 @@ private val MinHeightFraction = 0.08f
 private val MaxHeightFraction = 1f
 private val MaxLayoutSpacingDp = 48f
 private const val AutosaveDebounceMs = 400L
+private const val PreviewControlsHideDelayMs = 3000L
+private val PreviewControlsHotspotHeight = 120.dp
 
 private enum class SaveStatus { Saved }
 
@@ -424,31 +429,90 @@ private fun PreviewModeOverlay(
     onClear: () -> Unit,
     hasComponents: Boolean,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(OemSpacing.md)
-            .zIndex(5f),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
-            FloatingPlaygroundButton(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                onClick = onBack,
-            )
-            FloatingPlaygroundButton(
-                icon = Icons.AutoMirrored.Filled.ViewSidebar,
-                contentDescription = "Exit preview",
-                onClick = onExitPreview,
+    var controlsVisible by remember { mutableStateOf(true) }
+    var hideGeneration by remember { mutableIntStateOf(0) }
+    val hotspotInteractionSource = remember { MutableInteractionSource() }
+    val isHotspotHovered by hotspotInteractionSource.collectIsHoveredAsState()
+
+    fun revealControls() {
+        controlsVisible = true
+        hideGeneration++
+    }
+
+    LaunchedEffect(isHotspotHovered) {
+        if (isHotspotHovered) revealControls()
+    }
+
+    LaunchedEffect(hideGeneration, isHotspotHovered) {
+        if (!controlsVisible || isHotspotHovered) return@LaunchedEffect
+        delay(PreviewControlsHideDelayMs)
+        controlsVisible = false
+    }
+
+    Box(modifier = Modifier.fillMaxSize().zIndex(5f)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(PreviewControlsHotspotHeight)
+                .align(Alignment.TopCenter)
+                .hoverable(interactionSource = hotspotInteractionSource),
+        )
+
+        if (!controlsVisible) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { revealControls() },
+                    ),
             )
         }
-        if (hasComponents) {
-            FloatingPlaygroundButton(
-                icon = Icons.Default.DeleteSweep,
-                contentDescription = "Clear canvas",
-                onClick = onClear,
-            )
+
+        AnimatedVisibility(
+            visible = controlsVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(OemSpacing.md),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
+                    FloatingPlaygroundButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        onClick = {
+                            revealControls()
+                            onBack()
+                        },
+                    )
+                    FloatingPlaygroundButton(
+                        icon = Icons.AutoMirrored.Filled.ViewSidebar,
+                        contentDescription = "Exit preview",
+                        onClick = {
+                            revealControls()
+                            onExitPreview()
+                        },
+                    )
+                }
+                if (hasComponents) {
+                    FloatingPlaygroundButton(
+                        icon = Icons.Default.DeleteSweep,
+                        contentDescription = "Clear canvas",
+                        onClick = {
+                            revealControls()
+                            onClear()
+                        },
+                    )
+                }
+            }
         }
     }
 }
