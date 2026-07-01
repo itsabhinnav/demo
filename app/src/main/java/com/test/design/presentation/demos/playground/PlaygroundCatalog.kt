@@ -16,8 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -82,6 +80,8 @@ data class PlacedComponent(
     val paddingDp: Float = 0f,
     /** Editable copy for text typography components. */
     val textContent: String? = null,
+    /** Component-specific customizable properties. */
+    val props: Map<String, String> = emptyMap(),
 )
 
 enum class PlaygroundTextStyle(
@@ -166,136 +166,219 @@ fun PlaygroundComponentRenderer(
     componentId: String,
     modifier: Modifier = Modifier,
     textContent: String? = null,
+    props: Map<String, String> = emptyMap(),
 ) {
+    val mergedProps = PlaygroundComponentProps.mergeWithDefaults(componentId, props)
+    val propsAccessor = PlaygroundComponentProps
+
     PlaygroundTextStyle.fromComponentId(componentId)?.let { style ->
         PlaygroundTextRenderer(
             style = style,
-            text = textContent ?: style.sample,
+            text = textContent ?: propsAccessor.string(mergedProps, "textContent", style.sample),
             modifier = modifier,
         )
         return
     }
 
     when (componentId) {
-        "button-primary" -> CustomButton(text = "Primary", onClick = {}, style = ButtonStyle.Primary, modifier = modifier)
-        "button-tonal" -> CustomButton(text = "Tonal", onClick = {}, style = ButtonStyle.Tonal, modifier = modifier)
-        "button-secondary" -> CustomButton(text = "Secondary", onClick = {}, style = ButtonStyle.Secondary, modifier = modifier)
+        "button-primary", "button-tonal", "button-secondary" -> CustomButton(
+            text = propsAccessor.string(mergedProps, "label", "Button"),
+            onClick = {},
+            style = PlaygroundComponentProps.buttonStyle(componentId),
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
         "icon-button" -> Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
-            CustomIconButton(Icons.Default.Settings, "Settings", {}, style = IconButtonStyle.Standard)
-            CustomBadge(count = 2)
+            CustomIconButton(
+                Icons.Default.Settings,
+                "Settings",
+                {},
+                style = IconButtonStyle.Standard,
+                enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            )
+            val badgeCount = propsAccessor.int(mergedProps, "badgeCount", 2)
+            if (badgeCount > 0) CustomBadge(count = badgeCount)
         }
-        "fab" -> CustomFab(Icons.Default.Add, "Add", {}, size = FabSize.Standard, modifier = modifier)
-        "extended-fab" -> CustomExtendedFab("Navigate", Icons.Default.Navigation, {}, modifier = modifier)
-        "filter-chip" -> {
-            var selected by remember { mutableStateOf(false) }
-            CustomChip(label = "Climate", selected = selected, onClick = { selected = !selected }, modifier = modifier)
-        }
-        "assist-chip" -> CustomAssistChip("Add stop", {}, leadingIcon = Icons.Default.Add, modifier = modifier)
-        "suggestion-chip" -> CustomSuggestionChip("Home", {}, modifier = modifier)
-        "input-chip" -> {
-            var selected by remember { mutableStateOf(false) }
-            CustomInputChip("Eco Mode", selected, { selected = !selected }, modifier = modifier)
-        }
-        "switch" -> {
-            var on by remember { mutableStateOf(true) }
-            CustomSwitch("Auto climate", on, { on = it }, modifier = modifier)
-        }
-        "checkbox" -> {
-            var checked by remember { mutableStateOf(false) }
-            CustomCheckbox("Heated seats", checked, { checked = it }, modifier = modifier)
-        }
-        "radio" -> {
-            var selected by remember { mutableStateOf(true) }
-            CustomRadioButton("Standard mode", selected, { selected = true }, modifier = modifier)
-        }
+        "fab" -> CustomFab(
+            Icons.Default.Add,
+            "Add",
+            {},
+            size = FabSize.Standard,
+            modifier = modifier,
+        )
+        "extended-fab" -> CustomExtendedFab(
+            propsAccessor.string(mergedProps, "label", "Navigate"),
+            Icons.Default.Navigation,
+            {},
+            modifier = modifier,
+        )
+        "filter-chip" -> CustomChip(
+            label = propsAccessor.string(mergedProps, "label", "Climate"),
+            selected = propsAccessor.boolean(mergedProps, "selected", false),
+            onClick = {},
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
+        "assist-chip" -> CustomAssistChip(
+            propsAccessor.string(mergedProps, "label", "Add stop"),
+            {},
+            leadingIcon = Icons.Default.Add,
+            modifier = modifier,
+        )
+        "suggestion-chip" -> CustomSuggestionChip(
+            propsAccessor.string(mergedProps, "label", "Home"),
+            {},
+            modifier = modifier,
+        )
+        "input-chip" -> CustomInputChip(
+            propsAccessor.string(mergedProps, "label", "Eco Mode"),
+            propsAccessor.boolean(mergedProps, "selected", false),
+            {},
+            modifier = modifier,
+        )
+        "switch" -> CustomSwitch(
+            propsAccessor.string(mergedProps, "label", "Auto climate"),
+            propsAccessor.boolean(mergedProps, "checked", true),
+            {},
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
+        "checkbox" -> CustomCheckbox(
+            propsAccessor.string(mergedProps, "label", "Heated seats"),
+            propsAccessor.boolean(mergedProps, "checked", false),
+            {},
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
+        "radio" -> CustomRadioButton(
+            propsAccessor.string(mergedProps, "label", "Standard mode"),
+            propsAccessor.boolean(mergedProps, "selected", true),
+            {},
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
         "segmented-button" -> {
-            var index by remember { mutableIntStateOf(1) }
+            val options = propsAccessor.optionsList(mergedProps, "options", listOf("Off", "Auto", "Max"))
+            val selectedIndex = propsAccessor.int(mergedProps, "selectedIndex", 1)
+                .coerceIn(0, (options.size - 1).coerceAtLeast(0))
             CustomSegmentedButtonRow(
-                options = listOf("Off", "Auto", "Max"),
-                selectedIndex = index,
-                onOptionSelected = { index = it },
+                options = options,
+                selectedIndex = selectedIndex,
+                onOptionSelected = {},
                 modifier = modifier,
             )
         }
-        "text-field" -> {
-            var text by remember { mutableStateOf("") }
-            CustomTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = "Destination",
-                placeholder = "Enter address",
-                modifier = modifier,
-            )
-        }
-        "search-bar" -> {
-            var query by remember { mutableStateOf("") }
-            CustomSearchBar(
-                query = query,
-                onQueryChange = { query = it },
-                onSearch = {},
-                placeholder = "Search destinations",
-                modifier = modifier,
-            )
-        }
+        "text-field" -> CustomTextField(
+            value = propsAccessor.string(mergedProps, "value", ""),
+            onValueChange = {},
+            label = propsAccessor.string(mergedProps, "fieldLabel", "Destination"),
+            placeholder = propsAccessor.string(mergedProps, "placeholder", "Enter address"),
+            enabled = propsAccessor.boolean(mergedProps, "enabled", true),
+            modifier = modifier,
+        )
+        "search-bar" -> CustomSearchBar(
+            query = propsAccessor.string(mergedProps, "query", ""),
+            onQueryChange = {},
+            onSearch = {},
+            placeholder = propsAccessor.string(mergedProps, "placeholder", "Search destinations"),
+            modifier = modifier,
+        )
         "slider" -> {
-            var value by remember { mutableFloatStateOf(22f) }
+            val min = propsAccessor.float(mergedProps, "valueMin", 16f)
+            val max = propsAccessor.float(mergedProps, "valueMax", 30f)
+            val range = if (min < max) min..max else 16f..30f
             CustomSlider(
-                value = value,
-                onValueChange = { value = it },
-                label = "Temperature °C",
-                valueRange = 16f..30f,
+                value = propsAccessor.float(mergedProps, "value", 22f).coerceIn(range),
+                onValueChange = {},
+                label = propsAccessor.string(mergedProps, "label", "Temperature °C"),
+                valueRange = range,
                 modifier = modifier,
             )
         }
         "card" -> CustomCard(modifier = modifier, onClick = {}) {
-            Text("Climate", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-            Text("22°C", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                propsAccessor.string(mergedProps, "title", "Climate"),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                propsAccessor.string(mergedProps, "subtitle", "22°C"),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
-        "metric-card" -> CustomMetricCard("Range", "287", "km", modifier = modifier)
+        "metric-card" -> CustomMetricCard(
+            propsAccessor.string(mergedProps, "label", "Range"),
+            propsAccessor.string(mergedProps, "value", "287"),
+            propsAccessor.string(mergedProps, "unit", "km"),
+            modifier = modifier,
+        )
         "list-tile" -> CustomListTile(
-            "Navigation",
-            subtitle = "Home — 12 min",
+            propsAccessor.string(mergedProps, "title", "Navigation"),
+            subtitle = propsAccessor.string(mergedProps, "subtitle", "Home — 12 min"),
             leadingIcon = Icons.Default.Navigation,
+            showChevron = propsAccessor.boolean(mergedProps, "showChevron", true),
             onClick = {},
             modifier = modifier,
         )
-        "image" -> CustomImage(contentDescription = "Vehicle", modifier = modifier, size = OemSpacing.xl * 2)
+        "image" -> CustomImage(
+            contentDescription = propsAccessor.string(mergedProps, "contentDescription", "Vehicle"),
+            modifier = modifier,
+            size = OemSpacing.xl * 2,
+        )
         "tabs" -> {
-            var index by remember { mutableIntStateOf(0) }
+            val tabs = propsAccessor.optionsList(mergedProps, "options", listOf("Overview", "Details", "Settings"))
+            val selectedIndex = propsAccessor.int(mergedProps, "selectedIndex", 0)
+                .coerceIn(0, (tabs.size - 1).coerceAtLeast(0))
             CustomTabs(
-                tabs = listOf("Overview", "Details", "Settings"),
-                selectedIndex = index,
-                onTabSelected = { index = it },
+                tabs = tabs,
+                selectedIndex = selectedIndex,
+                onTabSelected = {},
                 modifier = modifier,
             )
         }
-        "status-indicator" -> CustomStatusIndicator("Systems OK", StatusLevel.Normal, modifier = modifier)
+        "status-indicator" -> CustomStatusIndicator(
+            propsAccessor.string(mergedProps, "label", "Systems OK"),
+            propsAccessor.statusLevel(mergedProps),
+            modifier = modifier,
+        )
         "linear-progress" -> CustomLinearProgress(
-            progress = { 0.65f },
-            label = "Battery charge",
+            progress = { propsAccessor.float(mergedProps, "progress", 0.65f).coerceIn(0f, 1f) },
+            label = propsAccessor.string(mergedProps, "label", "Battery charge"),
             modifier = modifier.padding(vertical = OemSpacing.sm),
         )
-        "circular-progress" -> CustomCircularProgress(label = "Syncing…", modifier = modifier)
+        "circular-progress" -> CustomCircularProgress(
+            label = propsAccessor.string(mergedProps, "label", "Syncing…"),
+            modifier = modifier,
+        )
         "snackbar" -> CustomSnackbarMessage(
-            message = "Route updated",
-            actionLabel = "Undo",
+            message = propsAccessor.string(mergedProps, "message", "Route updated"),
+            actionLabel = propsAccessor.string(mergedProps, "actionLabel", "Undo"),
             modifier = modifier,
         )
         "empty-state" -> CustomEmptyState(
             icon = Icons.Default.Search,
-            title = "No results",
-            message = "Try a different search term",
+            title = propsAccessor.string(mergedProps, "title", "No results"),
+            message = propsAccessor.string(mergedProps, "message", "Try a different search term"),
             modifier = modifier,
         )
         "dialog-trigger" -> {
             var show by remember { mutableStateOf(false) }
-            CustomButton(text = "Show dialog", onClick = { show = true }, modifier = modifier)
+            CustomButton(
+                text = propsAccessor.string(mergedProps, "triggerLabel", "Show dialog"),
+                onClick = { show = true },
+                modifier = modifier,
+            )
             if (show) {
                 CustomDialog(
-                    title = "Enable ProPILOT?",
-                    message = "Driver assistance will activate on supported roads.",
-                    confirmText = "Enable",
-                    dismissText = "Cancel",
+                    title = propsAccessor.string(mergedProps, "title", "Enable ProPILOT?"),
+                    message = propsAccessor.string(
+                        mergedProps,
+                        "message",
+                        "Driver assistance will activate on supported roads.",
+                    ),
+                    confirmText = propsAccessor.string(mergedProps, "confirmText", "Enable"),
+                    dismissText = propsAccessor.string(mergedProps, "dismissText", "Cancel"),
                     onConfirm = { show = false },
                     onDismiss = { show = false },
                 )

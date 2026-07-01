@@ -23,7 +23,7 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         FeatureDemo(
             id = "component-playground",
             title = "Component Playground",
-            description = "Drag and drop components onto a live canvas to prototype screens at runtime. Hide the palette for full-screen preview.",
+            description = "Drag components onto a canvas, select each instance to customize labels, states, and layout, then save your screen design.",
             category = DemoCategory.Components,
             tagline = "Runtime screen builder",
         ),
