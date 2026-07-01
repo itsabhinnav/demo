@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,6 +53,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,11 +64,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomSectionHeader
@@ -92,21 +98,29 @@ private val MaxWidthFraction = 1f
 private val MinHeightFraction = 0.08f
 private val MaxHeightFraction = 1f
 private val MaxLayoutSpacingDp = 48f
+private const val AutosaveDebounceMs = 400L
+
+private enum class SaveStatus { Saved }
 
 @Composable
 fun ComponentPlaygroundDemo(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val designStore = remember { PlaygroundDesignStore(context) }
+
     var paletteVisible by remember { mutableStateOf(true) }
     val placedComponents = remember { mutableStateListOf<PlacedComponent>() }
     var nextInstanceId by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf(PlaygroundCatalog.categories.first()) }
     var selectedInstanceId by remember { mutableStateOf<Int?>(null) }
+    var saveStatus by remember { mutableStateOf<SaveStatus?>(null) }
 
     var activeDrag by remember { mutableStateOf<PlaygroundComponentDefinition?>(null) }
     var dragPosition by remember { mutableStateOf(Offset.Zero) }
     var canvasBounds by remember { mutableStateOf(Rect.Zero) }
+    var canvasContentSize by remember { mutableStateOf(IntSize.Zero) }
     var isCanvasHovered by remember { mutableStateOf(false) }
 
     val isPreviewMode = !paletteVisible
@@ -115,20 +129,45 @@ fun ComponentPlaygroundDemo(
         label = "paletteWidth",
     )
 
+    LaunchedEffect(Unit) {
+        designStore.load()?.let { snapshot ->
+            placedComponents.clear()
+            placedComponents.addAll(snapshot.components)
+            nextInstanceId = snapshot.nextInstanceId
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        @OptIn(FlowPreview::class)
+        run {
+            snapshotFlow {
+                placedComponents.toList() to nextInstanceId
+            }
+                .debounce(AutosaveDebounceMs)
+                .collect { (components, nextId) ->
+                    designStore.save(components, nextId)
+                    saveStatus = SaveStatus.Saved
+                }
+        }
+    }
+
     fun updatePlaced(instanceId: Int, transform: (PlacedComponent) -> PlacedComponent) {
         val index = placedComponents.indexOfFirst { it.instanceId == instanceId }
         if (index >= 0) placedComponents[index] = transform(placedComponents[index])
     }
 
-    fun addComponent(componentId: String, canvasLocalOffset: Offset? = null) {
-        val stagger = placedComponents.size * 40f
-        val x = canvasLocalOffset?.x?.coerceAtLeast(0f) ?: (32f + (placedComponents.size % 4) * 20f)
-        val y = canvasLocalOffset?.y?.coerceAtLeast(0f) ?: (32f + stagger)
+    fun addComponent(
+        componentId: String,
+        xFraction: Float? = null,
+        yFraction: Float? = null,
+    ) {
+        val x = xFraction ?: (0.05f + (placedComponents.size % 4) * 0.02f)
+        val y = yFraction ?: (0.05f + placedComponents.size * 0.04f).coerceAtMost(0.85f)
         val placed = PlacedComponent(
             instanceId = nextInstanceId++,
             componentId = componentId,
-            xDp = x,
-            yDp = y,
+            xFraction = x.coerceIn(0f, 1f),
+            yFraction = y.coerceIn(0f, 1f),
             widthFraction = defaultWidthFraction(componentId),
             textContent = if (PlaygroundCatalog.isTextComponent(componentId)) {
                 PlaygroundCatalog.defaultTextContent(componentId)
@@ -148,11 +187,15 @@ fun ComponentPlaygroundDemo(
     fun handleDrop() {
         val dragged = activeDrag ?: return
         if (isCanvasHovered || isPreviewMode) {
-            val local = Offset(
-                x = dragPosition.x - canvasBounds.left,
-                y = dragPosition.y - canvasBounds.top,
-            )
-            addComponent(dragged.id, local)
+            if (canvasContentSize.width > 0 && canvasContentSize.height > 0) {
+                val localX = (dragPosition.x - canvasBounds.left).coerceAtLeast(0f)
+                val localY = (dragPosition.y - canvasBounds.top).coerceAtLeast(0f)
+                val xFraction = localX / canvasContentSize.width
+                val yFraction = localY / canvasContentSize.height
+                addComponent(dragged.id, xFraction, yFraction)
+            } else {
+                addComponent(dragged.id)
+            }
         }
         activeDrag = null
         isCanvasHovered = false
@@ -169,8 +212,10 @@ fun ComponentPlaygroundDemo(
                     onClear = {
                         placedComponents.clear()
                         selectedInstanceId = null
+                        nextInstanceId = 0
                     },
                     componentCount = placedComponents.size,
+                    saveStatus = saveStatus,
                 )
             }
 
@@ -214,14 +259,17 @@ fun ComponentPlaygroundDemo(
                     isDropTargetActive = activeDrag != null,
                     isHovered = isCanvasHovered,
                     isPreviewMode = isPreviewMode,
-                    onBoundsChanged = { canvasBounds = it },
+                    onBoundsChanged = { bounds, contentSize ->
+                        canvasBounds = bounds
+                        canvasContentSize = contentSize
+                    },
                     onSelect = { selectedInstanceId = it },
                     onDeselect = { selectedInstanceId = null },
-                    onMove = { instanceId, deltaXDp, deltaYDp ->
+                    onMove = { instanceId, deltaXFraction, deltaYFraction ->
                         updatePlaced(instanceId) { placed ->
                             placed.copy(
-                                xDp = (placed.xDp + deltaXDp).coerceAtLeast(0f),
-                                yDp = (placed.yDp + deltaYDp).coerceAtLeast(0f),
+                                xFraction = (placed.xFraction + deltaXFraction).coerceIn(0f, 1f),
+                                yFraction = (placed.yFraction + deltaYFraction).coerceIn(0f, 1f),
                             )
                         }
                     },
@@ -302,6 +350,7 @@ fun ComponentPlaygroundDemo(
                 onClear = {
                     placedComponents.clear()
                     selectedInstanceId = null
+                    nextInstanceId = 0
                 },
                 hasComponents = placedComponents.isNotEmpty(),
             )
@@ -329,6 +378,7 @@ private fun PlaygroundTopBar(
     onTogglePreview: () -> Unit,
     onClear: () -> Unit,
     componentCount: Int,
+    saveStatus: SaveStatus?,
 ) {
     CustomTopBar(
         title = "Component Playground",
@@ -339,6 +389,13 @@ private fun PlaygroundTopBar(
                 horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (saveStatus == SaveStatus.Saved) {
+                    Text(
+                        text = "Auto-saved",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OemOnSurfaceVariant,
+                    )
+                }
                 Text(
                     text = "$componentCount placed",
                     style = MaterialTheme.typography.bodyMedium,
@@ -762,34 +819,37 @@ private fun PlaygroundCanvas(
     isDropTargetActive: Boolean,
     isHovered: Boolean,
     isPreviewMode: Boolean,
-    onBoundsChanged: (Rect) -> Unit,
+    onBoundsChanged: (Rect, IntSize) -> Unit,
     onSelect: (Int) -> Unit,
     onDeselect: () -> Unit,
-    onMove: (instanceId: Int, deltaXDp: Float, deltaYDp: Float) -> Unit,
+    onMove: (instanceId: Int, deltaXFraction: Float, deltaYFraction: Float) -> Unit,
     onResize: (instanceId: Int, deltaFraction: Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val density = LocalDensity.current
     val borderColor = when {
         isHovered -> MaterialTheme.colorScheme.onSurface
         isDropTargetActive -> OemOnSurfaceVariant
         else -> if (isPreviewMode) OemBorder.copy(alpha = 0f) else OemBorder
     }
     val borderWidth = if (isHovered) 2.dp else if (isPreviewMode) 0.dp else 1.dp
-    val canvasPadding = if (isPreviewMode) 0.dp else OemSpacing.md
+    val canvasPadding = OemSpacing.sm
 
     Surface(
-        modifier = modifier.onGloballyPositioned { coordinates ->
-            val pos = coordinates.positionInRoot()
-            val size = coordinates.size
-            onBoundsChanged(Rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height))
-        },
+        modifier = modifier,
         color = MaterialTheme.colorScheme.background,
     ) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(canvasPadding)
+                .onGloballyPositioned { coordinates ->
+                    val pos = coordinates.positionInRoot()
+                    val size = coordinates.size
+                    onBoundsChanged(
+                        Rect(pos.x, pos.y, pos.x + size.width, pos.y + size.height),
+                        IntSize(size.width, size.height),
+                    )
+                }
                 .clip(if (isPreviewMode) RoundedCornerShape(0.dp) else OemVisuals.cardShape)
                 .border(borderWidth, borderColor, if (isPreviewMode) RoundedCornerShape(0.dp) else OemVisuals.cardShape)
                 .clickable(
@@ -812,7 +872,9 @@ private fun PlaygroundCanvas(
                             canvasWidthDp = canvasWidthDp,
                             canvasHeightDp = canvasHeightDp,
                             onSelect = { onSelect(placed.instanceId) },
-                            onMove = { deltaXDp, deltaYDp -> onMove(placed.instanceId, deltaXDp, deltaYDp) },
+                            onMove = { deltaXFraction, deltaYFraction ->
+                                onMove(placed.instanceId, deltaXFraction, deltaYFraction)
+                            },
                             onResize = { deltaFraction -> onResize(placed.instanceId, deltaFraction) },
                         )
                     }
@@ -829,10 +891,12 @@ private fun CanvasPlacedComponent(
     canvasWidthDp: Float,
     canvasHeightDp: Float,
     onSelect: () -> Unit,
-    onMove: (deltaXDp: Float, deltaYDp: Float) -> Unit,
+    onMove: (deltaXFraction: Float, deltaYFraction: Float) -> Unit,
     onResize: (deltaFraction: Float) -> Unit,
 ) {
     val density = LocalDensity.current
+    val canvasWidthPx = canvasWidthDp * density.density
+    val canvasHeightPx = canvasHeightDp * density.density
     val widthModifier = if (placed.widthFraction != null) {
         Modifier.width((canvasWidthDp * placed.widthFraction).dp)
     } else {
@@ -853,8 +917,8 @@ private fun CanvasPlacedComponent(
     Box(
         modifier = Modifier.offset {
             IntOffset(
-                with(density) { placed.xDp.dp.roundToPx() },
-                with(density) { placed.yDp.dp.roundToPx() },
+                (placed.xFraction * canvasWidthDp).dp.roundToPx(),
+                (placed.yFraction * canvasHeightDp).dp.roundToPx(),
             )
         },
     ) {
@@ -879,9 +943,12 @@ private fun CanvasPlacedComponent(
                 .pointerInput(placed.instanceId) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        val deltaXDp = with(density) { dragAmount.x.toDp().value }
-                        val deltaYDp = with(density) { dragAmount.y.toDp().value }
-                        onMove(deltaXDp, deltaYDp)
+                        if (canvasWidthPx > 0f && canvasHeightPx > 0f) {
+                            onMove(
+                                dragAmount.x / canvasWidthPx,
+                                dragAmount.y / canvasHeightPx,
+                            )
+                        }
                     }
                 },
         ) {
