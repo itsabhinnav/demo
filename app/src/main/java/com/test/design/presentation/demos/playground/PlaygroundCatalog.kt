@@ -68,8 +68,10 @@ data class PlaygroundComponentDefinition(
 data class PlacedComponent(
     val instanceId: Int,
     val componentId: String,
-    val xDp: Float = 32f,
-    val yDp: Float = 32f,
+    /** Horizontal position as a fraction of canvas width (0–1). */
+    val xFraction: Float = 0.05f,
+    /** Vertical position as a fraction of canvas height (0–1). */
+    val yFraction: Float = 0.05f,
     /** Null = wrap content; otherwise fraction of canvas width (0.1–1.0). */
     val widthFraction: Float? = null,
     /** Null = wrap content; otherwise fraction of canvas height (0.08–1.0). */
