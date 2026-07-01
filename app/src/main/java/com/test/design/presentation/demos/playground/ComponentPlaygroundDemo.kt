@@ -72,6 +72,7 @@ import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomSlider
 import com.test.design.component.components.CustomSwitch
 import com.test.design.component.components.CustomTopBar
+import com.test.design.component.components.CustomTextField
 import com.test.design.component.theme.OemBorder
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
@@ -125,6 +126,11 @@ fun ComponentPlaygroundDemo(
             xDp = x,
             yDp = y,
             widthFraction = defaultWidthFraction(componentId),
+            textContent = if (PlaygroundCatalog.isTextComponent(componentId)) {
+                PlaygroundCatalog.defaultTextContent(componentId)
+            } else {
+                null
+            },
         )
         placedComponents.add(placed)
         selectedInstanceId = placed.instanceId
@@ -245,6 +251,18 @@ fun ComponentPlaygroundDemo(
                                     it.copy(widthFraction = if (wrap) null else 0.4f)
                                 }
                             },
+                            onTextContentChange = { content ->
+                                updatePlaced(placed.instanceId) { it.copy(textContent = content) }
+                            },
+                            onTextStyleChange = { styleId ->
+                                updatePlaced(placed.instanceId) { current ->
+                                    current.copy(
+                                        componentId = styleId,
+                                        textContent = current.textContent
+                                            ?: PlaygroundCatalog.defaultTextContent(styleId),
+                                    )
+                                }
+                            },
                             onDelete = { removeComponent(placed.instanceId) },
                             modifier = Modifier
                                 .width(ConfigBarWidth)
@@ -273,10 +291,13 @@ fun ComponentPlaygroundDemo(
     }
 }
 
-private fun defaultWidthFraction(componentId: String): Float? = when (componentId) {
-    "text-field", "search-bar", "slider", "tabs", "segmented-button",
-    "list-tile", "empty-state", "snackbar", "linear-progress", "card",
-    -> 0.45f
+private fun defaultWidthFraction(componentId: String): Float? = when {
+    componentId.startsWith("text-body") -> 0.5f
+    componentId.startsWith("text-display") || componentId.startsWith("text-headline") -> null
+    componentId in setOf(
+        "text-field", "search-bar", "slider", "tabs", "segmented-button",
+        "list-tile", "empty-state", "snackbar", "linear-progress", "card",
+    ) -> 0.45f
     else -> null
 }
 
@@ -416,12 +437,16 @@ private fun ComponentConfigBar(
     placed: PlacedComponent,
     onWidthFractionChange: (Float) -> Unit,
     onWrapContentToggle: (Boolean) -> Unit,
+    onTextContentChange: (String) -> Unit,
+    onTextStyleChange: (String) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val definition = PlaygroundCatalog.findById(placed.componentId)
     val isWrapContent = placed.widthFraction == null
     val widthValue = placed.widthFraction ?: 0.4f
+    val isText = PlaygroundCatalog.isTextComponent(placed.componentId)
+    val textStyle = PlaygroundTextStyle.fromComponentId(placed.componentId)
 
     Surface(modifier = modifier, color = OemSurface) {
         Column(
@@ -435,6 +460,62 @@ private fun ComponentConfigBar(
                 title = "Properties",
                 subtitle = definition?.name ?: placed.componentId,
             )
+
+            if (isText) {
+                CustomTextField(
+                    value = placed.textContent.orEmpty(),
+                    onValueChange = onTextContentChange,
+                    label = "Text content",
+                    placeholder = "Enter label or copy",
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Text(
+                    text = "Typography style",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = OemOnSurfaceVariant,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(OemSpacing.xs)) {
+                    PlaygroundTextStyle.entriesList.chunked(2).forEach { rowStyles ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+                        ) {
+                            rowStyles.forEach { style ->
+                                val selected = textStyle == style
+                                val shape = OemVisuals.chipShape
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(shape)
+                                        .background(if (selected) OemSurfaceElevated else OemSurface)
+                                        .oemSurfaceBorder(
+                                            shape,
+                                            if (selected) MaterialTheme.colorScheme.onSurface else OemBorder,
+                                        )
+                                        .clickable { onTextStyleChange(style.id) }
+                                        .padding(horizontal = OemSpacing.sm, vertical = OemSpacing.xs),
+                                ) {
+                                    Text(
+                                        text = style.label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (selected) {
+                                            MaterialTheme.colorScheme.onSurface
+                                        } else {
+                                            OemOnSurfaceVariant
+                                        },
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            if (rowStyles.size == 1) {
+                                Box(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
 
             CustomSwitch(
                 label = "Wrap content width",
@@ -710,6 +791,7 @@ private fun CanvasPlacedComponent(
     ) {
         PlaygroundComponentRenderer(
             componentId = placed.componentId,
+            textContent = placed.textContent,
             modifier = if (placed.widthFraction != null) Modifier.fillMaxWidth() else Modifier,
         )
 
