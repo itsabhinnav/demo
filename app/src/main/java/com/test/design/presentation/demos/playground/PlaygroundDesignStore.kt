@@ -49,6 +49,11 @@ class PlaygroundDesignStore(context: Context) {
                     put("marginDp", component.marginDp.toDouble())
                     put("paddingDp", component.paddingDp.toDouble())
                     component.textContent?.let { put("textContent", it) }
+                    if (component.props.isNotEmpty()) {
+                        val propsObject = JSONObject()
+                        component.props.forEach { (key, value) -> propsObject.put(key, value) }
+                        put("props", propsObject)
+                    }
                 },
             )
         }
@@ -79,6 +84,7 @@ class PlaygroundDesignStore(context: Context) {
                         marginDp = item.optDouble("marginDp", 0.0).toFloat(),
                         paddingDp = item.optDouble("paddingDp", 0.0).toFloat(),
                         textContent = item.optString("textContent").takeIf { it.isNotEmpty() },
+                        props = item.optProps(),
                     ),
                 )
             }
@@ -106,6 +112,17 @@ class PlaygroundDesignStore(context: Context) {
 
     private fun JSONObject.optNullableFloat(key: String): Float? =
         if (has(key) && !isNull(key)) getDouble(key).toFloat() else null
+
+    private fun JSONObject.optProps(): Map<String, String> {
+        val propsObject = optJSONObject("props") ?: return emptyMap()
+        return buildMap {
+            val keys = propsObject.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                put(key, propsObject.getString(key))
+            }
+        }
+    }
 
     companion object {
         private const val PREFS_NAME = "component_playground"

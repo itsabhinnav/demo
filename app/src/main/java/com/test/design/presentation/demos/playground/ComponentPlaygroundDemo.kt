@@ -167,7 +167,13 @@ fun ComponentPlaygroundDemo(
     LaunchedEffect(Unit) {
         designStore.load()?.let { snapshot ->
             placedComponents.clear()
-            placedComponents.addAll(snapshot.components)
+            placedComponents.addAll(
+                snapshot.components.map { placed ->
+                    placed.copy(
+                        props = PlaygroundComponentProps.mergeWithDefaults(placed.componentId, placed.props),
+                    )
+                },
+            )
             nextInstanceId = snapshot.nextInstanceId
             canvasBackgroundColor = snapshot.backgroundColorArgb?.decodeToColor() ?: OemBackground
         }
@@ -210,6 +216,7 @@ fun ComponentPlaygroundDemo(
             } else {
                 null
             },
+            props = PlaygroundComponentProps.defaultProps(componentId),
         )
         placedComponents.add(placed)
         selectedInstanceId = placed.instanceId
@@ -245,11 +252,20 @@ fun ComponentPlaygroundDemo(
                 PlaygroundTopBar(
                     onBack = onBack,
                     onTogglePreview = { paletteVisible = false },
+                    onSave = {
+                        designStore.save(
+                            placedComponents.toList(),
+                            nextInstanceId,
+                            canvasBackgroundColor.encodeForStorage(),
+                        )
+                        saveStatus = SaveStatus.Saved
+                    },
                     onClear = {
                         placedComponents.clear()
                         selectedInstanceId = null
                         nextInstanceId = 0
                         canvasBackgroundColor = OemBackground
+                        designStore.clear()
                     },
                     componentCount = placedComponents.size,
                     saveStatus = saveStatus,
@@ -350,7 +366,13 @@ fun ComponentPlaygroundDemo(
                                         componentId = styleId,
                                         textContent = current.textContent
                                             ?: PlaygroundCatalog.defaultTextContent(styleId),
+                                        props = PlaygroundComponentProps.defaultProps(styleId),
                                     )
+                                }
+                            },
+                            onPropChange = { key, value ->
+                                updatePlaced(selectedPlaced.instanceId) { current ->
+                                    current.copy(props = current.props + (key to value))
                                 }
                             },
                             onHeightFractionChange = { fraction ->
@@ -416,6 +438,7 @@ private fun defaultWidthFraction(componentId: String): Float? = when {
 private fun PlaygroundTopBar(
     onBack: () -> Unit,
     onTogglePreview: () -> Unit,
+    onSave: () -> Unit,
     onClear: () -> Unit,
     componentCount: Int,
     saveStatus: SaveStatus?,
@@ -431,11 +454,16 @@ private fun PlaygroundTopBar(
             ) {
                 if (saveStatus == SaveStatus.Saved) {
                     Text(
-                        text = "Auto-saved",
+                        text = "Saved",
                         style = MaterialTheme.typography.bodySmall,
                         color = OemOnSurfaceVariant,
                     )
                 }
+                CustomButton(
+                    text = "Save",
+                    onClick = onSave,
+                    style = ButtonStyle.Secondary,
+                )
                 Text(
                     text = "$componentCount placed",
                     style = MaterialTheme.typography.bodyMedium,
@@ -700,16 +728,14 @@ private fun ComponentConfigBar(
     onPaddingChange: (Float) -> Unit,
     onTextContentChange: (String) -> Unit,
     onTextStyleChange: (String) -> Unit,
+    onPropChange: (String, String) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val definition = PlaygroundCatalog.findById(placed.componentId)
     val isWrapContentWidth = placed.widthFraction == null
     val widthValue = placed.widthFraction ?: 0.4f
     val isWrapContentHeight = placed.heightFraction == null
     val heightValue = placed.heightFraction ?: 0.25f
-    val isText = PlaygroundCatalog.isTextComponent(placed.componentId)
-    val textStyle = PlaygroundTextStyle.fromComponentId(placed.componentId)
 
     Surface(modifier = modifier, color = OemSurface) {
         Column(
@@ -719,66 +745,14 @@ private fun ComponentConfigBar(
                 .padding(OemSpacing.md),
             verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
         ) {
-            CustomSectionHeader(
-                title = "Properties",
-                subtitle = definition?.name ?: placed.componentId,
+            ComponentPropertyEditor(
+                componentId = placed.componentId,
+                props = placed.props,
+                textContent = placed.textContent,
+                onPropChange = onPropChange,
+                onTextContentChange = onTextContentChange,
+                onTextStyleChange = onTextStyleChange,
             )
-
-            if (isText) {
-                CustomTextField(
-                    value = placed.textContent.orEmpty(),
-                    onValueChange = onTextContentChange,
-                    label = "Text content",
-                    placeholder = "Enter label or copy",
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Text(
-                    text = "Typography style",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = OemOnSurfaceVariant,
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(OemSpacing.xs)) {
-                    PlaygroundTextStyle.entriesList.chunked(2).forEach { rowStyles ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(OemSpacing.xs),
-                        ) {
-                            rowStyles.forEach { style ->
-                                val selected = textStyle == style
-                                val shape = OemVisuals.chipShape
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clip(shape)
-                                        .background(if (selected) OemSurfaceElevated else OemSurface)
-                                        .oemSurfaceBorder(
-                                            shape,
-                                            if (selected) MaterialTheme.colorScheme.onSurface else OemBorder,
-                                        )
-                                        .clickable { onTextStyleChange(style.id) }
-                                        .padding(horizontal = OemSpacing.sm, vertical = OemSpacing.xs),
-                                ) {
-                                    Text(
-                                        text = style.label,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = if (selected) {
-                                            MaterialTheme.colorScheme.onSurface
-                                        } else {
-                                            OemOnSurfaceVariant
-                                        },
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
-                            if (rowStyles.size == 1) {
-                                Box(modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                }
-            }
 
             CustomSectionHeader(
                 title = "Layout",
@@ -1252,6 +1226,7 @@ private fun CanvasPlacedComponent(
                 PlaygroundComponentRenderer(
                     componentId = placed.componentId,
                     textContent = placed.textContent,
+                    props = placed.props,
                     modifier = contentModifier,
                 )
             }
