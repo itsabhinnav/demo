@@ -77,7 +77,9 @@ fun ExpressiveMotionDemo(
                 tips = listOf(
                     "Parked: OemTheme uses expressive springs for setup, onboarding, and media hero UI",
                     "Driving/Restricted: switch to standard or snap() — AAOS caps animation at 0ms",
-                    "Spatial specs: panel expand, map overlays, media artwork resize",
+                    "M3 spring tokens expose stiffness (k) and damping ratio (ζ) — see token table",
+                    "Pass initialVelocity to Animatable.animateTo() for swipe/fling IVI panels",
+                    "Switch, Slider, NavigationBar, SegmentedButton inherit MaterialTheme.motionScheme",
                     "Effects specs: HVAC mode tint, alert emphasis, selection feedback",
                     "Use NavMotion + OemMotion tokens for screen-to-screen transitions",
                     "Press feedback (OemMotion.pressSpec) replaces ripple on in-car touch targets",
@@ -95,6 +97,8 @@ fun ExpressiveMotionDemo(
             onSchemeChanged = { useExpressive = it },
             animationsEnabled = animationsEnabled,
         )
+
+        SpringPhysicsTokensSection(useExpressive = useExpressive)
 
         OemThemePolicySection(
             drivingState = drivingState,
@@ -116,6 +120,8 @@ fun ExpressiveMotionDemo(
             motionScheme = motionScheme,
         ) {
             CarScreenScenariosSection(animationsEnabled = animationsEnabled)
+            SpringSideBySideSection(animationsEnabled = animationsEnabled)
+            InitialVelocityFlingSection(animationsEnabled = animationsEnabled)
             SpatialMotionSection(animationsEnabled = animationsEnabled)
             EffectsMotionSection(animationsEnabled = animationsEnabled)
             SpeedComparisonSection(animationsEnabled = animationsEnabled)
@@ -125,7 +131,7 @@ fun ExpressiveMotionDemo(
             )
             PressFeedbackSection(animationsEnabled = animationsEnabled)
             OemMotionTokensSection(drivingState = drivingState)
-            MaterialComponentsSection(animationsEnabled = animationsEnabled)
+            AaosMaterial3MotionSection(animationsEnabled = animationsEnabled)
         }
     }
 }
@@ -718,29 +724,6 @@ private fun SpeedComparisonSection(animationsEnabled: Boolean) {
                 .size(48.dp)
                 .clip(OemVisuals.chipShape)
                 .background(MaterialTheme.colorScheme.secondary),
-        )
-    }
-}
-
-@Composable
-private fun MaterialComponentsSection(animationsEnabled: Boolean) {
-    var checked by remember { mutableStateOf(false) }
-
-    CustomSectionHeader(
-        title = "Material Components",
-        subtitle = "M3 controls inherit MaterialTheme.motionScheme automatically",
-    )
-    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
-        androidx.compose.material3.Switch(
-            checked = checked,
-            onCheckedChange = { if (animationsEnabled) checked = it },
-            enabled = animationsEnabled,
-        )
-        Text(
-            text = "Switch uses theme motion when toggled",
-            style = MaterialTheme.typography.bodyMedium,
-            color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(top = OemSpacing.sm),
         )
     }
 }
