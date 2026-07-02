@@ -10,7 +10,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SearchOff
+import com.test.design.component.components.CustomEmptyState
 import com.test.design.component.components.CustomFeatureCard
+import com.test.design.component.components.CustomSearchBar
 import com.test.design.component.components.CustomTopBar
 import com.test.design.component.theme.OemSpacing
 import com.test.design.domain.model.FeatureDemo
@@ -20,6 +24,7 @@ import com.test.design.presentation.home.component.HomeHeroSection
 import com.test.design.presentation.home.component.SystemInfoPanel
 import com.test.design.presentation.home.mapper.mapFeatureIcon
 import com.test.design.presentation.home.mapper.mapToSystemInfoUiState
+import com.test.design.presentation.shared.GlobalDrivingUxPanel
 import com.test.design.template.AutomotiveDashboardTemplate
 import com.test.design.template.LocalAutomotiveWindowInfo
 
@@ -28,6 +33,7 @@ fun HomeScreen(
     state: HomeState,
     onFeatureClick: (FeatureDemo) -> Unit,
     onCategorySelected: (com.test.design.domain.model.DemoCategory) -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AutomotiveDashboardTemplate(
@@ -40,6 +46,14 @@ fun HomeScreen(
                     selectedCategory = state.selectedCategory,
                     onCategorySelected = onCategorySelected,
                     modifier = Modifier.padding(horizontal = OemSpacing.md),
+                )
+                CustomSearchBar(
+                    query = state.searchQuery,
+                    onQueryChange = onSearchQueryChanged,
+                    onSearch = onSearchQueryChanged,
+                    placeholder = "Search demos",
+                    modifier = Modifier
+                        .padding(horizontal = OemSpacing.md, vertical = OemSpacing.sm),
                 )
             }
         },
@@ -81,6 +95,15 @@ private fun HomeContent(
                 onClick = { onFeatureClick(feature) },
             )
         }
+        if (state.filteredFeatures.isEmpty()) {
+            item {
+                CustomEmptyState(
+                    icon = Icons.Default.SearchOff,
+                    title = "No demos found",
+                    message = "Try another category or search term.",
+                )
+            }
+        }
     }
 }
 
@@ -91,6 +114,7 @@ private fun HomeYellowPanel(state: HomeState) {
     val systemInfo = mapToSystemInfoUiState(windowInfo, density)
 
     Column(modifier = Modifier.fillMaxSize()) {
+        GlobalDrivingUxPanel(modifier = Modifier.padding(bottom = OemSpacing.lg))
         HomeBrandingPanel(
             demoCount = state.features.size,
             selectedCategory = state.selectedCategory,

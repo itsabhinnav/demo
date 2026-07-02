@@ -57,7 +57,7 @@ fun RestrictedUxDemo(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var selectedState by remember { mutableStateOf(DrivingUxState.Driving) }
+    val selectedState = currentDrivingUxState()
 
     DemoScaffold(
         title = "Driving UX & Restrictions",
@@ -66,44 +66,19 @@ fun RestrictedUxDemo(
         yellowContent = {
             DemoTipsPanel(
                 tips = RestrictedComponentPolicy.restrictionSummary(selectedState) + listOf(
+                    "Use the global Driving State toggle in the yellow zone",
                     "Google Design for Driving: glanceable, shorter, safer",
-                    "Driver distraction: limit task depth while moving",
                     "4.5:1 contrast minimum at all restriction levels",
                 ),
             )
         },
     ) {
-        DrivingStateSelector(
-            selected = selectedState,
-            onSelected = { selectedState = it },
+        CustomSectionHeader(
+            title = "Live restriction preview",
+            subtitle = "Components below reflect the global ${selectedState.name} UXR state",
         )
         ScaleReferencePanel(state = selectedState)
         RestrictedComponentPreview(state = selectedState)
-    }
-}
-
-@Composable
-private fun DrivingStateSelector(
-    selected: DrivingUxState,
-    onSelected: (DrivingUxState) -> Unit,
-) {
-    CustomSectionHeader(
-        title = "Driving State",
-        subtitle = "Simulates Parked, Driving, and strict UXR (CarUxRestrictions)",
-    )
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = OemSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
-    ) {
-        DrivingUxState.entries.forEach { state ->
-            CustomChip(
-                label = state.name,
-                selected = selected == state,
-                onClick = { onSelected(state) },
-            )
-        }
     }
 }
 

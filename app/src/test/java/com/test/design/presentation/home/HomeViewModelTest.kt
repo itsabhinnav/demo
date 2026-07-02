@@ -28,9 +28,8 @@ class HomeViewModelTest {
 
         val state = viewModel.state.value
         assertFalse(state.isLoading)
-        assertEquals(1, state.features.size)
-        assertEquals(1, state.filteredFeatures.size)
-        assertEquals("Components", state.features.first().title)
+        assertEquals(2, state.features.size)
+        assertEquals(2, state.filteredFeatures.size)
     }
 
     @Test
@@ -42,6 +41,15 @@ class HomeViewModelTest {
         assertEquals(DemoCategory.Components, state.selectedCategory)
         assertEquals(1, state.filteredFeatures.size)
         assertEquals(DemoCategory.Components, state.filteredFeatures.first().category)
+    }
+
+    @Test
+    fun searchQueryChanged_filtersByTitle() = runTest {
+        viewModel.onIntent(HomeIntent.Load)
+        viewModel.onIntent(HomeIntent.SearchQueryChanged("gallery"))
+
+        assertEquals(1, viewModel.state.value.filteredFeatures.size)
+        assertEquals("components-gallery", viewModel.state.value.filteredFeatures.first().id)
     }
 
     @Test
@@ -61,7 +69,8 @@ class HomeViewModelTest {
 
     private class FakeFeatureDemoRepository : FeatureDemoRepository {
         private val demos = listOf(
-            FeatureDemo("components-gallery", "Components", "Gallery", DemoCategory.Components, "UI"),
+            FeatureDemo("design-system", "Design System", "Tokens", DemoCategory.DesignSystem, "OEM"),
+            FeatureDemo("components-gallery", "Components Gallery", "Gallery", DemoCategory.Components, "UI"),
         )
 
         override fun getAll(): List<FeatureDemo> = demos

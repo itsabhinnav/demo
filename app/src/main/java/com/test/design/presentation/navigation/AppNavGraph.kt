@@ -4,6 +4,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,10 +17,20 @@ import com.test.design.presentation.home.HomeRoute
 
 @Composable
 fun AppNavGraph(
+    pendingNavigation: PendingNavigation?,
+    onPendingNavigationConsumed: () -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
     val drivingState = currentDrivingUxState()
+
+    LaunchedEffect(pendingNavigation) {
+        val pending = pendingNavigation ?: return@LaunchedEffect
+        navController.navigate(Routes.demo(pending.demoId)) {
+            popUpTo(Routes.HOME)
+        }
+        onPendingNavigationConsumed()
+    }
 
     NavHost(
         navController = navController,

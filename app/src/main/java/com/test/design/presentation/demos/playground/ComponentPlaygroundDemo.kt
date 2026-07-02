@@ -99,6 +99,8 @@ import com.test.design.component.theme.OemWhite
 import com.test.design.component.theme.oemSurfaceBorder
 import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.motion.OemMotion
+import com.test.design.core.export.DesignExportHelper
+import com.test.design.core.feedback.DesignFeedback
 import kotlin.math.roundToInt
 
 private val PaletteWidth = 280.dp
@@ -265,6 +267,19 @@ fun ComponentPlaygroundDemo(
                             canvasBackgroundColor.encodeForStorage(),
                         )
                         saveStatus = SaveStatus.Saved
+                    },
+                    onExport = {
+                        val result = DesignExportHelper.shareJson(
+                            context = context,
+                            fileName = "playground-design.json",
+                            json = designStore.exportJson(
+                                placedComponents.toList(),
+                                nextInstanceId,
+                                canvasBackgroundColor.encodeForStorage(),
+                            ),
+                            chooserTitle = "Export playground design",
+                        )
+                        DesignFeedback.showExportResult(context, result)
                     },
                     onClear = {
                         placedComponents.clear()
@@ -445,6 +460,7 @@ private fun PlaygroundTopBar(
     onBack: () -> Unit,
     onTogglePreview: () -> Unit,
     onSave: () -> Unit,
+    onExport: () -> Unit,
     onClear: () -> Unit,
     componentCount: Int,
     saveStatus: SaveStatus?,
@@ -469,6 +485,11 @@ private fun PlaygroundTopBar(
                     text = "Save",
                     onClick = onSave,
                     style = ButtonStyle.Secondary,
+                )
+                CustomButton(
+                    text = "Export",
+                    onClick = onExport,
+                    style = ButtonStyle.Tonal,
                 )
                 Text(
                     text = "$componentCount placed",

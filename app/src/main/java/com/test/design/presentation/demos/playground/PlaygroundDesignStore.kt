@@ -28,6 +28,12 @@ class PlaygroundDesignStore(context: Context) {
         prefs.edit().remove(KEY_DESIGN).apply()
     }
 
+    fun exportJson(
+        components: List<PlacedComponent>,
+        nextInstanceId: Int,
+        backgroundColorArgb: Long,
+    ): String = encode(components, nextInstanceId, backgroundColorArgb)
+
     private fun encode(
         components: List<PlacedComponent>,
         nextInstanceId: Int,
