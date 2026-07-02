@@ -26,10 +26,17 @@ This repo is configured for **Cursor Cloud Agents**, so work continues when the 
 ### Use from Cursor iOS (laptop off)
 
 1. Install **Cursor for iOS** and sign in with the same account.
+<<<<<<< HEAD
 2. Choose repository `itsabhinnav/demo` and branch `main`.
 3. Select **Cloud** as the worker — not Remote Control.
 4. Send tasks such as "build the app", "add a screen", or "run unit tests".
 5. Review artifacts (screenshots, videos, logs) on the agent session. Agents push directly to `main` unless you request a PR.
+=======
+2. Choose repository `itsabhinnav/demo` and branch `main` (or a feature branch).
+3. Select **Cloud** as the worker — not Remote Control.
+4. Send tasks such as "build the app", "add a screen", or "run unit tests".
+5. Review artifacts (screenshots, videos, logs) and merge PRs from the phone.
+>>>>>>> origin/cursor/cloud-ios-remote-setup-e4a4
 
 Remote Control requires the laptop to stay awake. Cloud Agents do not.
 
@@ -54,6 +61,7 @@ Cloud agent setup is defined in:
 
 `ANDROID_HOME` defaults to `/opt/android-sdk` in cloud VMs.
 
+<<<<<<< HEAD
 ### Git workflow (agents)
 
 **Push directly to `main` by default.** Do not create feature branches or PRs unless the user explicitly asks for one.
@@ -66,6 +74,8 @@ If you already worked on a branch, merge it into `main` and push before finishin
 
 See also `.cursor/rules/git-workflow.mdc`.
 
+=======
+>>>>>>> origin/cursor/cloud-ios-remote-setup-e4a4
 ### CI APK (no laptop required)
 
 GitHub Actions builds `app-debug.apk` on every push to `main` and on pull requests. Download the artifact from the Actions tab on your phone and sideload to an Android device or emulator.
