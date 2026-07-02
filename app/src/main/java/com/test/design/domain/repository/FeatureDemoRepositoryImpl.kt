@@ -16,9 +16,9 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         FeatureDemo(
             id = "expressive-motion",
             title = "Expressive Motion",
-            description = "Material 3 physics-based motion with standard and expressive MotionScheme springs.",
+            description = "Material 3 MotionScheme spring physics — standard vs expressive, spatial and effects specs.",
             category = DemoCategory.DesignSystem,
-            tagline = "Spring physics & motion",
+            tagline = "MotionScheme physics",
         ),
         FeatureDemo(
             id = "components-gallery",
