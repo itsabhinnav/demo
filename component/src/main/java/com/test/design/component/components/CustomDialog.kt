@@ -1,13 +1,25 @@
 package com.test.design.component.components
 
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.window.Dialog
 import com.test.design.component.core.RestrictedComponentPolicy
 import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.theme.OemOnSurface
+import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.theme.OemSpacing
+import com.test.design.component.theme.OemSurfaceElevated
+import com.test.design.component.theme.OemVisuals
+import com.test.design.component.theme.oemSurfaceBorder
 
 @Composable
 fun CustomDialog(
@@ -22,29 +34,37 @@ fun CustomDialog(
     val drivingState = currentDrivingUxState()
     if (!RestrictedComponentPolicy.allowsDialogs(drivingState)) return
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        modifier = modifier,
-        title = {
-            Text(text = title, style = MaterialTheme.typography.headlineMedium)
-        },
-        text = {
-            Text(text = message, style = MaterialTheme.typography.bodyLarge)
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(confirmText, style = MaterialTheme.typography.labelLarge)
+    Dialog(onDismissRequest = onDismiss) {
+        val shape = OemVisuals.cardShape
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(OemSurfaceElevated)
+                .oemSurfaceBorder(shape)
+                .padding(OemSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(OemSpacing.md),
+        ) {
+            Text(text = title, style = MaterialTheme.typography.headlineMedium, color = OemOnSurface)
+            Text(text = message, style = MaterialTheme.typography.bodyLarge, color = OemOnSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                CustomButton(
+                    text = dismissText,
+                    onClick = onDismiss,
+                    style = ButtonStyle.Secondary,
+                    modifier = Modifier.padding(end = OemSpacing.sm),
+                )
+                CustomButton(
+                    text = confirmText,
+                    onClick = onConfirm,
+                    style = ButtonStyle.Primary,
+                )
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(dismissText, style = MaterialTheme.typography.labelLarge)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.surface,
-        titleContentColor = MaterialTheme.colorScheme.onSurface,
-        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+        }
+    }
 }
 
 @Composable
@@ -54,18 +74,29 @@ fun CustomSnackbarMessage(
     actionLabel: String? = null,
     onAction: () -> Unit = {},
 ) {
-    androidx.compose.material3.Snackbar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.inverseSurface,
-        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-        action = {
-            if (actionLabel != null) {
-                TextButton(onClick = onAction) {
-                    Text(actionLabel, color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        },
+    val shape = OemVisuals.cardShape
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(OemSurfaceElevated)
+            .oemSurfaceBorder(shape)
+            .padding(horizontal = OemSpacing.md, vertical = OemSpacing.sm),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
-        Text(message, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = OemOnSurface,
+            modifier = Modifier.weight(1f),
+        )
+        if (actionLabel != null) {
+            CustomButton(
+                text = actionLabel,
+                onClick = onAction,
+                style = ButtonStyle.Text,
+            )
+        }
     }
 }

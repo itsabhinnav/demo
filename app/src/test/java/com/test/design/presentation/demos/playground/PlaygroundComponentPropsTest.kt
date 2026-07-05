@@ -15,8 +15,10 @@ class PlaygroundComponentPropsTest {
 
         assertEquals("Drive", merged["label"])
         assertEquals("true", merged["enabled"])
-        assertEquals("Default", merged["bgColor"])
+        assertEquals("Variant", merged["bgColor"])
         assertEquals("12", merged["cornerRadiusDp"])
+        assertEquals("1", merged["borderWidthDp"])
+        assertEquals("LabelLarge", merged["typography"])
     }
 
     @Test

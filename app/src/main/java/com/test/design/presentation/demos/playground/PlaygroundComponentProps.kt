@@ -1,6 +1,9 @@
 package com.test.design.presentation.demos.playground
 
 import com.test.design.component.components.ButtonStyle
+import com.test.design.component.components.CardStyle
+import com.test.design.component.components.FabSize
+import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
 
 enum class PlaygroundPropertyType {
@@ -28,8 +31,11 @@ object PlaygroundComponentProps {
         return componentSchema + PlaygroundAppearance.schema
     }
 
-    fun defaultProps(componentId: String): Map<String, String> =
-        schemaFor(componentId).associate { it.key to it.defaultValue }
+    fun defaultProps(componentId: String): Map<String, String> {
+        val componentDefaults = schemaFor(componentId).associate { it.key to it.defaultValue }
+        val appearanceDefaults = OemComponentAppearancePresets.forComponent(componentId)
+        return componentDefaults + appearanceDefaults
+    }
 
     fun mergeWithDefaults(componentId: String, props: Map<String, String>): Map<String, String> {
         val defaults = defaultProps(componentId)
@@ -71,6 +77,21 @@ object PlaygroundComponentProps {
         else -> ButtonStyle.Primary
     }
 
+    fun iconButtonStyle(props: Map<String, String>): IconButtonStyle =
+        runCatching {
+            IconButtonStyle.valueOf(string(props, "iconButtonStyle", IconButtonStyle.Filled.name))
+        }.getOrDefault(IconButtonStyle.Filled)
+
+    fun fabSize(props: Map<String, String>): FabSize =
+        runCatching {
+            FabSize.valueOf(string(props, "fabSize", FabSize.Standard.name))
+        }.getOrDefault(FabSize.Standard)
+
+    fun cardStyle(props: Map<String, String>, default: CardStyle = CardStyle.Filled): CardStyle =
+        runCatching {
+            CardStyle.valueOf(string(props, "cardStyle", default.name))
+        }.getOrDefault(default)
+
     private fun baseComponentId(componentId: String): String = when {
         PlaygroundCatalog.isTextComponent(componentId) -> "text"
         else -> componentId
@@ -83,9 +104,16 @@ object PlaygroundComponentProps {
         "icon-button" to listOf(
             bool("enabled", "Enabled", true),
             int("badgeCount", "Badge count", 2, 0..99),
+            enumProp(
+                "iconButtonStyle",
+                "Icon button style",
+                IconButtonStyle.Filled.name,
+                IconButtonStyle.entries.map { it.name },
+            ),
         ),
         "fab" to listOf(
             bool("enabled", "Enabled", true),
+            enumProp("fabSize", "FAB size", FabSize.Standard.name, FabSize.entries.map { it.name }),
         ),
         "extended-fab" to listOf(
             text("label", "Label", "Navigate"),
@@ -127,11 +155,13 @@ object PlaygroundComponentProps {
         "card" to listOf(
             text("title", "Title", "Climate"),
             text("subtitle", "Subtitle", "22°C"),
+            enumProp("cardStyle", "Card style", CardStyle.Filled.name, CardStyle.entries.map { it.name }),
         ),
         "metric-card" to listOf(
             text("label", "Label", "Range"),
             text("value", "Value", "287"),
             text("unit", "Unit", "km"),
+            enumProp("cardStyle", "Card style", CardStyle.Elevated.name, CardStyle.entries.map { it.name }),
         ),
         "list-tile" to listOf(
             text("title", "Title", "Navigation"),
@@ -140,6 +170,7 @@ object PlaygroundComponentProps {
         ),
         "image" to listOf(
             text("contentDescription", "Content description", "Vehicle"),
+            int("sizeDp", "Size (dp)", 64, 32..128),
         ),
         "tabs" to listOf(
             text("options", "Tab labels (comma-separated)", "Overview,Details,Settings"),

@@ -50,9 +50,11 @@ import com.test.design.component.components.CustomSuggestionChip
 import com.test.design.component.components.CustomSwitch
 import com.test.design.component.components.CustomTabs
 import com.test.design.component.components.CustomTextField
+import com.test.design.component.components.CardStyle
 import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
 import com.test.design.component.components.StatusLevel
+import androidx.compose.ui.unit.dp
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.tokens.DesignTokens
 
@@ -209,7 +211,7 @@ private fun PlaygroundComponentBody(
                 Icons.Default.Settings,
                 "Settings",
                 {},
-                style = IconButtonStyle.Standard,
+                style = propsAccessor.iconButtonStyle(mergedProps),
                 enabled = propsAccessor.boolean(mergedProps, "enabled", true),
             )
             val badgeCount = propsAccessor.int(mergedProps, "badgeCount", 2)
@@ -219,7 +221,7 @@ private fun PlaygroundComponentBody(
             Icons.Default.Add,
             "Add",
             {},
-            size = FabSize.Standard,
+            size = propsAccessor.fabSize(mergedProps),
             modifier = Modifier,
         )
         "extended-fab" -> CustomExtendedFab(
@@ -311,7 +313,11 @@ private fun PlaygroundComponentBody(
                 modifier = Modifier,
             )
         }
-        "card" -> CustomCard(modifier = Modifier, onClick = {}) {
+        "card" -> CustomCard(
+            modifier = Modifier,
+            style = propsAccessor.cardStyle(mergedProps),
+            onClick = {},
+        ) {
             Text(
                 propsAccessor.string(mergedProps, "title", "Climate"),
                 style = MaterialTheme.typography.titleMedium,
@@ -327,6 +333,7 @@ private fun PlaygroundComponentBody(
             propsAccessor.string(mergedProps, "label", "Range"),
             propsAccessor.string(mergedProps, "value", "287"),
             propsAccessor.string(mergedProps, "unit", "km"),
+            cardStyle = propsAccessor.cardStyle(mergedProps, CardStyle.Elevated),
             modifier = Modifier,
         )
         "list-tile" -> CustomListTile(
@@ -340,7 +347,7 @@ private fun PlaygroundComponentBody(
         "image" -> CustomImage(
             contentDescription = propsAccessor.string(mergedProps, "contentDescription", "Vehicle"),
             modifier = Modifier,
-            size = OemSpacing.xl * 2,
+            size = propsAccessor.int(mergedProps, "sizeDp", 64).dp,
         )
         "tabs" -> {
             val tabs = propsAccessor.optionsList(mergedProps, "options", listOf("Overview", "Details", "Settings"))

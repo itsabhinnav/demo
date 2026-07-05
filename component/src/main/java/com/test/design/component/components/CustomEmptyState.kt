@@ -57,9 +57,10 @@ fun CustomMetricCard(
     value: String,
     unit: String,
     modifier: Modifier = Modifier,
+    cardStyle: CardStyle = CardStyle.Filled,
     onClick: (() -> Unit)? = null,
 ) {
-    CustomCard(modifier = modifier, onClick = onClick) {
+    CustomCard(modifier = modifier, style = cardStyle, onClick = onClick) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
