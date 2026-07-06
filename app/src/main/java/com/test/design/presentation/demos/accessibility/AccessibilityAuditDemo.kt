@@ -28,7 +28,6 @@ import com.test.design.component.theme.OemSuccess
 import com.test.design.component.theme.OemWarning
 import com.test.design.component.tokens.DesignTokens
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private enum class AuditStatus {
     Pass,
@@ -106,15 +105,7 @@ fun AccessibilityAuditDemo(
     DemoScaffold(
         title = "Accessibility Audit",
         onBack = onBack,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Pass = automated check · Manual = verify on device",
-                    "Policy rows confirm UXR rules are enforced, not violated",
-                    "Run under each global Driving State before sign-off",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "Live AAOS Audit",

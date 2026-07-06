@@ -25,7 +25,6 @@ import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.ListItemStyle
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private data class AppItem(val id: String, val title: String, val subtitle: String, val icon: ImageVector)
 
@@ -41,16 +40,7 @@ fun ListsGridsDemo(
         title = "Lists & Grids",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Use LazyColumn for long lists",
-                    "LazyVerticalGrid for app launchers",
-                    "64dp row height for touch safety",
-                    "Always provide stable keys",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(title = "List", subtitle = "CustomList with automotive row height")
         CustomList(

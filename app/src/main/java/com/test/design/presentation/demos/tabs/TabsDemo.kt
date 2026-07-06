@@ -15,7 +15,6 @@ import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomTabs
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun TabsDemo(
@@ -26,16 +25,7 @@ fun TabsDemo(
         title = "Tabs & Navigation",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Use tabs for 2–5 related sections",
-                    "Scrollable tabs for 6+ items",
-                    "Keep tab labels short",
-                    "Place tabs in the blue zone",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         FixedTabsSection()
         ScrollableTabsSection()

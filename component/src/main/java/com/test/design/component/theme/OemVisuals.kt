@@ -10,12 +10,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object OemVisuals {
-    val buttonShape = RoundedCornerShape(12.dp)
-    val cardShape = RoundedCornerShape(16.dp)
-    val chipShape = RoundedCornerShape(12.dp)
-    val tabContainerShape = RoundedCornerShape(14.dp)
-    val iconContainerShape = RoundedCornerShape(12.dp)
-    val fabShape = RoundedCornerShape(16.dp)
+    val buttonShape = RoundedCornerShape(0.dp)
+    val cardShape = RoundedCornerShape(0.dp)
+    val chipShape = RoundedCornerShape(0.dp)
+    val tabContainerShape = RoundedCornerShape(0.dp)
+    val iconContainerShape = RoundedCornerShape(0.dp)
+    val fabShape = RoundedCornerShape(0.dp)
 }
 
 fun Modifier.oemSurfaceBorder(

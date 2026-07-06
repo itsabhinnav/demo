@@ -28,7 +28,6 @@ import com.test.design.component.theme.OemSurfaceElevated
 import com.test.design.component.theme.OemSurfaceVariant
 import com.test.design.component.theme.OemWhite
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun DesignSystemDemo(
@@ -39,16 +38,7 @@ fun DesignSystemDemo(
         title = "Design System",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Black, white, and gray palette only",
-                    "Maintain 4.5:1 contrast minimum",
-                    "Rounded corners on all surfaces",
-                    "Reuse Custom components across screens",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         ColorPaletteSection()
         TypographySection()
@@ -118,16 +108,16 @@ private fun SpacingSection() {
 
 @Composable
 private fun ShapesSection() {
-    CustomSectionHeader(title = "Shapes", subtitle = "Rounded corners from OemShapes")
+    CustomSectionHeader(title = "Shapes", subtitle = "Square corners from OemShapes")
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = OemSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
     ) {
-        ShapeSample("Small 10dp", MaterialTheme.shapes.small)
-        ShapeSample("Medium 14dp", MaterialTheme.shapes.medium)
-        ShapeSample("Large 18dp", MaterialTheme.shapes.large)
+        ShapeSample("Small", MaterialTheme.shapes.small)
+        ShapeSample("Medium", MaterialTheme.shapes.medium)
+        ShapeSample("Large", MaterialTheme.shapes.large)
     }
 }
 

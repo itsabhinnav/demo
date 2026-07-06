@@ -50,7 +50,6 @@ import com.test.design.component.theme.OemTheme
 import com.test.design.component.theme.OemVisuals
 import com.test.design.component.tokens.DesignTokens
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun RestrictedUxDemo(
@@ -63,15 +62,7 @@ fun RestrictedUxDemo(
         title = "Driving UX & Restrictions",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = RestrictedComponentPolicy.restrictionSummary(selectedState) + listOf(
-                    "Use the global Driving State toggle in the yellow zone",
-                    "Google Design for Driving: glanceable, shorter, safer",
-                    "4.5:1 contrast minimum at all restriction levels",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "Live restriction preview",

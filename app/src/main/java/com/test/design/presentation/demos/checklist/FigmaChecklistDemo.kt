@@ -12,7 +12,6 @@ import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private data class FigmaGapEntry(
     val component: String,
@@ -82,15 +81,7 @@ fun FigmaChecklistDemo(
         title = "Figma vs Android",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Use this checklist during design reviews",
-                    "Validate every item here in Android before sign-off",
-                    "Toggle global Driving State to confirm UXR-specific gaps",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "What Figma Cannot Show",

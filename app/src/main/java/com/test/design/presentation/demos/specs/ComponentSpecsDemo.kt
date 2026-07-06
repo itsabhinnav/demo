@@ -15,7 +15,6 @@ import com.test.design.component.theme.OemSpacing
 import com.test.design.core.export.DesignExportHelper
 import com.test.design.presentation.demos.playground.PlaygroundCatalog
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun ComponentSpecsDemo(
@@ -25,15 +24,7 @@ fun ComponentSpecsDemo(
     DemoScaffold(
         title = "Component Spec Sheets",
         onBack = onBack,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Each entry maps to a Playground catalog component",
-                    "Share deep links to open related demos on device",
-                    "Driving restrictions apply via global UXR toggle",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "Component Catalog",

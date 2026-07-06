@@ -22,7 +22,6 @@ import com.test.design.component.components.CustomSlider
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun ThemingLabDemo(
@@ -36,15 +35,7 @@ fun ThemingLabDemo(
         title = "Theming Lab",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Preview token changes before updating OemSpacing or OemTypography",
-                    "Production theme uses fixed tokens — this lab simulates what-if scenarios",
-                    "Share screenshots with engineering when proposing token updates",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "Spacing Scale",
