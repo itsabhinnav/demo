@@ -108,16 +108,16 @@ private fun SpacingSection() {
 
 @Composable
 private fun ShapesSection() {
-    CustomSectionHeader(title = "Shapes", subtitle = "Square corners from OemShapes")
+    CustomSectionHeader(title = "Shapes", subtitle = "Rounded surfaces; square buttons and text fields")
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = OemSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
     ) {
-        ShapeSample("Small", MaterialTheme.shapes.small)
-        ShapeSample("Medium", MaterialTheme.shapes.medium)
-        ShapeSample("Large", MaterialTheme.shapes.large)
+        ShapeSample("Small 10dp", MaterialTheme.shapes.small)
+        ShapeSample("Medium 14dp", MaterialTheme.shapes.medium)
+        ShapeSample("Large 18dp", MaterialTheme.shapes.large)
     }
 }
 

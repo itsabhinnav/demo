@@ -34,7 +34,7 @@ fun CustomIconButton(
     style: IconButtonStyle = IconButtonStyle.Standard,
     enabled: Boolean = true,
 ) {
-    val shape = OemVisuals.chipShape
+    val shape = OemVisuals.iconButtonShape
     val interactionSource = remember { MutableInteractionSource() }
 
     val backgroundModifier = when (style) {

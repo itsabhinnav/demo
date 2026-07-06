@@ -83,7 +83,7 @@ object PlaygroundAppearance {
             key = "cornerRadiusDp",
             label = "Corner radius",
             type = PlaygroundPropertyType.Float,
-            defaultValue = "0",
+            defaultValue = "12",
             floatRange = 0f..32f,
         ),
         PlaygroundPropertyDefinition(
@@ -181,7 +181,7 @@ object PlaygroundAppearance {
         modifier: Modifier = Modifier,
         content: @Composable () -> Unit,
     ) {
-        val cornerRadius = PlaygroundComponentProps.float(props, "cornerRadiusDp", 0f).coerceIn(0f, 32f)
+        val cornerRadius = PlaygroundComponentProps.float(props, "cornerRadiusDp", 12f).coerceIn(0f, 32f)
         val padding = PlaygroundComponentProps.float(props, "paddingDp", 0f).coerceIn(0f, 48f)
         val margin = PlaygroundComponentProps.float(props, "marginDp", 0f).coerceIn(0f, 48f)
         val borderWidth = PlaygroundComponentProps.float(props, "borderWidthDp", 0f).coerceIn(0f, 8f)
