@@ -10,7 +10,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,6 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.test.design.component.components.ButtonStyle
-import com.test.design.component.components.CustomAssistChip
 import com.test.design.component.components.CustomBadge
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomCard
@@ -133,34 +130,25 @@ private fun GalleryComponentSlot(
     componentId: String,
     onCustomize: (String) -> Unit,
     modifier: Modifier = Modifier,
-    /** When false, preview stays interactive and only the Customize chip opens the editor. */
+    /** When false, the preview stays interactive and skips the editor gesture overlay. */
     interceptPreviewGestures: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier.padding(vertical = OemSpacing.xs),
-        verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+        contentAlignment = Alignment.TopStart,
     ) {
-        Box(contentAlignment = Alignment.TopStart) {
-            content()
-            if (interceptPreviewGestures) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .pointerInput(componentId) {
-                            detectTapGestures(
-                                onLongPress = { onCustomize(componentId) },
-                                onTap = { onCustomize(componentId) },
-                            )
-                        },
-                )
-            }
-        }
-        if (!interceptPreviewGestures) {
-            CustomAssistChip(
-                label = "Customize",
-                onClick = { onCustomize(componentId) },
-                leadingIcon = Icons.Default.Tune,
+        content()
+        if (interceptPreviewGestures) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .pointerInput(componentId) {
+                        detectTapGestures(
+                            onLongPress = { onCustomize(componentId) },
+                            onTap = { onCustomize(componentId) },
+                        )
+                    },
             )
         }
     }
