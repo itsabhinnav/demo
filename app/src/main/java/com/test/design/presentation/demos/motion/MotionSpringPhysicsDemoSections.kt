@@ -1,17 +1,16 @@
 package com.test.design.presentation.demos.motion
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -33,289 +32,86 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomCard
-import com.test.design.component.components.CustomSectionHeader
-import com.test.design.component.motion.OemMotionScheme
-import com.test.design.component.theme.OemOnSurfaceVariant
+import com.test.design.component.components.CustomCheckbox
+import com.test.design.component.components.CustomChip
+import com.test.design.component.components.CustomLinearProgress
+import com.test.design.component.components.CustomList
+import com.test.design.component.components.CustomListItem
+import com.test.design.component.components.CustomListItemRow
+import com.test.design.component.components.CustomSegmentedButton
+import com.test.design.component.components.CustomSwitch
+import com.test.design.component.components.CustomTabs
+import com.test.design.component.motion.OemMotionPhysicsConfig
+import com.test.design.component.motion.progressSpec
+import com.test.design.component.motion.rememberOemFlingBehavior
 import com.test.design.component.theme.OemSpacing
-import com.test.design.component.theme.OemSurfaceElevated
-import com.test.design.component.theme.OemVisuals
-import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 
 @Composable
-fun SpringPhysicsTokensSection(useExpressive: Boolean) {
-    CustomSectionHeader(
-        title = "M3 Spring Physics Tokens",
-        subtitle = "Stiffness (k) and damping ratio (ζ) from Material motion tokens",
-    )
-    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
-        Text(
-            text = if (useExpressive) {
-                "ExpressiveMotionTokens — lower damping, softer springs for hero IVI UI"
-            } else {
-                "StandardMotionTokens — tighter springs for utilitarian AAOS controls"
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(bottom = OemSpacing.sm),
-        )
-        SpringTokenRow("Default spatial", useExpressive, OemMotionScheme.SpringToken.DefaultSpatial)
-        SpringTokenRow("Fast spatial", useExpressive, OemMotionScheme.SpringToken.FastSpatial)
-        SpringTokenRow("Slow spatial", useExpressive, OemMotionScheme.SpringToken.SlowSpatial)
-        SpringTokenRow("Default effects", useExpressive, OemMotionScheme.SpringToken.DefaultEffects)
-        SpringTokenRow("Fast effects", useExpressive, OemMotionScheme.SpringToken.FastEffects)
-        SpringTokenRow("Slow effects", useExpressive, OemMotionScheme.SpringToken.SlowEffects)
-        Text(
-            text = "initialVelocity defaults to 0 in MotionScheme.expressive(). " +
-                "Pass v₀ to spring() for swipe/fling panels (see below).",
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(top = OemSpacing.sm),
-        )
-    }
-}
-
-@Composable
-private fun SpringTokenRow(
-    label: String,
-    useExpressive: Boolean,
-    token: OemMotionScheme.SpringToken,
+fun MotionPhysicsComponentsSection(
+    config: OemMotionPhysicsConfig,
+    animationsEnabled: Boolean,
 ) {
-    val physics = if (useExpressive) {
-        OemMotionScheme.expressivePhysics(token)
-    } else {
-        OemMotionScheme.standardPhysics(token)
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = OemSpacing.xs),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            text = physics.label(),
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-        )
-    }
+    ButtonsSection(animationsEnabled = animationsEnabled)
+    TogglesSection(animationsEnabled = animationsEnabled)
+    ChipsSection(animationsEnabled = animationsEnabled)
+    SegmentedControlsSection(animationsEnabled = animationsEnabled)
+    TabsSection(animationsEnabled = animationsEnabled)
+    SliderSection(animationsEnabled = animationsEnabled)
+    ListSection(config = config, animationsEnabled = animationsEnabled)
+    ProgressSection(config = config, animationsEnabled = animationsEnabled)
+    CardsSection(animationsEnabled = animationsEnabled)
 }
 
 @Composable
-fun SpringSideBySideSection(animationsEnabled: Boolean) {
-    var expanded by remember { mutableStateOf(false) }
-    val target = if (expanded) 120.dp else 48.dp
-    val expressiveSize by animateDpAsState(
-        targetValue = target,
-        animationSpec = OemMotionScheme.springSpec<Dp>(
-            OemMotionScheme.expressivePhysics(OemMotionScheme.SpringToken.DefaultSpatial),
-        ).let { if (animationsEnabled) it else snap() },
-        label = "expressive-compare",
-    )
-    val standardSize by animateDpAsState(
-        targetValue = target,
-        animationSpec = OemMotionScheme.springSpec<Dp>(
-            OemMotionScheme.standardPhysics(OemMotionScheme.SpringToken.DefaultSpatial),
-        ).let { if (animationsEnabled) it else snap() },
-        label = "standard-compare",
-    )
-
-    CustomSectionHeader(
-        title = "Standard vs Expressive Springs",
-        subtitle = "Same target — compare ζ and k from token sets side by side",
-    )
-    CustomCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = OemSpacing.md)
-            .then(
-                if (animationsEnabled) {
-                    Modifier.clickableToggle { expanded = !expanded }
-                } else {
-                    Modifier
-                },
-            ),
-    ) {
-        Text(
-            text = if (expanded) "Tap to collapse both" else "Tap to expand both",
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = OemSpacing.md),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            SpringCompareColumn(
-                title = "Expressive",
-                subtitle = OemMotionScheme.expressivePhysics(OemMotionScheme.SpringToken.DefaultSpatial).label(),
-                size = expressiveSize,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            SpringCompareColumn(
-                title = "Standard",
-                subtitle = OemMotionScheme.standardPhysics(OemMotionScheme.SpringToken.DefaultSpatial).label(),
-                size = standardSize,
-                color = MaterialTheme.colorScheme.secondary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SpringCompareColumn(
-    title: String,
-    subtitle: String,
-    size: androidx.compose.ui.unit.Dp,
-    color: androidx.compose.ui.graphics.Color,
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(size)
-                .clip(OemVisuals.cardShape)
-                .background(color),
-        )
-        Text(text = title, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = OemSpacing.sm))
-        Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = OemOnSurfaceVariant)
-    }
-}
-
-@Composable
-fun InitialVelocityFlingSection(animationsEnabled: Boolean) {
-    val scope = rememberCoroutineScope()
-    val offsetAnim = remember { Animatable(0f) }
-    var flingCount by remember { mutableIntStateOf(0) }
-
-    CustomSectionHeader(
-        title = "Initial Velocity (v₀)",
-        subtitle = "Swipe/fling media drawer — expressive spatial spring with v₀",
-    )
-    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
-        Text(
-            text = "AAOS pattern: parked media queue panel flung open from edge swipe. " +
-                "OemMotionScheme.initialVelocitySpatialSpec(v₀) adds momentum to the spring.",
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = OemSpacing.md)
-                .height(100.dp)
-                .clip(OemVisuals.cardShape)
-                .background(OemSurfaceElevated),
-        ) {
-            Box(
-                modifier = Modifier
-                    .offset { IntOffset(offsetAnim.value.roundToInt(), 0) }
-                    .size(width = 140.dp, height = 100.dp)
-                    .clip(OemVisuals.cardShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(OemSpacing.md),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Column {
-                    Icon(Icons.Default.MusicNote, contentDescription = null)
-                    Text(text = "Queue", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-        }
+private fun ButtonsSection(animationsEnabled: Boolean) {
+    MotionComponentCard(title = "Buttons") {
         Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
             CustomButton(
-                text = "Fling open (v₀=1200)",
-                onClick = {
-                    if (!animationsEnabled) return@CustomButton
-                    flingCount++
-                    scope.launch {
-                        offsetAnim.animateTo(
-                            targetValue = 180f,
-                            animationSpec = OemMotionScheme.springSpec(
-                                OemMotionScheme.expressivePhysics(OemMotionScheme.SpringToken.DefaultSpatial),
-                            ),
-                            initialVelocity = 1200f,
-                        )
-                    }
-                },
+                text = "Primary",
+                onClick = {},
                 enabled = animationsEnabled,
             )
             CustomButton(
-                text = "Snap closed",
-                onClick = {
-                    if (!animationsEnabled) return@CustomButton
-                    scope.launch {
-                        offsetAnim.animateTo(
-                            targetValue = 0f,
-                            animationSpec = OemMotionScheme.springSpec(
-                                OemMotionScheme.expressivePhysics(OemMotionScheme.SpringToken.FastSpatial),
-                            ),
-                        )
-                    }
-                },
+                text = "Secondary",
+                onClick = {},
                 style = ButtonStyle.Secondary,
                 enabled = animationsEnabled,
             )
-        }
-        if (flingCount > 0) {
-            val physics = OemMotionScheme.expressivePhysics(OemMotionScheme.SpringToken.DefaultSpatial)
-            Text(
-                text = "Fling #$flingCount · ${physics.label()} · v₀ passed to Animatable.animateTo()",
-                style = MaterialTheme.typography.bodySmall,
-                color = OemOnSurfaceVariant,
-                modifier = Modifier.padding(top = OemSpacing.sm),
+            CustomButton(
+                text = "Tonal",
+                onClick = {},
+                style = ButtonStyle.Tonal,
+                enabled = animationsEnabled,
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AaosMaterial3MotionSection(animationsEnabled: Boolean) {
+private fun TogglesSection(animationsEnabled: Boolean) {
     var switchOn by remember { mutableStateOf(true) }
     var checkboxOn by remember { mutableStateOf(false) }
-    var sliderValue by remember { mutableFloatStateOf(0.4f) }
-    var segmentIndex by remember { mutableIntStateOf(0) }
-    var navIndex by remember { mutableIntStateOf(0) }
-    var filterSelected by remember { mutableStateOf(false) }
+    var customSwitchOn by remember { mutableStateOf(false) }
+    var customCheckboxOn by remember { mutableStateOf(true) }
 
-    CustomSectionHeader(
-        title = "M3 Components Using MotionScheme",
-        subtitle = "Jetpack Material 3 reads MaterialTheme.motionScheme — no manual spring wiring",
-    )
-    Text(
-        text = "Wrap AAOS screens in OemTheme { } with motionScheme = expressive (parked) or standard (driving). " +
-            "Built-in M3 components inherit physics automatically.",
-        style = MaterialTheme.typography.bodySmall,
-        color = OemOnSurfaceVariant,
-        modifier = Modifier.padding(bottom = OemSpacing.sm),
-    )
-
-    M3MotionComponentCard(
-        title = "Switch · Checkbox · Slider",
-        aaosUse = "Parked: defrost toggle, seat heater. Driving: avoid sliders — use presets.",
-    ) {
+    MotionComponentCard(title = "Switch & checkbox") {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
+            horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
         ) {
             Switch(
                 checked = switchOn,
@@ -328,23 +124,66 @@ fun AaosMaterial3MotionSection(animationsEnabled: Boolean) {
                 enabled = animationsEnabled,
             )
         }
-        Slider(
-            value = sliderValue,
-            onValueChange = { if (animationsEnabled) sliderValue = it },
+        CustomSwitch(
+            label = "Defrost",
+            checked = customSwitchOn,
+            onCheckedChange = { if (animationsEnabled) customSwitchOn = it },
             enabled = animationsEnabled,
             modifier = Modifier.padding(top = OemSpacing.sm),
         )
+        CustomCheckbox(
+            label = "Rear climate",
+            checked = customCheckboxOn,
+            onCheckedChange = { if (animationsEnabled) customCheckboxOn = it },
+            enabled = animationsEnabled,
+        )
     }
+}
 
-    M3MotionComponentCard(
-        title = "SegmentedButton",
-        aaosUse = "Drive mode selector (Eco/Normal/Sport) — spatial indicator uses theme springs",
-    ) {
+@Composable
+private fun ChipsSection(animationsEnabled: Boolean) {
+    var selectedChip by remember { mutableIntStateOf(0) }
+    var filterSelected by remember { mutableStateOf(false) }
+    val chips = listOf("Driver", "Passenger", "Rear")
+
+    MotionComponentCard(title = "Chips") {
+        Row(horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm)) {
+            chips.forEachIndexed { index, label ->
+                CustomChip(
+                    label = label,
+                    selected = selectedChip == index,
+                    onClick = { if (animationsEnabled) selectedChip = index },
+                    enabled = animationsEnabled,
+                )
+            }
+        }
+        FilterChip(
+            selected = filterSelected,
+            onClick = { if (animationsEnabled) filterSelected = !filterSelected },
+            enabled = animationsEnabled,
+            label = { Text("Favorites") },
+            leadingIcon = if (filterSelected) {
+                { Icon(Icons.Default.MusicNote, contentDescription = null, modifier = Modifier.size(18.dp)) }
+            } else {
+                null
+            },
+            modifier = Modifier.padding(top = OemSpacing.sm),
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SegmentedControlsSection(animationsEnabled: Boolean) {
+    var m3Segment by remember { mutableIntStateOf(1) }
+    var customSegment by remember { mutableIntStateOf(0) }
+
+    MotionComponentCard(title = "Segmented buttons") {
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
             listOf("Eco", "Normal", "Sport").forEachIndexed { index, label ->
                 SegmentedButton(
-                    selected = segmentIndex == index,
-                    onClick = { if (animationsEnabled) segmentIndex = index },
+                    selected = m3Segment == index,
+                    onClick = { if (animationsEnabled) m3Segment = index },
                     enabled = animationsEnabled,
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
                     icon = {},
@@ -352,13 +191,54 @@ fun AaosMaterial3MotionSection(animationsEnabled: Boolean) {
                 )
             }
         }
+        CustomSegmentedButton(
+            options = listOf("List", "Grid"),
+            selectedIndex = customSegment,
+            onOptionSelected = { if (animationsEnabled) customSegment = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OemSpacing.sm),
+        )
     }
+}
 
-    M3MotionComponentCard(
-        title = "NavigationBar",
-        aaosUse = "Bottom launcher rail — indicator slide uses defaultSpatialSpec()",
-    ) {
-        NavigationBar {
+@Composable
+private fun TabsSection(animationsEnabled: Boolean) {
+    var tabIndex by remember { mutableIntStateOf(0) }
+    var navIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Climate", "Navigation", "Media")
+    val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
+
+    MotionComponentCard(title = "Tabs & navigation") {
+        CustomTabs(
+            tabs = tabs,
+            selectedIndex = tabIndex,
+            onTabSelected = { if (animationsEnabled) tabIndex = it },
+        )
+        AnimatedContent(
+            targetState = tabIndex,
+            transitionSpec = {
+                if (animationsEnabled) {
+                    fadeIn(effectsSpec) togetherWith fadeOut(effectsSpec)
+                } else {
+                    fadeIn(snap()) togetherWith fadeOut(snap())
+                }
+            },
+            label = "tab-preview",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OemSpacing.sm),
+        ) { index ->
+            Text(
+                text = when (index) {
+                    0 -> "72°F · Auto"
+                    1 -> "12 min · I-280 North"
+                    else -> "Now playing"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        NavigationBar(modifier = Modifier.padding(top = OemSpacing.sm)) {
             val items = listOf(
                 Triple("Climate", Icons.Default.AcUnit, 0),
                 Triple("Nav", Icons.Default.Map, 1),
@@ -376,61 +256,130 @@ fun AaosMaterial3MotionSection(animationsEnabled: Boolean) {
             }
         }
     }
+}
 
-    M3MotionComponentCard(
-        title = "FilterChip",
-        aaosUse = "Quick filters on parked media/search — effects spring on selection tint",
-    ) {
-        FilterChip(
-            selected = filterSelected,
-            onClick = { if (animationsEnabled) filterSelected = !filterSelected },
+@Composable
+private fun SliderSection(animationsEnabled: Boolean) {
+    var sliderValue by remember { mutableFloatStateOf(0.4f) }
+
+    MotionComponentCard(title = "Slider") {
+        Slider(
+            value = sliderValue,
+            onValueChange = { if (animationsEnabled) sliderValue = it },
             enabled = animationsEnabled,
-            label = { Text("Favorites") },
-            leadingIcon = if (filterSelected) {
-                { Icon(Icons.Default.MusicNote, contentDescription = null, modifier = Modifier.size(18.dp)) }
-            } else {
-                null
-            },
         )
     }
+}
 
-    CustomCard(modifier = Modifier.padding(top = OemSpacing.sm)) {
-        Text(text = "MotionScheme token resolution", style = MaterialTheme.typography.titleSmall)
-        Text(
-            text = "OemMotionScheme reads ζ and k from MotionScheme.expressive() / standard():",
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(top = OemSpacing.xs),
-        )
-        OemMotionScheme.SpringToken.entries.forEach { token ->
-            val physics = OemMotionScheme.expressivePhysics(token)
-            Text(
-                text = "${token.name}: ${physics.label()} · resolved via MotionScheme.expressive()",
-                style = MaterialTheme.typography.bodySmall,
-                color = OemOnSurfaceVariant,
-                modifier = Modifier.padding(top = OemSpacing.xs),
+@Composable
+private fun ListSection(
+    config: OemMotionPhysicsConfig,
+    animationsEnabled: Boolean,
+) {
+    val flingBehavior = rememberOemFlingBehavior(config, animationsEnabled)
+    val listItems = remember {
+        (1..16).map { index ->
+            CustomListItem(
+                id = index.toString(),
+                title = "Track $index",
+                subtitle = "Fling to feel scroll physics",
             )
+        }
+    }
+
+    MotionComponentCard(title = "List") {
+        CustomList(
+            items = listItems,
+            key = { it.id },
+            scrollable = true,
+            flingBehavior = flingBehavior,
+            modifier = Modifier.height(180.dp),
+            onItemClick = {},
+        ) { item ->
+            CustomListItemRow(title = item.title, subtitle = item.subtitle)
         }
     }
 }
 
 @Composable
-private fun M3MotionComponentCard(
+private fun ProgressSection(
+    config: OemMotionPhysicsConfig,
+    animationsEnabled: Boolean,
+) {
+    var targetProgress by remember { mutableFloatStateOf(0.35f) }
+    var replayTick by remember { mutableIntStateOf(0) }
+    val progressSpec = config.progressSpec(animationsEnabled)
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = progressSpec,
+        label = "motion-progress",
+    )
+
+    LaunchedEffect(replayTick) {
+        if (replayTick == 0) return@LaunchedEffect
+        if (!animationsEnabled) {
+            targetProgress = 1f
+            return@LaunchedEffect
+        }
+        targetProgress = 0f
+        delay(120)
+        targetProgress = 1f
+    }
+
+    MotionComponentCard(title = "Progress") {
+        CustomLinearProgress(
+            progress = { animatedProgress },
+            label = "Download ${(animatedProgress * 100).toInt()}%",
+            modifier = Modifier.fillMaxWidth(),
+        )
+        CustomButton(
+            text = if (replayTick == 0) "Simulate" else "Replay",
+            onClick = { replayTick++ },
+            style = ButtonStyle.Tonal,
+            enabled = animationsEnabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OemSpacing.sm),
+        )
+    }
+}
+
+@Composable
+private fun CardsSection(animationsEnabled: Boolean) {
+    var expanded by remember { mutableStateOf(false) }
+
+    MotionComponentCard(title = "Cards") {
+        CustomCard(
+            onClick = { if (animationsEnabled) expanded = !expanded },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column {
+                Text(
+                    text = if (expanded) "Tap to collapse" else "Tap to expand",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (expanded) {
+                    Text(
+                        text = "CustomCard uses press motion for in-car glanceability.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = OemSpacing.xs),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MotionComponentCard(
     title: String,
-    aaosUse: String,
     content: @Composable () -> Unit,
 ) {
     CustomCard(modifier = Modifier.padding(vertical = OemSpacing.xs)) {
         Text(text = title, style = MaterialTheme.typography.titleSmall)
-        Text(
-            text = aaosUse,
-            style = MaterialTheme.typography.bodySmall,
-            color = OemOnSurfaceVariant,
-            modifier = Modifier.padding(top = OemSpacing.xs, bottom = OemSpacing.sm),
+        Column(
+            modifier = Modifier.padding(top = OemSpacing.sm),
+            content = { content() },
         )
-        content()
     }
 }
-
-private fun Modifier.clickableToggle(onClick: () -> Unit): Modifier =
-    clickable(onClick = onClick).then(this)
