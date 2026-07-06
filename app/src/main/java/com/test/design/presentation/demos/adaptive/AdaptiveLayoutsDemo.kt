@@ -19,7 +19,6 @@ import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomStatRow
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 import com.test.design.presentation.home.mapper.mapToSystemInfoUiState
 import com.test.design.template.LocalAutomotiveWindowInfo
 
@@ -54,10 +53,6 @@ private fun AdaptiveLayoutInfoPanel() {
     Column {
         CustomSectionHeader(title = "Live Display", subtitle = info.layoutLabel)
         CustomStatRow(label = "Resolution", value = info.displayLabel)
-        DemoTipsPanel(
-            tips = listOf("70/30 split on standard displays", "75/25 on 15.3\"+ screens"),
-            modifier = Modifier.padding(top = OemSpacing.lg),
-        )
     }
 }
 

@@ -35,7 +35,6 @@ import com.test.design.component.theme.OemTheme
 import com.test.design.component.theme.OemVisuals
 import com.test.design.presentation.demos.playground.PlaygroundComponentRenderer
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private data class MatrixRow(
     val label: String,
@@ -67,15 +66,7 @@ fun ComponentStateMatrixDemo(
         title = "Component State Matrix",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Columns are fixed to Parked, Driving, and Restricted for side-by-side comparison",
-                    "Use the global Driving State toggle for app-wide behavior outside this matrix",
-                    "Dialog cells use static previews to avoid modal distraction while driving",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "UXR State Matrix",

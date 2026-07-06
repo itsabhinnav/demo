@@ -26,7 +26,6 @@ import com.test.design.component.components.CustomStatusIndicator
 import com.test.design.component.components.StatusLevel
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun EvDemo(
@@ -42,17 +41,9 @@ fun EvDemo(
         modifier = modifier,
         yellowContent = {
             Column {
-                DemoTipsPanel(
-                    tips = listOf(
-                        "Range and SOC must be glanceable at a glance",
-                        "Limit drive-mode changes to parked state",
-                        "Use one primary charging action per screen",
-                    ),
-                )
                 CustomStatRow(
                     label = "Est. arrival charge",
                     value = "84%",
-                    modifier = Modifier.padding(top = OemSpacing.md),
                 )
                 CustomStatRow(
                     label = "Last charge",

@@ -14,7 +14,6 @@ import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.tokens.DesignTokens
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private data class TokenEntry(
     val name: String,
@@ -30,15 +29,7 @@ fun TokenBrowserDemo(
     DemoScaffold(
         title = "Token Browser",
         onBack = onBack,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Tokens live in component/theme and DesignTokens.kt",
-                    "Use consistent spacing scale — avoid arbitrary dp values",
-                    "Layout weights define the green/yellow column split",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(title = "Spacing Scale", subtitle = "OemSpacing xs through xl")
         CustomSpacingSample("xs", OemSpacing.xs)

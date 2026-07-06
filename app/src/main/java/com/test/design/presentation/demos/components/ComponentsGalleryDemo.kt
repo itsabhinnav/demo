@@ -71,7 +71,6 @@ import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.motion.OemMotion
 import com.test.design.presentation.demos.playground.ComponentDetailEditor
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun ComponentsGalleryDemo(
@@ -128,19 +127,7 @@ private fun GalleryContent(
     DemoScaffold(
         title = "Components Gallery",
         onBack = onBack,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Long-press any highlighted component to open the editor",
-                    "Motion follows AAOS patterns: fast-out-slow-in easing, short durations",
-                    "Customize labels, appearance, and values then tap Save",
-                    "76dp minimum touch targets (AAOS, not phone 48dp)",
-                    "20sp body text minimum for in-car legibility",
-                    "4.5:1 contrast ratio for legibility while driving",
-                    "Use color sparingly — white for primary actions",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         ButtonsSection(onCustomize = onCustomize)
         IconButtonsSection(onCustomize = onCustomize)
@@ -184,7 +171,7 @@ private fun GalleryComponentSlot(
 
 @Composable
 private fun ButtonsSection(onCustomize: (String) -> Unit) {
-    CustomSectionHeader(title = "Buttons", subtitle = "Rounded monochrome button variants")
+    CustomSectionHeader(title = "Buttons", subtitle = "Monochrome button variants")
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),

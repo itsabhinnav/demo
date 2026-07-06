@@ -17,7 +17,6 @@ import com.test.design.component.components.CustomCard
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun ComposeBasicsDemo(
@@ -28,16 +27,7 @@ fun ComposeBasicsDemo(
         title = "Compose Basics",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "State changes trigger recomposition",
-                    "Use remember for local UI state",
-                    "Modifiers chain left-to-right",
-                    "Composables are functions, not views",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         StateSection()
         RecompositionSection()

@@ -33,7 +33,7 @@ object OemComponentAppearancePresets {
     private fun actionsPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Variant.name,
         "borderColor" to PlaygroundColorToken.Border.name,
-        "cornerRadiusDp" to "12",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "8",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -43,7 +43,7 @@ object OemComponentAppearancePresets {
     private fun selectionPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Surface.name,
         "borderColor" to PlaygroundColorToken.Border.name,
-        "cornerRadiusDp" to "14",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "12",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -53,7 +53,7 @@ object OemComponentAppearancePresets {
     private fun inputPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Variant.name,
         "borderColor" to PlaygroundColorToken.Border.name,
-        "cornerRadiusDp" to "14",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "12",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -63,7 +63,7 @@ object OemComponentAppearancePresets {
     private fun displayPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Elevated.name,
         "borderColor" to PlaygroundColorToken.Border.name,
-        "cornerRadiusDp" to "16",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "12",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -73,7 +73,7 @@ object OemComponentAppearancePresets {
     private fun feedbackPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Elevated.name,
         "borderColor" to PlaygroundColorToken.Gray.name,
-        "cornerRadiusDp" to "16",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "16",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -83,7 +83,7 @@ object OemComponentAppearancePresets {
     private fun navigationPreset() = mapOf(
         "bgColor" to PlaygroundColorToken.Surface.name,
         "borderColor" to PlaygroundColorToken.Border.name,
-        "cornerRadiusDp" to "14",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "8",
         "marginDp" to "4",
         "borderWidthDp" to "1",
@@ -92,7 +92,7 @@ object OemComponentAppearancePresets {
 
     private fun textPreset() = mapOf(
         "textColor" to PlaygroundColorToken.Default.name,
-        "cornerRadiusDp" to "8",
+        "cornerRadiusDp" to "0",
         "paddingDp" to "8",
         "marginDp" to "4",
         "borderWidthDp" to "0",
@@ -104,7 +104,7 @@ object OemComponentAppearancePresets {
         "button-primary" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -113,7 +113,7 @@ object OemComponentAppearancePresets {
         "button-tonal" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Gray.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -122,7 +122,7 @@ object OemComponentAppearancePresets {
         "button-secondary" to mapOf(
             "bgColor" to PlaygroundColorToken.Background.name,
             "borderColor" to PlaygroundColorToken.Primary.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "2",
@@ -131,7 +131,7 @@ object OemComponentAppearancePresets {
         "icon-button" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -139,7 +139,7 @@ object OemComponentAppearancePresets {
         "fab" to mapOf(
             "bgColor" to PlaygroundColorToken.Gray.name,
             "borderColor" to PlaygroundColorToken.Primary.name,
-            "cornerRadiusDp" to "16",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "4",
             "marginDp" to "8",
             "borderWidthDp" to "1",
@@ -147,7 +147,7 @@ object OemComponentAppearancePresets {
         "extended-fab" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "16",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -156,7 +156,7 @@ object OemComponentAppearancePresets {
         "filter-chip" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "4",
             "marginDp" to "2",
             "borderWidthDp" to "1",
@@ -165,7 +165,7 @@ object OemComponentAppearancePresets {
         "assist-chip" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "4",
             "marginDp" to "2",
             "borderWidthDp" to "1",
@@ -173,7 +173,7 @@ object OemComponentAppearancePresets {
         "suggestion-chip" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Gray.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "4",
             "marginDp" to "2",
             "borderWidthDp" to "1",
@@ -181,7 +181,7 @@ object OemComponentAppearancePresets {
         "input-chip" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Primary.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "4",
             "marginDp" to "2",
             "borderWidthDp" to "1",
@@ -189,7 +189,7 @@ object OemComponentAppearancePresets {
         "switch" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -198,7 +198,7 @@ object OemComponentAppearancePresets {
         "checkbox" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -206,7 +206,7 @@ object OemComponentAppearancePresets {
         "radio" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -214,7 +214,7 @@ object OemComponentAppearancePresets {
         "segmented-button" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -222,7 +222,7 @@ object OemComponentAppearancePresets {
         "text-field" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -231,7 +231,7 @@ object OemComponentAppearancePresets {
         "search-bar" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Gray.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -240,7 +240,7 @@ object OemComponentAppearancePresets {
         "slider" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "16",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -249,7 +249,7 @@ object OemComponentAppearancePresets {
         "card" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "18",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -258,7 +258,7 @@ object OemComponentAppearancePresets {
         "metric-card" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Gray.name,
-            "cornerRadiusDp" to "18",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "16",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -268,7 +268,7 @@ object OemComponentAppearancePresets {
         "list-tile" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "16",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -277,7 +277,7 @@ object OemComponentAppearancePresets {
         "image" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -285,7 +285,7 @@ object OemComponentAppearancePresets {
         "tabs" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -294,7 +294,7 @@ object OemComponentAppearancePresets {
         "status-indicator" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "10",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "12",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -303,7 +303,7 @@ object OemComponentAppearancePresets {
         "linear-progress" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "12",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "16",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -312,7 +312,7 @@ object OemComponentAppearancePresets {
         "circular-progress" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "16",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "16",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -321,7 +321,7 @@ object OemComponentAppearancePresets {
         "snackbar" to mapOf(
             "bgColor" to PlaygroundColorToken.Elevated.name,
             "borderColor" to PlaygroundColorToken.Primary.name,
-            "cornerRadiusDp" to "14",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -330,7 +330,7 @@ object OemComponentAppearancePresets {
         "empty-state" to mapOf(
             "bgColor" to PlaygroundColorToken.Surface.name,
             "borderColor" to PlaygroundColorToken.Gray.name,
-            "cornerRadiusDp" to "18",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "24",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -340,7 +340,7 @@ object OemComponentAppearancePresets {
         "dialog-trigger" to mapOf(
             "bgColor" to PlaygroundColorToken.Variant.name,
             "borderColor" to PlaygroundColorToken.Border.name,
-            "cornerRadiusDp" to "16",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "16",
             "marginDp" to "4",
             "borderWidthDp" to "1",
@@ -348,7 +348,7 @@ object OemComponentAppearancePresets {
         ),
         "text" to mapOf(
             "textColor" to PlaygroundColorToken.Default.name,
-            "cornerRadiusDp" to "8",
+            "cornerRadiusDp" to "0",
             "paddingDp" to "8",
             "marginDp" to "4",
             "borderWidthDp" to "0",

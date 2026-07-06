@@ -25,7 +25,6 @@ import com.test.design.component.components.CustomTabs
 import com.test.design.component.components.StatusLevel
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 private val tripHistory = listOf(
     CustomListItem("1", "Home → Office", "24.3 mi · 38 min"),
@@ -52,13 +51,6 @@ fun TelematicsDemo(
         modifier = modifier,
         yellowContent = {
             Column {
-                DemoTipsPanel(
-                    tips = listOf(
-                        "Live data should be glanceable while driving",
-                        "Alerts use badges and status indicators",
-                        "Deep trip history is best when parked",
-                    ),
-                )
                 CustomStatRow(
                     label = "Odometer",
                     value = "18,432 mi",

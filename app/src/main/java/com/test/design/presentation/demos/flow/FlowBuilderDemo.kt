@@ -26,7 +26,6 @@ import com.test.design.core.export.DesignExportHelper
 import com.test.design.presentation.demos.playground.PlaygroundCatalog
 import com.test.design.presentation.demos.playground.PlaygroundComponentRenderer
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun FlowBuilderDemo(
@@ -44,15 +43,7 @@ fun FlowBuilderDemo(
         title = "Flow Builder",
         onBack = onBack,
         modifier = modifier,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Add screens and components to prototype multi-step flows",
-                    "Changes autosave locally for handoff between sessions",
-                    "Export JSON or share the flow-builder deep link",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomTextField(
             value = uiState.flow.title,

@@ -1276,7 +1276,7 @@ private fun CanvasPlacedComponent(
                     Box(
                         modifier = Modifier
                             .size(width = 4.dp, height = OemSpacing.lg)
-                            .clip(RoundedCornerShape(2.dp))
+                            .clip(RoundedCornerShape(0.dp))
                             .background(MaterialTheme.colorScheme.onSurface),
                     )
                 }

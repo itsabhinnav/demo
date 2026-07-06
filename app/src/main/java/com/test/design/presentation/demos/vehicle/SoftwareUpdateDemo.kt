@@ -27,7 +27,6 @@ import com.test.design.component.components.CustomStatusIndicator
 import com.test.design.component.components.StatusLevel
 import com.test.design.component.theme.OemSpacing
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun SoftwareUpdateDemo(
@@ -58,13 +57,6 @@ fun SoftwareUpdateDemo(
         modifier = modifier,
         yellowContent = {
             Column {
-                DemoTipsPanel(
-                    tips = listOf(
-                        "OTA updates require parked + sufficient battery",
-                        "Show clear progress during download and install",
-                        "Confirm destructive actions with a dialog",
-                    ),
-                )
                 CustomStatusIndicator(
                     label = "Vehicle parked — ready to install",
                     level = StatusLevel.Normal,

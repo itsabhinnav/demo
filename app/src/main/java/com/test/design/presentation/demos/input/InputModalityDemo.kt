@@ -33,7 +33,6 @@ import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemVisuals
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 
 @Composable
 fun InputModalityDemo(
@@ -47,15 +46,7 @@ fun InputModalityDemo(
     DemoScaffold(
         title = "Input Modality Lab",
         onBack = onBack,
-        yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Touch targets scale with global Driving State (76 → 84 → 88dp)",
-                    "Keyboard input is blocked while Driving or Restricted",
-                    "Rotary focus order matters for non-touch AAOS hardware",
-                ),
-            )
-        },
+        yellowContent = {},
     ) {
         CustomSectionHeader(
             title = "Touch Targets",
