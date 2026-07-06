@@ -9,25 +9,9 @@ class FeatureDemoRepositoryImplTest {
     private val repository = FeatureDemoRepositoryImpl()
 
     private val routedDemoIds = setOf(
-        "design-system",
-        "theming-lab",
-        "token-browser",
-        "accessibility-audit",
-        "figma-checklist",
-        "expressive-motion",
         "components-gallery",
-        "component-state-matrix",
-        "component-specs",
+        "expressive-motion",
         "component-playground",
-        "flow-builder",
-        "input-modality",
-        "lists-grids",
-        "tabs-demo",
-        "adaptive-layouts",
-        "driving-ux",
-        "ev-dashboard",
-        "software-update",
-        "telematics",
     )
 
     @Test
@@ -47,9 +31,27 @@ class FeatureDemoRepositoryImplTest {
     }
 
     @Test
-    fun getAll_coversAllCategoriesExceptAll() {
+    fun getAll_coversActiveCategories() {
         val categories = repository.getAll().map { it.category }.toSet()
-        assertTrue(categories.contains(com.test.design.domain.model.DemoCategory.Layouts))
-        assertTrue(categories.contains(com.test.design.domain.model.DemoCategory.Vehicle))
+        assertTrue(categories.contains(com.test.design.domain.model.DemoCategory.Components))
+        assertTrue(categories.contains(com.test.design.domain.model.DemoCategory.DesignSystem))
+    }
+
+    @Test
+    fun getCategories_returnsOnlyCategoriesWithDemos() {
+        val categories = repository.getCategories()
+        assertEquals(
+            listOf(
+                com.test.design.domain.model.DemoCategory.All,
+                com.test.design.domain.model.DemoCategory.DesignSystem,
+                com.test.design.domain.model.DemoCategory.Components,
+            ),
+            categories,
+        )
+    }
+
+    @Test
+    fun getAll_returnsThreeMotionPhysicsDemos() {
+        assertEquals(3, repository.getAll().size)
     }
 }
