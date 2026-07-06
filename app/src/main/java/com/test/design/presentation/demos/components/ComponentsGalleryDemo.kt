@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
@@ -41,6 +42,9 @@ import com.test.design.component.components.CustomCircularProgress
 import com.test.design.component.components.CustomIconButton
 import com.test.design.component.components.CustomImage
 import com.test.design.component.components.CustomLinearProgress
+import com.test.design.component.components.CustomList
+import com.test.design.component.components.CustomListItem
+import com.test.design.component.components.CustomListItemRow
 import com.test.design.component.components.CustomListTile
 import com.test.design.component.components.CustomRadioButton
 import com.test.design.component.components.CustomSearchBar
@@ -56,6 +60,19 @@ import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.motion.OemMotion
 import com.test.design.presentation.demos.playground.ComponentDetailEditor
 import com.test.design.presentation.demos.shared.DemoScaffold
+
+private val galleryListItems = listOf(
+    CustomListItem("1", "Home", "742 Evergreen Terrace · 3 min"),
+    CustomListItem("2", "Office", "100 Market Street · 18 min"),
+    CustomListItem("3", "Grocery", "Whole Foods · 12 min"),
+    CustomListItem("4", "Gym", "FitLife Center · 9 min"),
+    CustomListItem("5", "Airport", "SFO Terminal 2 · 42 min"),
+    CustomListItem("6", "School", "Lincoln Elementary · 14 min"),
+    CustomListItem("7", "Charging", "EVgo Station · 6 min"),
+    CustomListItem("8", "Restaurant", "Bay Kitchen · 22 min"),
+    CustomListItem("9", "Park", "Golden Gate Park · 28 min"),
+    CustomListItem("10", "Dealer", "OEM Service Center · 35 min"),
+)
 
 @Composable
 fun ComponentsGalleryDemo(
@@ -265,6 +282,21 @@ private fun ListsSection(onCustomize: (String) -> Unit) {
         CustomListTile("Vehicle settings", subtitle = "Doors, locks, mirrors", leadingIcon = Icons.Default.Settings, onClick = {})
     }
     CustomListTile("Navigation", subtitle = "Home — 12 min", leadingIcon = Icons.Default.Navigation, onClick = {})
+
+    CustomSectionHeader(title = "List", subtitle = "Scrollable CustomList with automotive row height")
+    GalleryComponentSlot("list", onCustomize, interceptPreviewGestures = false) {
+        CustomList(
+            items = galleryListItems,
+            key = { it.id },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(OemSpacing.listItemHeight * 5 + OemSpacing.lg)
+                .padding(vertical = OemSpacing.md),
+            onItemClick = {},
+        ) { item ->
+            CustomListItemRow(title = item.title, subtitle = item.subtitle)
+        }
+    }
 }
 
 @Composable
