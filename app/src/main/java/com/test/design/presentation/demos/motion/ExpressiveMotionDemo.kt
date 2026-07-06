@@ -45,10 +45,7 @@ fun ExpressiveMotionDemo(
                 title = "Motion components",
                 subtitle = "Tap, toggle, and scroll — physics come from MotionScheme (tune in sidebar)",
             )
-            MotionPhysicsComponentsSection(
-                config = config,
-                animationsEnabled = animationsEnabled,
-            )
+            MotionPhysicsComponentsSection(animationsEnabled = animationsEnabled)
         }
     }
 }
