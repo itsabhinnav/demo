@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
@@ -26,10 +27,11 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,74 +46,53 @@ import com.test.design.component.components.ButtonStyle
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomCard
 import com.test.design.component.components.CustomChip
+import com.test.design.component.components.CustomLinearProgress
+import com.test.design.component.components.CustomList
+import com.test.design.component.components.CustomListItem
+import com.test.design.component.components.CustomListItemRow
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomSegmentedButton
 import com.test.design.component.components.CustomTabs
 import com.test.design.component.core.DrivingUxState
 import com.test.design.component.core.RestrictedComponentPolicy
 import com.test.design.component.core.currentDrivingUxState
+import com.test.design.component.motion.MotionSchemePreset
 import com.test.design.component.motion.OemMotion
+import com.test.design.component.motion.OemMotionPhysicsConfig
+import com.test.design.component.motion.progressSpec
+import com.test.design.component.motion.rememberOemFlingBehavior
+import com.test.design.component.motion.toMotionScheme
 import com.test.design.component.theme.OemOnSurfaceVariant
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.theme.OemSurfaceElevated
 import com.test.design.component.theme.OemVisuals
 import com.test.design.presentation.demos.shared.DemoScaffold
-import com.test.design.presentation.demos.shared.DemoTipsPanel
 import com.test.design.presentation.navigation.NavMotion
+import kotlinx.coroutines.delay
 
 @Composable
 fun ExpressiveMotionDemo(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var useExpressive by remember { mutableStateOf(true) }
+    var config by remember { mutableStateOf(OemMotionPhysicsConfig.Default) }
     val drivingState = currentDrivingUxState()
     val animationsEnabled = RestrictedComponentPolicy.maxAnimationDurationMs(drivingState) > 0
+    val useExpressive = config.preset != MotionSchemePreset.Standard
 
     DemoScaffold(
-        title = "Expressive Motion",
+        title = "Motion Physics",
         onBack = onBack,
         modifier = modifier,
         yellowContent = {
-            DemoTipsPanel(
-                tips = listOf(
-                    "Parked: OemTheme uses expressive springs for setup, onboarding, and media hero UI",
-                    "Driving/Restricted: switch to standard or snap() — AAOS caps animation at 0ms",
-                    "M3 spring tokens expose stiffness (k) and damping ratio (ζ) — see token table",
-                    "Pass initialVelocity to Animatable.animateTo() for swipe/fling IVI panels",
-                    "Switch, Slider, NavigationBar, SegmentedButton inherit MaterialTheme.motionScheme",
-                    "Effects specs: HVAC mode tint, alert emphasis, selection feedback",
-                    "Use NavMotion + OemMotion tokens for screen-to-screen transitions",
-                    "Press feedback (OemMotion.pressSpec) replaces ripple on in-car touch targets",
-                    if (animationsEnabled) {
-                        "Toggle Driving State above to preview UXR motion policy live"
-                    } else {
-                        "Animations disabled while driving (AAOS policy)"
-                    },
-                ),
+            MotionPhysicsConfigPanel(
+                config = config,
+                onConfigChange = { config = it },
+                animationsEnabled = animationsEnabled,
             )
         },
     ) {
-        SchemeSection(
-            useExpressive = useExpressive,
-            onSchemeChanged = { useExpressive = it },
-            animationsEnabled = animationsEnabled,
-        )
-
-        SpringPhysicsTokensSection(useExpressive = useExpressive)
-
-        OemThemePolicySection(
-            drivingState = drivingState,
-            useExpressiveOverride = useExpressive,
-        )
-
-        AaosOemPlaybookSection()
-
-        val motionScheme = if (useExpressive) {
-            MotionScheme.expressive()
-        } else {
-            MotionScheme.standard()
-        }
+        val motionScheme = config.toMotionScheme()
 
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme,
@@ -119,6 +100,26 @@ fun ExpressiveMotionDemo(
             shapes = MaterialTheme.shapes,
             motionScheme = motionScheme,
         ) {
+            PresetSummarySection(config = config)
+
+            OemThemePolicySection(
+                drivingState = drivingState,
+                config = config,
+            )
+
+            SpringPhysicsTokensSection(useExpressive = useExpressive)
+
+            ListScrollMotionSection(
+                config = config,
+                animationsEnabled = animationsEnabled,
+            )
+            ProgressMotionSection(
+                config = config,
+                animationsEnabled = animationsEnabled,
+            )
+
+            AaosOemPlaybookSection()
+
             CarScreenScenariosSection(animationsEnabled = animationsEnabled)
             SpringSideBySideSection(animationsEnabled = animationsEnabled)
             InitialVelocityFlingSection(animationsEnabled = animationsEnabled)
@@ -137,9 +138,34 @@ fun ExpressiveMotionDemo(
 }
 
 @Composable
+private fun PresetSummarySection(config: OemMotionPhysicsConfig) {
+    CustomSectionHeader(
+        title = "OEM motion profile",
+        subtitle = "${config.preset.name} — tweak springs and scroll physics in the sidebar",
+    )
+    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
+        Text(
+            text = buildString {
+                append("Fling friction ×${"%.2f".format(config.flingFrictionMultiplier)}")
+                append(" · Progress ")
+                append(
+                    if (config.progressUseSpring) {
+                        "spring (${config.progressStiffness.toInt()} stiffness)"
+                    } else {
+                        "${config.progressDurationMs}ms tween"
+                    },
+                )
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = OemOnSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun OemThemePolicySection(
     drivingState: DrivingUxState,
-    useExpressiveOverride: Boolean,
+    config: OemMotionPhysicsConfig,
 ) {
     val themeScheme = when (drivingState) {
         DrivingUxState.Parked -> "Expressive"
@@ -158,7 +184,7 @@ private fun OemThemePolicySection(
         GuidanceRow("Driving", "MotionScheme.standard() — glanceable panels, zero-duration cap ($animCap ms)")
         GuidanceRow("Restricted", "MotionScheme.standard() — primary actions only, no decorative motion")
         Text(
-            text = "Preview override: ${if (useExpressiveOverride) "Expressive" else "Standard"} " +
+            text = "Sidebar preset: ${config.preset.name} " +
                 "(live theme: $themeScheme for ${drivingState.name})",
             style = MaterialTheme.typography.bodySmall,
             color = OemOnSurfaceVariant,
@@ -418,6 +444,105 @@ private fun LauncherTabPreview(
 }
 
 @Composable
+private fun ListScrollMotionSection(
+    config: OemMotionPhysicsConfig,
+    animationsEnabled: Boolean,
+) {
+    val flingBehavior = rememberOemFlingBehavior(config, animationsEnabled)
+    val listItems = remember {
+        (1..24).map { index ->
+            CustomListItem(
+                id = index.toString(),
+                title = "Media track $index",
+                subtitle = "Fling to feel OEM scroll decay",
+            )
+        }
+    }
+
+    CustomSectionHeader(
+        title = "List scroll physics",
+        subtitle = "LazyColumn fling decay — common in media, settings, and nav lists",
+    )
+    CustomCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = OemSpacing.md),
+    ) {
+        Text(
+            text = if (animationsEnabled) {
+                "Swipe fast and release — adjust fling friction in the sidebar"
+            } else {
+                "Scrolling only while parked"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = OemOnSurfaceVariant,
+            modifier = Modifier.padding(bottom = OemSpacing.sm),
+        )
+        CustomList(
+            items = listItems,
+            key = { it.id },
+            scrollable = true,
+            flingBehavior = flingBehavior,
+            modifier = Modifier.height(220.dp),
+            onItemClick = {},
+        ) { item ->
+            CustomListItemRow(title = item.title, subtitle = item.subtitle)
+        }
+    }
+}
+
+@Composable
+private fun ProgressMotionSection(
+    config: OemMotionPhysicsConfig,
+    animationsEnabled: Boolean,
+) {
+    var targetProgress by remember { mutableFloatStateOf(0.25f) }
+    var simulationTick by remember { mutableIntStateOf(0) }
+    val progressSpec = config.progressSpec(animationsEnabled)
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = progressSpec,
+        label = "oem-progress",
+    )
+
+    LaunchedEffect(simulationTick) {
+        if (simulationTick == 0) return@LaunchedEffect
+        if (!animationsEnabled) {
+            targetProgress = 1f
+            return@LaunchedEffect
+        }
+        targetProgress = 0f
+        delay(120)
+        targetProgress = 0.35f
+        delay((config.progressDurationMs * 0.6).toLong().coerceAtLeast(200))
+        targetProgress = 0.72f
+        delay((config.progressDurationMs * 0.5).toLong().coerceAtLeast(180))
+        targetProgress = 1f
+    }
+
+    CustomSectionHeader(
+        title = "Progress bar motion",
+        subtitle = "Software update, EV charge, and task completion fills",
+    )
+    CustomCard(modifier = Modifier.padding(vertical = OemSpacing.md)) {
+        CustomLinearProgress(
+            progress = { animatedProgress },
+            label = "Download ${(animatedProgress * 100).toInt()}%",
+            modifier = Modifier.fillMaxWidth(),
+        )
+        CustomButton(
+            text = if (simulationTick == 0) "Simulate download" else "Replay",
+            onClick = { simulationTick++ },
+            style = ButtonStyle.Primary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = OemSpacing.md),
+            enabled = animationsEnabled,
+        )
+    }
+}
+
+@Composable
 private fun NavigationTransitionSection(
     drivingState: DrivingUxState,
     animationsEnabled: Boolean,
@@ -453,11 +578,7 @@ private fun NavigationTransitionSection(
             targetState = showDetail,
             transitionSpec = {
                 if (animationsEnabled) {
-                    if (targetState) {
-                        NavMotion.detailEnter(drivingState) togetherWith NavMotion.detailExit(drivingState)
-                    } else {
-                        NavMotion.detailEnter(drivingState) togetherWith NavMotion.detailExit(drivingState)
-                    }
+                    NavMotion.detailEnter(drivingState) togetherWith NavMotion.detailExit(drivingState)
                 } else {
                     fadeIn(snap()) togetherWith fadeOut(snap())
                 }
@@ -571,30 +692,6 @@ private fun GuidanceRow(label: String, value: String) {
 }
 
 @Composable
-private fun SchemeSection(
-    useExpressive: Boolean,
-    onSchemeChanged: (Boolean) -> Unit,
-    animationsEnabled: Boolean,
-) {
-    CustomSectionHeader(
-        title = "Motion Scheme",
-        subtitle = if (animationsEnabled) {
-            "Switch between Material 3 standard and expressive physics"
-        } else {
-            "Park to preview spring-based motion"
-        },
-    )
-    CustomSegmentedButton(
-        options = listOf("Standard", "Expressive"),
-        selectedIndex = if (useExpressive) 1 else 0,
-        onOptionSelected = { onSchemeChanged(it == 1) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = OemSpacing.md),
-    )
-}
-
-@Composable
 private fun SpatialMotionSection(animationsEnabled: Boolean) {
     var expanded by remember { mutableStateOf(false) }
     val motionScheme = MaterialTheme.motionScheme
@@ -607,8 +704,8 @@ private fun SpatialMotionSection(animationsEnabled: Boolean) {
     )
 
     CustomSectionHeader(
-        title = "Spatial Motion",
-        subtitle = "MaterialTheme.motionScheme.defaultSpatialSpec()",
+        title = "Spatial motion",
+        subtitle = "motionScheme.defaultSpatialSpec() — bounds and layout",
     )
     CustomCard(
         modifier = Modifier
@@ -656,8 +753,8 @@ private fun EffectsMotionSection(animationsEnabled: Boolean) {
     )
 
     CustomSectionHeader(
-        title = "Effects Motion",
-        subtitle = "MaterialTheme.motionScheme.defaultEffectsSpec()",
+        title = "Effects motion",
+        subtitle = "motionScheme.defaultEffectsSpec() — color and surface",
     )
     Box(
         modifier = Modifier
@@ -699,7 +796,7 @@ private fun SpeedComparisonSection(animationsEnabled: Boolean) {
     )
 
     CustomSectionHeader(
-        title = "Spatial Speed",
+        title = "Spatial speed tokens",
         subtitle = "fastSpatialSpec() for banners; slowSpatialSpec() for hero panels",
     )
     CustomSegmentedButton(

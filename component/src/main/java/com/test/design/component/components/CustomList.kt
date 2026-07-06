@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +49,7 @@ fun <T> CustomList(
     key: ((T) -> Any)? = null,
     style: ListItemStyle = ListItemStyle.Standard,
     scrollable: Boolean = true,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     onItemClick: ((T) -> Unit)? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
@@ -63,6 +66,7 @@ fun <T> CustomList(
         LazyColumn(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
+            flingBehavior = flingBehavior,
         ) {
             if (key != null) {
                 items(items, key = key) { item -> renderItem(item) }

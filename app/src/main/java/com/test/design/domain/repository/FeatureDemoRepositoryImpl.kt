@@ -15,10 +15,10 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         ),
         FeatureDemo(
             id = "expressive-motion",
-            title = "Expressive Motion",
-            description = "Material 3 MotionScheme spring physics — standard vs expressive, spatial and effects specs.",
+            title = "Motion Physics",
+            description = "OEM-tunable motion physics — list fling, progress fills, and M3 spring specs with live sidebar controls.",
             category = DemoCategory.DesignSystem,
-            tagline = "MotionScheme physics",
+            tagline = "OEM motion tuning",
         ),
         FeatureDemo(
             id = "component-playground",
