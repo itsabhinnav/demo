@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
@@ -35,37 +34,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.test.design.component.components.ButtonStyle
-import com.test.design.component.components.CustomAssistChip
 import com.test.design.component.components.CustomBadge
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomCard
 import com.test.design.component.components.CustomCheckbox
-import com.test.design.component.components.CustomChip
 import com.test.design.component.components.CustomCircularProgress
-import com.test.design.component.components.CustomDialog
-import com.test.design.component.components.CustomEmptyState
-import com.test.design.component.components.CustomExtendedFab
-import com.test.design.component.components.CustomFab
 import com.test.design.component.components.CustomIconButton
 import com.test.design.component.components.CustomImage
-import com.test.design.component.components.CustomInputChip
 import com.test.design.component.components.CustomLinearProgress
 import com.test.design.component.components.CustomListTile
-import com.test.design.component.components.CustomMetricCard
 import com.test.design.component.components.CustomRadioButton
 import com.test.design.component.components.CustomSearchBar
 import com.test.design.component.components.CustomSectionHeader
 import com.test.design.component.components.CustomSegmentedButtonRow
 import com.test.design.component.components.CustomSlider
-import com.test.design.component.components.CustomSnackbarMessage
-import com.test.design.component.components.CustomStatusIndicator
-import com.test.design.component.components.CustomSuggestionChip
 import com.test.design.component.components.CustomSwitch
 import com.test.design.component.components.CustomTabs
 import com.test.design.component.components.CustomTextField
-import com.test.design.component.components.FabSize
 import com.test.design.component.components.IconButtonStyle
-import com.test.design.component.components.StatusLevel
 import com.test.design.component.theme.OemSpacing
 import com.test.design.component.core.currentDrivingUxState
 import com.test.design.component.motion.OemMotion
@@ -131,15 +117,10 @@ private fun GalleryContent(
     ) {
         ButtonsSection(onCustomize = onCustomize)
         IconButtonsSection(onCustomize = onCustomize)
-        FabSection(onCustomize = onCustomize)
-        ChipsSection(onCustomize = onCustomize)
         SelectionControlsSection(onCustomize = onCustomize)
         InputsSection(onCustomize = onCustomize)
         ProgressSection(onCustomize = onCustomize)
-        MetricsSection(onCustomize = onCustomize)
         ListsSection(onCustomize = onCustomize)
-        StatusSection(onCustomize = onCustomize)
-        FeedbackSection(onCustomize = onCustomize)
         CardsAndTabsSection(onCustomize = onCustomize)
         ImagesSection(onCustomize = onCustomize)
     }
@@ -202,56 +183,6 @@ private fun IconButtonsSection(onCustomize: (String) -> Unit) {
             CustomIconButton(Icons.Default.Navigation, "Nav", {}, style = IconButtonStyle.Filled)
             CustomIconButton(Icons.Default.Notifications, "Alerts", {}, style = IconButtonStyle.Tonal)
             CustomBadge(count = 3)
-        }
-    }
-}
-
-@Composable
-private fun FabSection(onCustomize: (String) -> Unit) {
-    CustomSectionHeader(title = "FABs", subtitle = "Floating action buttons")
-    Row(
-        modifier = Modifier.padding(vertical = OemSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
-    ) {
-        GalleryComponentSlot("fab", onCustomize) {
-            CustomFab(Icons.Default.Add, "Add", {}, size = FabSize.Standard)
-        }
-        CustomFab(Icons.Default.Add, "Add large", {}, size = FabSize.Large)
-        GalleryComponentSlot("extended-fab", onCustomize) {
-            CustomExtendedFab("Navigate", Icons.Default.Navigation, {})
-        }
-    }
-}
-
-@Composable
-private fun ChipsSection(onCustomize: (String) -> Unit) {
-    var filterIndex by remember { mutableIntStateOf(0) }
-    var inputSelected by remember { mutableStateOf(false) }
-    val filters = listOf("All", "Climate", "Nav", "Media")
-
-    CustomSectionHeader(title = "Chips", subtitle = "Filter, assist, suggestion, and input chips")
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
-    ) {
-        GalleryComponentSlot("filter-chip", onCustomize) {
-            filters.forEachIndexed { i, label ->
-                CustomChip(label = label, selected = filterIndex == i, onClick = { filterIndex = i })
-            }
-        }
-    }
-    Row(
-        modifier = Modifier.padding(vertical = OemSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.sm),
-    ) {
-        GalleryComponentSlot("assist-chip", onCustomize) {
-            CustomAssistChip("Add stop", {}, leadingIcon = Icons.Default.Add)
-        }
-        GalleryComponentSlot("suggestion-chip", onCustomize) {
-            CustomSuggestionChip("Home", {})
-        }
-        GalleryComponentSlot("input-chip", onCustomize) {
-            CustomInputChip("Eco Mode", inputSelected, { inputSelected = !inputSelected })
         }
     }
 }
@@ -324,76 +255,12 @@ private fun ProgressSection(onCustomize: (String) -> Unit) {
 }
 
 @Composable
-private fun MetricsSection(onCustomize: (String) -> Unit) {
-    CustomSectionHeader(title = "Metric Cards", subtitle = "OEM dashboard value displays")
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
-    ) {
-        GalleryComponentSlot("metric-card", onCustomize, modifier = Modifier.weight(1f)) {
-            CustomMetricCard("Range", "287", "km", modifier = Modifier.fillMaxWidth())
-        }
-        CustomMetricCard("Speed", "65", "km/h", modifier = Modifier.weight(1f))
-        CustomMetricCard("Efficiency", "6.2", "km/kWh", modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
 private fun ListsSection(onCustomize: (String) -> Unit) {
     CustomSectionHeader(title = "List Tiles", subtitle = "Navigation rows with icons and chevrons")
     GalleryComponentSlot("list-tile", onCustomize) {
         CustomListTile("Vehicle settings", subtitle = "Doors, locks, mirrors", leadingIcon = Icons.Default.Settings, onClick = {})
     }
     CustomListTile("Navigation", subtitle = "Home — 12 min", leadingIcon = Icons.Default.Navigation, onClick = {})
-}
-
-@Composable
-private fun StatusSection(onCustomize: (String) -> Unit) {
-    CustomSectionHeader(title = "Status Indicators", subtitle = "Vehicle and system state")
-    Row(
-        modifier = Modifier.padding(vertical = OemSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(OemSpacing.lg),
-    ) {
-        GalleryComponentSlot("status-indicator", onCustomize) {
-            CustomStatusIndicator("Systems OK", StatusLevel.Normal)
-        }
-        CustomStatusIndicator("Low tire", StatusLevel.Warning)
-        CustomStatusIndicator("Brake fault", StatusLevel.Critical)
-        CustomStatusIndicator("OTA update", StatusLevel.Info)
-    }
-}
-
-@Composable
-private fun FeedbackSection(onCustomize: (String) -> Unit) {
-    var showDialog by remember { mutableStateOf(false) }
-    CustomSectionHeader(title = "Feedback", subtitle = "Dialogs, snackbars, empty states")
-    GalleryComponentSlot("dialog-trigger", onCustomize) {
-        CustomButton(text = "Show dialog", onClick = { showDialog = true })
-        if (showDialog) {
-            CustomDialog(
-                title = "Enable ProPILOT?",
-                message = "Driver assistance will activate on supported roads.",
-                confirmText = "Enable",
-                dismissText = "Cancel",
-                onConfirm = { showDialog = false },
-                onDismiss = { showDialog = false },
-            )
-        }
-    }
-    GalleryComponentSlot("snackbar", onCustomize) {
-        CustomSnackbarMessage(
-            message = "Route updated",
-            actionLabel = "Undo",
-            modifier = Modifier.padding(vertical = OemSpacing.md),
-        )
-    }
-    GalleryComponentSlot("empty-state", onCustomize) {
-        CustomEmptyState(
-            icon = Icons.Default.Search,
-            title = "No results",
-            message = "Try a different search term",
-        )
-    }
 }
 
 @Composable
