@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.test.design.component.components.ButtonStyle
+import com.test.design.component.components.CustomAssistChip
 import com.test.design.component.components.CustomBadge
 import com.test.design.component.components.CustomButton
 import com.test.design.component.components.CustomCard
@@ -131,22 +133,36 @@ private fun GalleryComponentSlot(
     componentId: String,
     onCustomize: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** When false, preview stays interactive and only the Customize chip opens the editor. */
+    interceptPreviewGestures: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    Box(
+    Column(
         modifier = modifier.padding(vertical = OemSpacing.xs),
-        contentAlignment = Alignment.TopStart,
+        verticalArrangement = Arrangement.spacedBy(OemSpacing.xs),
     ) {
-        content()
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .pointerInput(componentId) {
-                    detectTapGestures(
-                        onLongPress = { onCustomize(componentId) },
-                    )
-                },
-        )
+        Box(contentAlignment = Alignment.TopStart) {
+            content()
+            if (interceptPreviewGestures) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .pointerInput(componentId) {
+                            detectTapGestures(
+                                onLongPress = { onCustomize(componentId) },
+                                onTap = { onCustomize(componentId) },
+                            )
+                        },
+                )
+            }
+        }
+        if (!interceptPreviewGestures) {
+            CustomAssistChip(
+                label = "Customize",
+                onClick = { onCustomize(componentId) },
+                leadingIcon = Icons.Default.Tune,
+            )
+        }
     }
 }
 
@@ -174,7 +190,7 @@ private fun ButtonsSection(onCustomize: (String) -> Unit) {
 @Composable
 private fun IconButtonsSection(onCustomize: (String) -> Unit) {
     CustomSectionHeader(title = "Icon Buttons", subtitle = "Standard, filled, and tonal")
-    GalleryComponentSlot("icon-button", onCustomize) {
+    GalleryComponentSlot("icon-button", onCustomize, interceptPreviewGestures = false) {
         Row(
             modifier = Modifier.padding(vertical = OemSpacing.md),
             horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
@@ -195,17 +211,17 @@ private fun SelectionControlsSection(onCustomize: (String) -> Unit) {
     var segmentIndex by remember { mutableIntStateOf(0) }
 
     CustomSectionHeader(title = "Selection", subtitle = "Switch, checkbox, radio, segmented button")
-    GalleryComponentSlot("switch", onCustomize) {
+    GalleryComponentSlot("switch", onCustomize, interceptPreviewGestures = false) {
         CustomSwitch("Auto climate", switchOn, { switchOn = it })
     }
-    GalleryComponentSlot("checkbox", onCustomize) {
+    GalleryComponentSlot("checkbox", onCustomize, interceptPreviewGestures = false) {
         CustomCheckbox("Heated seats", checked, { checked = it })
     }
-    GalleryComponentSlot("radio", onCustomize) {
+    GalleryComponentSlot("radio", onCustomize, interceptPreviewGestures = false) {
         CustomRadioButton("Standard mode", radioIndex == 0, { radioIndex = 0 })
     }
     CustomRadioButton("Sport mode", radioIndex == 1, { radioIndex = 1 })
-    GalleryComponentSlot("segmented-button", onCustomize) {
+    GalleryComponentSlot("segmented-button", onCustomize, interceptPreviewGestures = false) {
         CustomSegmentedButtonRow(
             options = listOf("Off", "Auto", "Max"),
             selectedIndex = segmentIndex,
@@ -219,7 +235,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
     var search by remember { mutableStateOf("") }
     CustomSectionHeader(title = "Text Inputs", subtitle = "Outlined fields and search for in-car forms")
-    GalleryComponentSlot("search-bar", onCustomize) {
+    GalleryComponentSlot("search-bar", onCustomize, interceptPreviewGestures = false) {
         CustomSearchBar(
             query = search,
             onQueryChange = { search = it },
@@ -228,7 +244,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
             modifier = Modifier.padding(vertical = OemSpacing.sm),
         )
     }
-    GalleryComponentSlot("text-field", onCustomize) {
+    GalleryComponentSlot("text-field", onCustomize, interceptPreviewGestures = false) {
         CustomTextField(
             value = text,
             onValueChange = { text = it },
@@ -243,7 +259,7 @@ private fun InputsSection(onCustomize: (String) -> Unit) {
 private fun ProgressSection(onCustomize: (String) -> Unit) {
     var sliderValue by remember { mutableFloatStateOf(22f) }
     CustomSectionHeader(title = "Progress & Sliders", subtitle = "Temperature, volume, loading states")
-    GalleryComponentSlot("slider", onCustomize) {
+    GalleryComponentSlot("slider", onCustomize, interceptPreviewGestures = false) {
         CustomSlider(value = sliderValue, onValueChange = { sliderValue = it }, label = "Temperature °C", valueRange = 16f..30f)
     }
     GalleryComponentSlot("linear-progress", onCustomize) {
@@ -257,7 +273,7 @@ private fun ProgressSection(onCustomize: (String) -> Unit) {
 @Composable
 private fun ListsSection(onCustomize: (String) -> Unit) {
     CustomSectionHeader(title = "List Tiles", subtitle = "Navigation rows with icons and chevrons")
-    GalleryComponentSlot("list-tile", onCustomize) {
+    GalleryComponentSlot("list-tile", onCustomize, interceptPreviewGestures = false) {
         CustomListTile("Vehicle settings", subtitle = "Doors, locks, mirrors", leadingIcon = Icons.Default.Settings, onClick = {})
     }
     CustomListTile("Navigation", subtitle = "Home — 12 min", leadingIcon = Icons.Default.Navigation, onClick = {})
@@ -271,7 +287,7 @@ private fun CardsAndTabsSection(onCustomize: (String) -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(vertical = OemSpacing.md),
         horizontalArrangement = Arrangement.spacedBy(OemSpacing.md),
     ) {
-        GalleryComponentSlot("card", onCustomize, modifier = Modifier.weight(1f)) {
+        GalleryComponentSlot("card", onCustomize, modifier = Modifier.weight(1f), interceptPreviewGestures = false) {
             CustomCard(modifier = Modifier.fillMaxWidth(), onClick = {}) {
                 Text("Climate", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                 Text("22°C", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
@@ -282,7 +298,7 @@ private fun CardsAndTabsSection(onCustomize: (String) -> Unit) {
             Text("87%", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
-    GalleryComponentSlot("tabs", onCustomize) {
+    GalleryComponentSlot("tabs", onCustomize, interceptPreviewGestures = false) {
         CustomTabs(
             tabs = listOf("Overview", "Details", "Settings"),
             selectedIndex = tabIndex,
