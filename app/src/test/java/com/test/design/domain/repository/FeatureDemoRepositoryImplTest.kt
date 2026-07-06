@@ -9,6 +9,7 @@ class FeatureDemoRepositoryImplTest {
     private val repository = FeatureDemoRepositoryImpl()
 
     private val routedDemoIds = setOf(
+        "design-system",
         "components-gallery",
         "expressive-motion",
         "component-playground",
@@ -51,7 +52,7 @@ class FeatureDemoRepositoryImplTest {
     }
 
     @Test
-    fun getAll_returnsThreeMotionPhysicsDemos() {
-        assertEquals(3, repository.getAll().size)
+    fun getAll_returnsFourHomeScreenDemos() {
+        assertEquals(4, repository.getAll().size)
     }
 }

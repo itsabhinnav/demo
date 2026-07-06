@@ -7,8 +7,15 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
 
     private val demos = listOf(
         FeatureDemo(
+            id = "design-system",
+            title = "Design System",
+            description = "Oem color palette, typography, spacing, and shape tokens built for AAOS.",
+            category = DemoCategory.DesignSystem,
+            tagline = "OEM tokens & theming",
+        ),
+        FeatureDemo(
             id = "components-gallery",
-            title = "Design System Components",
+            title = "Components Gallery",
             description = "Interactive showcase of buttons, cards, chips, lists, tabs, and images.",
             category = DemoCategory.Components,
             tagline = "Reusable UI kit",
@@ -22,7 +29,7 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         ),
         FeatureDemo(
             id = "component-playground",
-            title = "Component Playground",
+            title = "Playground",
             description = "Drag components onto a canvas, customize props and layout, save, and export JSON.",
             category = DemoCategory.Components,
             tagline = "Runtime screen builder",
