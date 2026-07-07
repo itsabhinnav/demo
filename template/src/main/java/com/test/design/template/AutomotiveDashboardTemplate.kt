@@ -34,6 +34,7 @@ fun AutomotiveDashboardTemplate(
     greenZone: @Composable () -> Unit,
     yellowZone: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    showBlueZone: Boolean = true,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val windowInfo = rememberAutomotiveWindowInfo(maxWidth, maxHeight)
@@ -41,12 +42,14 @@ fun AutomotiveDashboardTemplate(
 
         CompositionLocalProvider(LocalAutomotiveWindowInfo provides windowInfo) {
             Column(modifier = Modifier.fillMaxSize()) {
-                BlueZone(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(blueZoneHeight),
-                ) {
-                    blueZone()
+                if (showBlueZone) {
+                    BlueZone(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(blueZoneHeight),
+                    ) {
+                        blueZone()
+                    }
                 }
                 Row(
                     modifier = Modifier
