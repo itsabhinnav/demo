@@ -13,9 +13,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.test.design.core.driving.DrivingUxViewModel
 import com.test.design.core.driving.LocalDrivingUxUpdater
-import com.test.design.presentation.home.HomeScreen
+import com.test.design.navigation.AppNavHost
 import com.test.design.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -32,7 +33,8 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalDrivingUxUpdater provides drivingUxViewModel::update,
                 ) {
-                    HomeScreen(
+                    AppNavHost(
+                        navController = rememberNavController(),
                         modifier = Modifier
                             .fillMaxSize()
                             .windowInsetsPadding(WindowInsets.safeDrawing),

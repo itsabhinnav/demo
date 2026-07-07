@@ -9,6 +9,9 @@ import com.test.design.theme.AppTheme
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreen()
+        HomeScreen(
+            onNavigateToMaterialComponents = {},
+            onNavigateToMotionPhysicsSample = {},
+        )
     }
 }

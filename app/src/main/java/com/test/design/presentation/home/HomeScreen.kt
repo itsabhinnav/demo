@@ -1,19 +1,30 @@
 package com.test.design.presentation.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -22,15 +33,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.driving.LocalDrivingUxUpdater
+import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.carListItemHeight
+import com.test.design.theme.carTouchTarget
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onNavigateToMaterialComponents: () -> Unit,
+    onNavigateToMotionPhysicsSample: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -69,8 +86,8 @@ fun HomeScreen(
                         .weight(0.68f)
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                        .padding(CarDesignTokens.ContentPadding),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                 ) {
                     Text(
                         text = "Welcome",
@@ -88,6 +105,18 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    HomeEntryCard(
+                        title = "Material Components",
+                        description = "Browse buttons, chips, cards, sliders, and more",
+                        icon = Icons.Default.Widgets,
+                        onClick = onNavigateToMaterialComponents,
+                    )
+                    HomeEntryCard(
+                        title = "Motion Physics Sample",
+                        description = "Tabs, lists, scroll, and expressive motion demos",
+                        icon = Icons.Default.Animation,
+                        onClick = onNavigateToMotionPhysicsSample,
+                    )
                 }
                 VerticalDivider()
                 HomeSidePanel(
@@ -99,6 +128,58 @@ fun HomeScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun HomeEntryCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+    ) {
+        ListItem(
+            modifier = Modifier.carListItemHeight(),
+            headlineContent = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                )
+            },
+            leadingContent = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            },
+        )
     }
 }
 
@@ -119,34 +200,43 @@ private fun HomeSidePanel(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(CarDesignTokens.ContentPadding),
+            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
         ) {
             Text(text = "Driving state", style = MaterialTheme.typography.titleMedium)
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
                 items(DrivingUxState.entries, key = { it.name }) { state ->
                     FilterChip(
                         selected = drivingState == state,
                         onClick = { onDrivingStateChange(state) },
-                        label = { Text(state.name) },
+                        modifier = Modifier
+                            .carTouchTarget()
+                            .height(CarDesignTokens.MinTouchTarget),
+                        label = { Text(state.name, style = MaterialTheme.typography.labelLarge) },
                     )
                 }
             }
             HorizontalDivider()
             Text(text = "Display", style = MaterialTheme.typography.titleMedium)
             ListItem(
-                headlineContent = { Text("Viewport") },
-                supportingContent = { Text("${widthDp}dp × ${heightDp}dp") },
+                modifier = Modifier.carListItemHeight(),
+                headlineContent = { Text("Viewport", style = MaterialTheme.typography.bodyLarge) },
+                supportingContent = {
+                    Text("${widthDp}dp × ${heightDp}dp", style = MaterialTheme.typography.bodyMedium)
+                },
             )
             ListItem(
-                headlineContent = { Text("Orientation") },
-                supportingContent = { Text("Landscape") },
+                modifier = Modifier.carListItemHeight(),
+                headlineContent = { Text("Orientation", style = MaterialTheme.typography.bodyLarge) },
+                supportingContent = { Text("Landscape", style = MaterialTheme.typography.bodyMedium) },
             )
             ListItem(
-                headlineContent = { Text("Motion scheme") },
+                modifier = Modifier.carListItemHeight(),
+                headlineContent = { Text("Motion scheme", style = MaterialTheme.typography.bodyLarge) },
                 supportingContent = {
                     Text(
                         if (drivingState == DrivingUxState.Parked) "Expressive" else "Standard",
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 },
             )

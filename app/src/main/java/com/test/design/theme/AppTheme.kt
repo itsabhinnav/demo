@@ -25,6 +25,7 @@ fun AppTheme(
     CompositionLocalProvider(LocalDrivingUxState provides drivingUxState) {
         MaterialTheme(
             colorScheme = AppColorScheme,
+            typography = CarTypography,
             motionScheme = motionScheme,
             content = content,
         )
