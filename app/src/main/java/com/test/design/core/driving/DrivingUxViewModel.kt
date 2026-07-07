@@ -4,7 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.test.design.component.core.DrivingUxState
+import com.test.design.core.DrivingUxState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
