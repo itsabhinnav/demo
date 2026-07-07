@@ -34,6 +34,20 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             category = DemoCategory.Components,
             tagline = "Runtime screen builder",
         ),
+        FeatureDemo(
+            id = "motion-easing-duration",
+            title = "Easing & Duration",
+            description = "Compare M3 easing curves and duration tiers for micro, component, and full-screen transitions.",
+            category = DemoCategory.DesignSystem,
+            tagline = "Timing in real use cases",
+        ),
+        FeatureDemo(
+            id = "motion-transition-patterns",
+            title = "Transition Patterns",
+            description = "Forward/back, lateral movement, card-to-full-screen transform, enter/exit, and skeleton loader choreography.",
+            category = DemoCategory.DesignSystem,
+            tagline = "Screen and container transitions",
+        ),
     )
 
     override fun getAll(): List<FeatureDemo> = demos

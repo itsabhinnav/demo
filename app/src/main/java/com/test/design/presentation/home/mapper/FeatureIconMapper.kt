@@ -31,6 +31,8 @@ fun mapFeatureIcon(feature: FeatureDemo): ImageVector {
         "accessibility-audit" -> Icons.Default.AccessibilityNew
         "figma-checklist" -> Icons.Default.Checklist
         "expressive-motion" -> Icons.Default.Animation
+        "motion-easing-duration" -> Icons.Default.Animation
+        "motion-transition-patterns" -> Icons.Default.Animation
         "driving-ux" -> Icons.Default.DirectionsCar
         "components-gallery" -> Icons.Default.Widgets
         "component-state-matrix" -> Icons.Default.GridOn

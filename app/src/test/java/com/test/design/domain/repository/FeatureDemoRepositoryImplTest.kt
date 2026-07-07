@@ -13,6 +13,8 @@ class FeatureDemoRepositoryImplTest {
         "components-gallery",
         "expressive-motion",
         "component-playground",
+        "motion-easing-duration",
+        "motion-transition-patterns",
     )
 
     @Test
@@ -52,7 +54,7 @@ class FeatureDemoRepositoryImplTest {
     }
 
     @Test
-    fun getAll_returnsFourHomeScreenDemos() {
-        assertEquals(4, repository.getAll().size)
+    fun getAll_returnsSixHomeScreenDemos() {
+        assertEquals(6, repository.getAll().size)
     }
 }
