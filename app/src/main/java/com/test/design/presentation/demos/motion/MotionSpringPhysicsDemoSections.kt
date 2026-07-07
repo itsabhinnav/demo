@@ -79,21 +79,48 @@ import androidx.compose.ui.unit.dp
 import com.test.design.component.theme.OemSpacing
 import kotlinx.coroutines.delay
 
+enum class MotionPhysicsSectionSet {
+    All,
+    Primary,
+    Secondary,
+}
+
 @Composable
-fun MotionPhysicsComponentsSection(animationsEnabled: Boolean) {
-    ButtonsSection(animationsEnabled = animationsEnabled)
-    IconButtonsSection(animationsEnabled = animationsEnabled)
-    FabSection(animationsEnabled = animationsEnabled)
-    SelectionControlsSection(animationsEnabled = animationsEnabled)
-    SliderSection(animationsEnabled = animationsEnabled)
-    ChipsSection(animationsEnabled = animationsEnabled)
-    SegmentedControlsSection(animationsEnabled = animationsEnabled)
-    TabsSection(animationsEnabled = animationsEnabled)
-    NavigationSection(animationsEnabled = animationsEnabled)
-    ProgressSection(animationsEnabled = animationsEnabled)
-    CardsSection(animationsEnabled = animationsEnabled)
-    BadgeSection(animationsEnabled = animationsEnabled)
-    ListSection(animationsEnabled = animationsEnabled)
+fun MotionPhysicsComponentsSection(
+    animationsEnabled: Boolean,
+    sections: MotionPhysicsSectionSet = MotionPhysicsSectionSet.All,
+) {
+    when (sections) {
+        MotionPhysicsSectionSet.All, MotionPhysicsSectionSet.Primary -> {
+            ButtonsSection(animationsEnabled = animationsEnabled)
+            IconButtonsSection(animationsEnabled = animationsEnabled)
+            FabSection(animationsEnabled = animationsEnabled)
+            SelectionControlsSection(animationsEnabled = animationsEnabled)
+            SliderSection(animationsEnabled = animationsEnabled)
+            ChipsSection(animationsEnabled = animationsEnabled)
+            SegmentedControlsSection(animationsEnabled = animationsEnabled)
+        }
+        MotionPhysicsSectionSet.Secondary -> Unit
+    }
+    when (sections) {
+        MotionPhysicsSectionSet.All -> {
+            TabsSection(animationsEnabled = animationsEnabled)
+            NavigationSection(animationsEnabled = animationsEnabled)
+            ProgressSection(animationsEnabled = animationsEnabled)
+            CardsSection(animationsEnabled = animationsEnabled)
+            BadgeSection(animationsEnabled = animationsEnabled)
+            ListSection(animationsEnabled = animationsEnabled)
+        }
+        MotionPhysicsSectionSet.Primary -> Unit
+        MotionPhysicsSectionSet.Secondary -> {
+            TabsSection(animationsEnabled = animationsEnabled)
+            NavigationSection(animationsEnabled = animationsEnabled)
+            ProgressSection(animationsEnabled = animationsEnabled)
+            CardsSection(animationsEnabled = animationsEnabled)
+            BadgeSection(animationsEnabled = animationsEnabled)
+            ListSection(animationsEnabled = animationsEnabled)
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

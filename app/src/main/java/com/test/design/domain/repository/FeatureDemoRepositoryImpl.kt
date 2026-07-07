@@ -22,10 +22,10 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
         ),
         FeatureDemo(
             id = "expressive-motion",
-            title = "Motion Physics",
-            description = "OEM-tunable motion physics — list fling, progress fills, and M3 spring specs with live sidebar controls.",
+            title = "Expressive Components",
+            description = "M3 MotionScheme springs on individual Jetpack components — compare Standard vs Expressive in 1920×720 landscape.",
             category = DemoCategory.DesignSystem,
-            tagline = "OEM motion tuning",
+            tagline = "Component spring physics",
         ),
         FeatureDemo(
             id = "component-playground",
@@ -35,18 +35,11 @@ class FeatureDemoRepositoryImpl : FeatureDemoRepository {
             tagline = "Runtime screen builder",
         ),
         FeatureDemo(
-            id = "motion-easing-duration",
-            title = "Easing & Duration",
-            description = "Compare M3 easing curves and duration tiers for micro, component, and full-screen transitions.",
-            category = DemoCategory.DesignSystem,
-            tagline = "Timing in real use cases",
-        ),
-        FeatureDemo(
             id = "motion-transition-patterns",
             title = "Transition Patterns",
-            description = "Forward/back, lateral movement, card-to-full-screen transform, enter/exit, and skeleton loader choreography.",
+            description = "Six M3 patterns for AAOS — container transform, forward/back, lateral, top level, enter/exit, and skeleton loaders with easing specs.",
             category = DemoCategory.DesignSystem,
-            tagline = "Screen and container transitions",
+            tagline = "Screen transitions & easing",
         ),
     )
 

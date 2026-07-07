@@ -1,14 +1,14 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /workspace/template/src/main/AndroidManifest.xml:2:1-13
-INJECTED from /workspace/template/src/main/AndroidManifest.xml:2:1-13
+ADDED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml:2:1-13
+INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml:2:1-13
 	package
-		INJECTED from /workspace/template/src/main/AndroidManifest.xml
+		INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml
 uses-sdk
-INJECTED from /workspace/template/src/main/AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from /workspace/template/src/main/AndroidManifest.xml
-INJECTED from /workspace/template/src/main/AndroidManifest.xml
+INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml
+INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml
 	android:targetSdkVersion
-		INJECTED from /workspace/template/src/main/AndroidManifest.xml
+		INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from /workspace/template/src/main/AndroidManifest.xml
+		INJECTED from C:\workspace\sources\Design\template\src\main\AndroidManifest.xml

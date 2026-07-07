@@ -13,9 +13,8 @@ import com.test.design.presentation.demos.matrix.ComponentStateMatrixDemo
 import com.test.design.presentation.demos.playground.ComponentPlaygroundDemo
 import com.test.design.presentation.demos.designsystem.DesignSystemDemo
 import com.test.design.presentation.demos.lists.ListsGridsDemo
-import com.test.design.presentation.demos.motion.ExpressiveMotionDemo
-import com.test.design.presentation.demos.motion.EasingDurationDemo
-import com.test.design.presentation.demos.motion.TransitionPatternsDemo
+import com.test.design.presentation.demos.motion.AaosExpressiveComponentsDemo
+import com.test.design.presentation.demos.motion.AaosTransitionShowcaseDemo
 import com.test.design.presentation.demos.restricted.RestrictedUxDemo
 import com.test.design.presentation.demos.specs.ComponentSpecsDemo
 import com.test.design.presentation.demos.tabs.TabsDemo
@@ -37,9 +36,8 @@ fun DemoContentRouter(
         "token-browser" -> TokenBrowserDemo(onBack = onNavigateBack, modifier = modifier)
         "accessibility-audit" -> AccessibilityAuditDemo(onBack = onNavigateBack, modifier = modifier)
         "figma-checklist" -> FigmaChecklistDemo(onBack = onNavigateBack, modifier = modifier)
-        "expressive-motion" -> ExpressiveMotionDemo(onBack = onNavigateBack, modifier = modifier)
-        "motion-easing-duration" -> EasingDurationDemo(onBack = onNavigateBack, modifier = modifier)
-        "motion-transition-patterns" -> TransitionPatternsDemo(onBack = onNavigateBack, modifier = modifier)
+        "expressive-motion" -> AaosExpressiveComponentsDemo(onBack = onNavigateBack, modifier = modifier)
+        "motion-transition-patterns" -> AaosTransitionShowcaseDemo(onBack = onNavigateBack, modifier = modifier)
         "components-gallery" -> ComponentsGalleryDemo(onBack = onNavigateBack, modifier = modifier)
         "component-state-matrix" -> ComponentStateMatrixDemo(onBack = onNavigateBack, modifier = modifier)
         "component-specs" -> ComponentSpecsDemo(onBack = onNavigateBack, modifier = modifier)
