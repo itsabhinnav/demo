@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Card
@@ -39,6 +40,10 @@ import androidx.compose.ui.unit.dp
 import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.driving.LocalDrivingUxUpdater
+import com.test.design.core.motion.AppMotionScheme
+import com.test.design.core.motion.LocalAppMotionScheme
+import com.test.design.core.motion.LocalEffectiveMotionScheme
+import com.test.design.core.motion.LocalMotionSchemeUpdater
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
 import com.test.design.theme.carTouchTarget
@@ -48,6 +53,7 @@ import com.test.design.theme.carTouchTarget
 fun HomeScreen(
     onNavigateToIviDemo: () -> Unit,
     onNavigateToMaterialComponents: () -> Unit,
+    onNavigateToMotionLab: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -97,6 +103,12 @@ fun HomeScreen(
                         description = "Browse buttons, chips, cards, sliders, and more",
                         icon = Icons.Default.Widgets,
                         onClick = onNavigateToMaterialComponents,
+                    )
+                    HomeEntryCard(
+                        title = "Motion System Lab",
+                        description = "Springs, transitions, and M3 motion tokens",
+                        icon = Icons.Default.Animation,
+                        onClick = onNavigateToMotionLab,
                     )
                 }
                 VerticalDivider()
@@ -172,6 +184,10 @@ private fun HomeSidePanel(
 ) {
     val drivingState = LocalDrivingUxState.current
     val onDrivingStateChange = LocalDrivingUxUpdater.current
+    val selectedMotionScheme = LocalAppMotionScheme.current
+    val effectiveMotionScheme = LocalEffectiveMotionScheme.current
+    val onMotionSchemeChange = LocalMotionSchemeUpdater.current
+    val motionLocked = drivingState != DrivingUxState.Parked
 
     Surface(
         modifier = modifier,
@@ -198,6 +214,28 @@ private fun HomeSidePanel(
                 }
             }
             HorizontalDivider()
+            Text(text = "Motion scheme", style = MaterialTheme.typography.titleMedium)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
+                items(AppMotionScheme.entries, key = { it.name }) { scheme ->
+                    FilterChip(
+                        selected = selectedMotionScheme == scheme,
+                        onClick = { onMotionSchemeChange(scheme) },
+                        enabled = !motionLocked || scheme == AppMotionScheme.Standard,
+                        modifier = Modifier
+                            .carTouchTarget()
+                            .height(CarDesignTokens.MinTouchTarget),
+                        label = { Text(scheme.label, style = MaterialTheme.typography.labelLarge) },
+                    )
+                }
+            }
+            if (motionLocked) {
+                Text(
+                    text = "Driving forces Standard motion for safety.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            HorizontalDivider()
             Text(text = "Display", style = MaterialTheme.typography.titleMedium)
             ListItem(
                 modifier = Modifier.carListItemHeight(),
@@ -216,7 +254,12 @@ private fun HomeSidePanel(
                 headlineContent = { Text("Motion scheme", style = MaterialTheme.typography.bodyLarge) },
                 supportingContent = {
                     Text(
-                        if (drivingState == DrivingUxState.Parked) "Expressive" else "Standard",
+                        text = buildString {
+                            append(effectiveMotionScheme.label)
+                            if (effectiveMotionScheme != selectedMotionScheme) {
+                                append(" (selected ${selectedMotionScheme.label})")
+                            }
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 },

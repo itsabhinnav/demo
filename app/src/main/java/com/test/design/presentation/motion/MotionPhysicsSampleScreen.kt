@@ -33,7 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -50,11 +49,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.test.design.core.motion.LocalEffectiveMotionScheme
+import com.test.design.presentation.motion.components.MotionSpringShowcase
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
 import com.test.design.theme.carTouchTarget
 
 private enum class MotionTab(val label: String) {
+    Springs("Springs"),
     List("List"),
     Scroll("Scroll"),
     Cards("Cards"),
@@ -67,33 +69,28 @@ fun MotionPhysicsSampleScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    MaterialTheme(
-        colorScheme = MaterialTheme.colorScheme,
-        typography = MaterialTheme.typography,
-        shapes = MaterialTheme.shapes,
-        motionScheme = MotionScheme.expressive(),
-    ) {
-        var selectedTabIndex by remember { mutableIntStateOf(0) }
-        val tabs = MotionTab.entries
+    val activeScheme = LocalEffectiveMotionScheme.current
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = MotionTab.entries
 
-        Scaffold(
-            modifier = modifier,
-            topBar = {
-                Column {
-                    TopAppBar(
-                        title = {
-                            Column {
-                                Text(
-                                    text = "Motion Physics Sample",
-                                    style = MaterialTheme.typography.titleLarge,
-                                )
-                                Text(
-                                    text = "Material 3 expressive motion scheme",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        },
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            Column {
+                TopAppBar(
+                    title = {
+                        Column {
+                            Text(
+                                text = "Motion System Lab",
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Text(
+                                text = "Scheme: ${activeScheme.label}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
                         navigationIcon = {
                             IconButton(
                                 onClick = onBack,
@@ -146,6 +143,7 @@ fun MotionPhysicsSampleScreen(
                 label = "motion_tab_content",
             ) { tabIndex ->
                 when (tabs[tabIndex]) {
+                    MotionTab.Springs -> MotionSpringShowcase()
                     MotionTab.List -> ListTabContent()
                     MotionTab.Scroll -> ScrollTabContent()
                     MotionTab.Cards -> CardsTabContent()
@@ -153,7 +151,6 @@ fun MotionPhysicsSampleScreen(
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -407,8 +404,8 @@ private fun ControlsTabContent() {
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = "MotionScheme.expressive() is applied on this screen for tab, chip, " +
-                        "switch, and content transitions.",
+                    text = "Uses MaterialTheme.motionScheme from home (Standard, Expressive, or Custom). " +
+                        "Tab, chip, switch, and content transitions all inherit the active scheme.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )

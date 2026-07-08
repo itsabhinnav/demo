@@ -16,6 +16,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.test.design.core.driving.DrivingUxViewModel
 import com.test.design.core.driving.LocalDrivingUxUpdater
+import com.test.design.core.motion.LocalMotionSchemeUpdater
+import com.test.design.core.motion.MotionSchemeViewModel
 import com.test.design.navigation.AppNavHost
 import com.test.design.theme.AppTheme
 
@@ -27,11 +29,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val drivingUxViewModel: DrivingUxViewModel = viewModel()
+            val motionSchemeViewModel: MotionSchemeViewModel = viewModel()
             val drivingState by drivingUxViewModel.drivingUxState.collectAsStateWithLifecycle()
+            val motionScheme by motionSchemeViewModel.motionScheme.collectAsStateWithLifecycle()
 
-            AppTheme(drivingUxState = drivingState) {
+            AppTheme(
+                drivingUxState = drivingState,
+                appMotionScheme = motionScheme,
+            ) {
                 CompositionLocalProvider(
                     LocalDrivingUxUpdater provides drivingUxViewModel::update,
+                    LocalMotionSchemeUpdater provides motionSchemeViewModel::update,
                 ) {
                     AppNavHost(
                         navController = rememberNavController(),

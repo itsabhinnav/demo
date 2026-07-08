@@ -2,13 +2,12 @@ package com.test.design.presentation.ivi
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
 import com.test.design.theme.CarTypography
 import com.test.design.theme.ExpressiveShapes
 
 /**
- * Wraps IVI demo screens with Material 3 Expressive motion and typography.
+ * IVI screens inherit the app-wide [MaterialTheme.motionScheme] from [AppTheme].
  */
 @Composable
 fun IviExpressiveTheme(
@@ -19,7 +18,7 @@ fun IviExpressiveTheme(
         colorScheme = colorScheme,
         typography = CarTypography,
         shapes = ExpressiveShapes,
-        motionScheme = MotionScheme.expressive(),
+        motionScheme = MaterialTheme.motionScheme,
         content = content,
     )
 }
