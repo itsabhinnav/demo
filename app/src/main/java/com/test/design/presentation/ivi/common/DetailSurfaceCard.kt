@@ -10,15 +10,55 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.DetailCardExpandedRadii
+import com.test.design.theme.DetailCardRestRadii
 import com.test.design.theme.ExpressiveShapes
+import com.test.design.theme.MorphingCornerRadii
+import com.test.design.theme.rememberMorphingRoundedShape
 
 @Composable
 fun DetailSurfaceCard(
     modifier: Modifier = Modifier,
     emphasized: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    DetailSurfaceCard(
+        modifier = modifier,
+        emphasized = emphasized,
+        shape = ExpressiveShapes.large,
+        content = content,
+    )
+}
+
+@Composable
+fun MorphingDetailSurfaceCard(
+    morphExpanded: Boolean,
+    modifier: Modifier = Modifier,
+    emphasized: Boolean = false,
+    compactRadii: MorphingCornerRadii = DetailCardRestRadii,
+    expandedRadii: MorphingCornerRadii = DetailCardExpandedRadii,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = rememberMorphingRoundedShape(
+        target = if (morphExpanded) expandedRadii else compactRadii,
+    )
+    DetailSurfaceCard(
+        modifier = modifier,
+        emphasized = emphasized,
+        shape = shape,
+        content = content,
+    )
+}
+
+@Composable
+private fun DetailSurfaceCard(
+    modifier: Modifier = Modifier,
+    emphasized: Boolean = false,
+    shape: Shape,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
@@ -32,7 +72,7 @@ fun DetailSurfaceCard(
             scaleX = scale
             scaleY = scale
         },
-        shape = ExpressiveShapes.large,
+        shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),

@@ -18,6 +18,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -102,6 +103,7 @@ fun PlaybackProgressSection(
     elapsedLabel: String,
     durationLabel: String,
     modifier: Modifier = Modifier,
+    progressShape: Shape = MediaAlbumShape,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         LinearProgressIndicator(
@@ -109,7 +111,7 @@ fun PlaybackProgressSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(10.dp)
-                .clip(MediaAlbumShape),
+                .clip(progressShape),
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(elapsedLabel, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)

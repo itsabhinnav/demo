@@ -33,8 +33,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -50,13 +50,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.test.design.core.motion.LocalEffectiveMotionScheme
+import com.test.design.presentation.motion.components.MotionSchemeCompare
 import com.test.design.presentation.motion.components.MotionSpringShowcase
+import com.test.design.presentation.motion.components.MotionTokenReference
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
 import com.test.design.theme.carTouchTarget
 
 private enum class MotionTab(val label: String) {
     Springs("Springs"),
+    Tokens("Tokens"),
+    Compare("Compare"),
     List("List"),
     Scroll("Scroll"),
     Cards("Cards"),
@@ -107,9 +111,10 @@ fun MotionPhysicsSampleScreen(
                             containerColor = MaterialTheme.colorScheme.surface,
                         ),
                     )
-                    PrimaryTabRow(
+                    ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex,
                         modifier = Modifier.height(CarDesignTokens.MinTouchTarget),
+                        edgePadding = CarDesignTokens.ContentPadding,
                     ) {
                         tabs.forEachIndexed { index, tab ->
                             Tab(
@@ -144,6 +149,8 @@ fun MotionPhysicsSampleScreen(
             ) { tabIndex ->
                 when (tabs[tabIndex]) {
                     MotionTab.Springs -> MotionSpringShowcase()
+                    MotionTab.Tokens -> MotionTokenReference()
+                    MotionTab.Compare -> MotionSchemeCompare()
                     MotionTab.List -> ListTabContent()
                     MotionTab.Scroll -> ScrollTabContent()
                     MotionTab.Cards -> CardsTabContent()
@@ -155,14 +162,16 @@ fun MotionPhysicsSampleScreen(
 
 @Composable
 private fun ListTabContent() {
-    val items = remember {
-        listOf(
-            "Spring-damped list transitions" to Icons.Default.MusicNote,
-            "Expressive tab indicator motion" to Icons.Default.Favorite,
-            "Shared-axis content fades" to Icons.Default.Place,
-            "Physics-based chip selection" to Icons.Default.Settings,
-            "Container transform cards" to Icons.Default.MusicNote,
-            "Emphasized deceleration curves" to Icons.Default.Favorite,
+    var items by remember {
+        mutableStateOf(
+            listOf(
+                "Spring-damped list transitions" to Icons.Default.MusicNote,
+                "Expressive tab indicator motion" to Icons.Default.Favorite,
+                "Shared-axis content fades" to Icons.Default.Place,
+                "Physics-based chip selection" to Icons.Default.Settings,
+                "Container transform cards" to Icons.Default.MusicNote,
+                "Emphasized deceleration curves" to Icons.Default.Favorite,
+            ),
         )
     }
 
@@ -172,15 +181,29 @@ private fun ListTabContent() {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         item {
-            Text(
-                text = "List motion",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = CarDesignTokens.TouchTargetSpacing),
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
+                Text(
+                    text = "List motion",
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    text = "Reorder rows to see spring-damped item placement.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FilterChip(
+                    selected = false,
+                    onClick = { items = items.shuffled() },
+                    modifier = Modifier.carTouchTarget(),
+                    label = { Text("Shuffle list", style = MaterialTheme.typography.labelLarge) },
+                )
+            }
         }
         items(items, key = { it.first }) { (title, icon) ->
             ListItem(
-                modifier = Modifier.carListItemHeight(),
+                modifier = Modifier
+                    .animateItem()
+                    .carListItemHeight(),
                 headlineContent = {
                     Text(title, style = MaterialTheme.typography.bodyLarge)
                 },

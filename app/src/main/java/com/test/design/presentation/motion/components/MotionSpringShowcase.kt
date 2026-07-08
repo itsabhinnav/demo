@@ -31,6 +31,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -39,8 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import com.test.design.core.motion.LocalEffectiveMotionScheme
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
@@ -50,6 +54,7 @@ import kotlin.math.roundToInt
 @Composable
 fun MotionSpringShowcase(modifier: Modifier = Modifier) {
     val scheme = LocalEffectiveMotionScheme.current
+    val haptic = LocalHapticFeedback.current
     var spatialTrigger by remember { mutableIntStateOf(0) }
     var effectsTrigger by remember { mutableIntStateOf(0) }
     var expanded by remember { mutableStateOf(false) }
@@ -65,6 +70,17 @@ fun MotionSpringShowcase(modifier: Modifier = Modifier) {
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
         label = "effects_demo",
     )
+
+    LaunchedEffect(spatialTrigger) {
+        if (spatialTrigger == 0) return@LaunchedEffect
+        delay(480)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+    }
+    LaunchedEffect(effectsTrigger) {
+        if (effectsTrigger == 0) return@LaunchedEffect
+        delay(420)
+        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+    }
 
     Column(
         modifier = modifier
