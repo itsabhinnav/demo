@@ -55,7 +55,13 @@ fun SharedTransitionScope.VehicleScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {
-            WidgetScreenHeader(title = "Vehicle", onBack = onBack)
+            WidgetScreenHeader(
+                title = "Vehicle",
+                onBack = onBack,
+                widgetIcon = DashboardWidget.Vehicle.icon,
+                sharedElementKey = DashboardWidget.Vehicle.sharedElementKey,
+                animatedVisibilityScope = animatedVisibilityScope,
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

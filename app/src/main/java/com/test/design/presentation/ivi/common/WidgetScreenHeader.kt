@@ -1,5 +1,8 @@
 package com.test.design.presentation.ivi.common
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -22,6 +26,59 @@ fun WidgetScreenHeader(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     trailingContent: @Composable () -> Unit = {},
+) {
+    WidgetScreenHeaderContent(
+        title = title,
+        onBack = onBack,
+        modifier = modifier,
+        trailingContent = trailingContent,
+    )
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.WidgetScreenHeader(
+    title: String,
+    onBack: () -> Unit,
+    widgetIcon: ImageVector,
+    sharedElementKey: String,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+    trailingContent: @Composable () -> Unit = {},
+) {
+    WidgetScreenHeaderContent(
+        title = title,
+        onBack = onBack,
+        modifier = modifier,
+        trailingContent = trailingContent,
+        iconContent = {
+            Icon(
+                imageVector = widgetIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(CarDesignTokens.PrimaryIcon)
+                    .sharedElement(
+                        rememberSharedContentState(key = "${sharedElementKey}_icon"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ),
+                tint = MaterialTheme.colorScheme.onBackground,
+            )
+        },
+        titleModifier = Modifier.sharedElement(
+            rememberSharedContentState(key = "${sharedElementKey}_title"),
+            animatedVisibilityScope = animatedVisibilityScope,
+        ),
+    )
+}
+
+@Composable
+private fun WidgetScreenHeaderContent(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    trailingContent: @Composable () -> Unit = {},
+    iconContent: @Composable (() -> Unit)? = null,
+    titleModifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -38,11 +95,18 @@ fun WidgetScreenHeader(
                 modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
             )
         }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            iconContent?.invoke()
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = titleModifier,
+            )
+        }
         trailingContent()
     }
 }

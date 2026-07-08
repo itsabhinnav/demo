@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,9 +48,11 @@ import com.test.design.presentation.ivi.media.components.MorphingPlayPauseButton
 import com.test.design.presentation.ivi.media.components.PlaybackProgressSection
 import com.test.design.presentation.ivi.media.components.RepeatModeLabel
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.MediaAlbumShape
+import com.test.design.theme.MediaAlbumCompactRadii
+import com.test.design.theme.MediaAlbumExpandedRadii
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
+import com.test.design.theme.rememberMorphingRoundedShape
 
 private val QueuePanelWidth = 400.dp
 
@@ -67,6 +70,9 @@ fun SharedTransitionScope.MediaPlayerScreen(
         targetValue = if (uiState.isQueueVisible) QueuePanelWidth else 0.dp,
         animationSpec = spatialSpec,
         label = "queue_panel_width",
+    )
+    val albumShape = rememberMorphingRoundedShape(
+        target = if (uiState.isPlaying) MediaAlbumExpandedRadii else MediaAlbumCompactRadii,
     )
 
     Box(
@@ -90,6 +96,7 @@ fun SharedTransitionScope.MediaPlayerScreen(
                 onEvent = onEvent,
                 onBack = onBack,
                 animatedVisibilityScope = animatedVisibilityScope,
+                albumShape = albumShape,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
@@ -117,13 +124,20 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
     onEvent: (MediaEvent) -> Unit,
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    albumShape: Shape,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
     ) {
-        WidgetScreenHeader(title = "Media", onBack = onBack)
+        WidgetScreenHeader(
+            title = "Media",
+            onBack = onBack,
+            widgetIcon = DashboardWidget.Media.icon,
+            sharedElementKey = DashboardWidget.Media.sharedElementKey,
+            animatedVisibilityScope = animatedVisibilityScope,
+        )
 
         MediaSourceChips(
             selected = uiState.source,
@@ -145,7 +159,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
                         rememberSharedContentState(key = "album_art"),
                         animatedVisibilityScope = animatedVisibilityScope,
                     )
-                    .clip(MediaAlbumShape)
+                    .clip(albumShape)
                     .background(
                         Brush.linearGradient(
                             colors = listOf(

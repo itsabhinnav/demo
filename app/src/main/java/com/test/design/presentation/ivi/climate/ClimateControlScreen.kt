@@ -42,10 +42,12 @@ import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.ClimateDialShape
+import com.test.design.theme.ClimateDialCompactRadii
+import com.test.design.theme.ClimateDialExpandedRadii
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
 import com.test.design.theme.climateColorScheme
+import com.test.design.theme.rememberMorphingRoundedShape
 import com.test.design.theme.temperatureToFraction
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -69,6 +71,9 @@ fun SharedTransitionScope.ClimateControlScreen(
         targetValue = dynamicScheme.background,
         animationSpec = motionSpec,
         label = "climate_bg",
+    )
+    val dialShape = rememberMorphingRoundedShape(
+        target = if (uiState.isAcEnabled) ClimateDialExpandedRadii else ClimateDialCompactRadii,
     )
 
     MaterialTheme(
@@ -98,6 +103,9 @@ fun SharedTransitionScope.ClimateControlScreen(
                 WidgetScreenHeader(
                     title = "Climate",
                     onBack = onBack,
+                    widgetIcon = DashboardWidget.Climate.icon,
+                    sharedElementKey = DashboardWidget.Climate.sharedElementKey,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     trailingContent = {
                         Switch(
                             checked = uiState.isAcEnabled,
@@ -127,7 +135,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                             Box(
                                 modifier = Modifier
                                     .size(240.dp)
-                                    .clip(ClimateDialShape)
+                                    .clip(dialShape)
                                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
                                 contentAlignment = Alignment.Center,
                             ) {

@@ -70,7 +70,11 @@ fun SharedTransitionScope.DashboardWidgetCard(
                 contentDescription = null,
                 modifier = Modifier
                     .size(CarDesignTokens.PrimaryIcon)
-                    .carTouchTarget(),
+                    .carTouchTarget()
+                    .sharedElement(
+                        rememberSharedContentState(key = "${widget.sharedElementKey}_icon"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ),
                 tint = contentColor,
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -80,6 +84,10 @@ fun SharedTransitionScope.DashboardWidgetCard(
                     color = contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.sharedElement(
+                        rememberSharedContentState(key = "${widget.sharedElementKey}_title"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ),
                 )
                 if (!isExpanded) {
                     Text(

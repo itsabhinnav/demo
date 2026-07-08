@@ -1,5 +1,7 @@
 package com.test.design.presentation.ivi.dashboard
 
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -7,6 +9,8 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -57,6 +61,17 @@ fun IviDemoScreen(
     val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
 
     IviExpressiveTheme {
+        val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
+        BackHandler(enabled = dashboardState.expandedWidget != null, onBack = collapseWidget)
+        PredictiveBackHandler(enabled = dashboardState.expandedWidget != null) { progress ->
+            try {
+                progress.collect { }
+                collapseWidget()
+            } catch (_: kotlinx.coroutines.CancellationException) {
+                // Gesture cancelled — keep expanded state.
+            }
+        }
+
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
@@ -81,14 +96,27 @@ fun IviDemoScreen(
                     }
                 },
             ) { padding ->
-                val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
+                val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+                val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
                 AnimatedContent(
                     targetState = dashboardState.expandedWidget,
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize(),
                     transitionSpec = {
-                        fadeIn(animationSpec = motionSpec) togetherWith fadeOut(animationSpec = motionSpec)
+                        (
+                            fadeIn(animationSpec = effectsSpec) +
+                                scaleIn(
+                                    initialScale = 0.92f,
+                                    animationSpec = spatialSpec,
+                                )
+                            ) togetherWith (
+                            fadeOut(animationSpec = effectsSpec) +
+                                scaleOut(
+                                    targetScale = 0.92f,
+                                    animationSpec = spatialSpec,
+                                )
+                            )
                     },
                     label = "dashboard_container_transform",
                 ) { expandedWidget ->
@@ -103,25 +131,25 @@ fun IviDemoScreen(
                             uiState = climateState,
                             activeTemperature = climateViewModel.activeTemperature(),
                             onEvent = climateViewModel::onEvent,
-                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
                         )
                         DashboardWidget.Media -> MediaPlayerScreen(
                             uiState = mediaState,
                             onEvent = mediaViewModel::onEvent,
-                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
                         )
                         DashboardWidget.Navigation -> NavigationScreen(
                             uiState = navigationState,
                             onEvent = navigationViewModel::onEvent,
-                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
                         )
                         DashboardWidget.Vehicle -> VehicleScreen(
                             uiState = vehicleState,
                             onEvent = vehicleViewModel::onEvent,
-                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
                         )
                     }

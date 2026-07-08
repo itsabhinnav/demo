@@ -85,6 +85,9 @@ fun SharedTransitionScope.NavigationScreen(
                 WidgetScreenHeader(
                     title = "Navigation",
                     onBack = onBack,
+                    widgetIcon = DashboardWidget.Navigation.icon,
+                    sharedElementKey = DashboardWidget.Navigation.sharedElementKey,
+                    animatedVisibilityScope = animatedVisibilityScope,
                     modifier = Modifier.padding(horizontal = CarDesignTokens.TouchTargetSpacing),
                     trailingContent = {
                         FilterChip(
