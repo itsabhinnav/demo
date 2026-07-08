@@ -29,7 +29,7 @@ import com.test.design.presentation.ivi.vehicle.components.AnimatedStatCounter
 import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSelector
 import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
 import com.test.design.presentation.ivi.vehicle.components.VehicleMotionStudio
-import com.test.design.presentation.ivi.vehicle.components.VehicleSchematic
+import com.test.design.presentation.ivi.vehicle.components.VehicleSystemsPanel
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.VehicleCardActiveRadii
@@ -71,11 +71,6 @@ fun SharedTransitionScope.VehicleScreen(
             targetValue = dynamicScheme.background,
             animationSpec = motionSpec,
             label = "vehicle_bg",
-        )
-        val driveAccent by animateColorAsState(
-            targetValue = MaterialTheme.colorScheme.primary,
-            animationSpec = motionSpec,
-            label = "drive_accent",
         )
 
         Box(
@@ -141,11 +136,13 @@ fun SharedTransitionScope.VehicleScreen(
                             .fillMaxHeight(),
                         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                     ) {
-                        VehicleSchematic(
-                            tires = uiState.tirePressures,
-                            selectedPosition = uiState.selectedTirePosition,
-                            driveModeAccent = driveAccent,
-                            onTireClick = { onEvent(VehicleEvent.CycleTirePressure(it)) },
+                        VehicleSystemsPanel(
+                            systems = uiState.systems,
+                            regenLevel = uiState.regenLevel,
+                            selectedSystemId = uiState.selectedSystemId,
+                            isCharging = uiState.isCharging,
+                            onRegenClick = { onEvent(VehicleEvent.CycleRegenLevel) },
+                            onSystemClick = { onEvent(VehicleEvent.SelectSystem(it)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),

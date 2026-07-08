@@ -19,25 +19,38 @@ class VehicleViewModel : MviViewModel<VehicleUiState, VehicleEvent>(VehicleUiSta
                     motionPreviewTrigger = motionPreviewTrigger + 1,
                 )
             }
-            VehicleEvent.ReplayMotionPreview -> setState {
-                copy(motionPreviewTrigger = motionPreviewTrigger + 1)
-            }
-            VehicleEvent.ToggleCharging -> setState { copy(isCharging = !isCharging) }
-            is VehicleEvent.CycleTirePressure -> setState {
+            is VehicleEvent.SelectSystem -> setState {
                 copy(
-                    selectedTirePosition = event.position,
-                    tirePressures = tirePressures.map { tire ->
-                        if (tire.position != event.position) tire
+                    selectedSystemId = event.id,
+                    systems = systems.map { system ->
+                        if (system.id != event.id) system
                         else {
-                            val nextPsi = if (tire.psi >= 38) 32 else tire.psi + 1
-                            tire.copy(
-                                psi = nextPsi,
-                                isOptimal = nextPsi in TirePressure.OPTIMAL_MIN_PSI..TirePressure.OPTIMAL_MAX_PSI,
+                            val next = when {
+                                system.valuePercent >= 95 -> 38
+                                system.valuePercent >= 70 -> system.valuePercent - 8
+                                else -> system.valuePercent + 12
+                            }.coerceIn(20, 100)
+                            system.copy(
+                                valuePercent = next,
+                                health = when {
+                                    next >= 75 -> SystemHealth.Good
+                                    next >= 50 -> SystemHealth.Caution
+                                    else -> SystemHealth.Warning
+                                },
                             )
                         }
                     },
                 )
             }
+            VehicleEvent.CycleRegenLevel -> setState {
+                val levels = RegenLevel.entries
+                val next = levels[(levels.indexOf(regenLevel) + 1) % levels.size]
+                copy(regenLevel = next)
+            }
+            VehicleEvent.ReplayMotionPreview -> setState {
+                copy(motionPreviewTrigger = motionPreviewTrigger + 1)
+            }
+            VehicleEvent.ToggleCharging -> setState { copy(isCharging = !isCharging) }
             VehicleEvent.CycleBatteryDemo -> setState {
                 val next = when {
                     batteryPercent >= 90 -> 62
