@@ -62,7 +62,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Oem AAOS Playground",
+                        text = "AAOS Playground",
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
