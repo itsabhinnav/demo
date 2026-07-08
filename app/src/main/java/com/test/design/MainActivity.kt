@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.test.design.presentation.common.ScreenWithBackground
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
@@ -41,12 +42,16 @@ class MainActivity : ComponentActivity() {
                     LocalDrivingUxUpdater provides drivingUxViewModel::update,
                     LocalMotionSchemeUpdater provides motionSchemeViewModel::update,
                 ) {
-                    AppNavHost(
-                        navController = rememberNavController(),
+                    ScreenWithBackground(
                         modifier = Modifier
                             .fillMaxSize()
                             .windowInsetsPadding(WindowInsets.safeDrawing),
-                    )
+                    ) {
+                        AppNavHost(
+                            navController = rememberNavController(),
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
             }
         }

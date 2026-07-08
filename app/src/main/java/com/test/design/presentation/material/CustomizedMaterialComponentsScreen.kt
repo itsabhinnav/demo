@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.OemBrandTheme
 import com.test.design.theme.carTouchTarget
@@ -32,7 +33,7 @@ fun CustomizedMaterialComponentsScreen(
     OemBrandTheme {
         Scaffold(
             modifier = modifier,
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = {

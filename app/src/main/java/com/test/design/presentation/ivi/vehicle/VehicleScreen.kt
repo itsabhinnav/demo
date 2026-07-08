@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -97,17 +98,22 @@ fun SharedTransitionScope.VehicleScreen(
                 widget = DashboardWidget.Vehicle,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = modifier.fillMaxSize(),
-            )
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            animatedBackground,
-                            MaterialTheme.colorScheme.surfaceContainerLow,
-                        ),
-                    ),
-                )
-                .padding(CarDesignTokens.ContentPadding),
+            ),
         ) {
+            ScreenBackground()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                animatedBackground.copy(alpha = 0.72f),
+                                MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.72f),
+                            ),
+                        ),
+                    )
+                    .padding(CarDesignTokens.ContentPadding),
+            ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
@@ -174,6 +180,7 @@ fun SharedTransitionScope.VehicleScreen(
                             .fillMaxHeight(),
                     )
                 }
+            }
             }
         }
     }

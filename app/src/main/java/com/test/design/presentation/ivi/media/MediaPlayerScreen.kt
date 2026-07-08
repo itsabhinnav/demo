@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -78,12 +79,14 @@ fun SharedTransitionScope.MediaPlayerScreen(
             widget = DashboardWidget.Media,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier.fillMaxSize(),
-        )
-            .background(MaterialTheme.colorScheme.background)
-            .padding(CarDesignTokens.ContentPadding),
+        ),
     ) {
+        ScreenBackground()
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
+                .padding(CarDesignTokens.ContentPadding),
             horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {
             MediaNowPlayingPanel(
