@@ -28,6 +28,7 @@ private val LowBatteryTint = Color(0xFFFF5252)
 fun vehicleColorScheme(
     driveMode: DriveMode,
     batteryFraction: Float,
+    isCharging: Boolean = false,
 ): ColorScheme {
     val (primary, secondary, surface, container) = when (driveMode) {
         DriveMode.Eco -> listOf(EcoPrimary, EcoSecondary, EcoSurface, EcoContainer)
@@ -39,8 +40,12 @@ fun vehicleColorScheme(
     } else {
         0f
     }
-    val blendedPrimary = lerp(primary, LowBatteryTint, lowBatteryBlend * 0.45f)
+    val blendedPrimary = when {
+        isCharging -> lerp(primary, Color(0xFF00E5FF), 0.55f)
+        else -> lerp(primary, LowBatteryTint, lowBatteryBlend * 0.45f)
+    }
     val blendedSurface = lerp(surface, Color(0xFF1A0808), lowBatteryBlend * 0.35f)
+        .let { if (isCharging) lerp(it, Color(0xFF061820), 0.4f) else it }
 
     return ColorScheme(
         primary = blendedPrimary,

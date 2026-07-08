@@ -2,10 +2,10 @@ package com.test.design.presentation.ivi.vehicle
 
 import com.test.design.core.motion.AppMotionScheme
 
-enum class DriveMode(val label: String) {
-    Eco("Eco"),
-    Comfort("Comfort"),
-    Sport("Sport"),
+enum class DriveMode(val label: String, val subtitle: String) {
+    Eco("Eco", "Max range"),
+    Comfort("Comfort", "Balanced"),
+    Sport("Sport", "Peak power"),
 }
 
 data class TirePressure(
@@ -27,15 +27,19 @@ data class VehicleUiState(
     ),
     val odometerMiles: Int = 18420,
     val tripEnergyKwh: Float = 12.4f,
+    val isCharging: Boolean = false,
+    val chargeRateKw: Float = 11f,
     val screenMotionScheme: AppMotionScheme = AppMotionScheme.Expressive,
-    val motionLabExpanded: Boolean = false,
     val motionPreviewTrigger: Int = 0,
+    val activeMotionToken: Int = 0,
 )
 
 sealed interface VehicleEvent {
     data class SelectDriveMode(val mode: DriveMode) : VehicleEvent
     data object CycleBatteryDemo : VehicleEvent
+    data object ToggleCharging : VehicleEvent
     data class SelectScreenMotionScheme(val scheme: AppMotionScheme) : VehicleEvent
-    data object ToggleMotionLab : VehicleEvent
     data object ReplayMotionPreview : VehicleEvent
+    data class SelectMotionToken(val index: Int) : VehicleEvent
+    data class CycleTirePressure(val position: String) : VehicleEvent
 }

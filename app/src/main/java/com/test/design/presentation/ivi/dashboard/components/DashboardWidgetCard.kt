@@ -29,6 +29,7 @@ import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
 import com.test.design.theme.rememberClimateCardShape
 import com.test.design.theme.rememberMediaCardShape
+import com.test.design.theme.rememberVehicleCardShape
 import androidx.compose.ui.graphics.Shape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -58,6 +59,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     val cardShape: Shape = when (widget) {
         DashboardWidget.Climate -> rememberClimateCardShape(active = morphExpanded)
         DashboardWidget.Media -> rememberMediaCardShape(playing = morphExpanded)
+        DashboardWidget.Vehicle -> rememberVehicleCardShape(active = morphExpanded)
         else -> WidgetCardShape
     }
 

@@ -114,7 +114,7 @@ fun IviDemoScreen(
                             climateMorphExpanded = climateState.isAcEnabled,
                             mediaMorphExpanded = mediaState.isPlaying,
                             vehicleMorphExpanded = vehicleState.driveMode == com.test.design.presentation.ivi.vehicle.DriveMode.Sport ||
-                                vehicleState.motionLabExpanded,
+                                vehicleState.isCharging,
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,

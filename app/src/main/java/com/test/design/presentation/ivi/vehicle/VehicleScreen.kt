@@ -9,27 +9,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
-import com.test.design.presentation.ivi.vehicle.components.AnimatedBatteryGauge
-import com.test.design.presentation.ivi.vehicle.components.DriveModeSelector
-import com.test.design.presentation.ivi.vehicle.components.TirePressureGrid
-import com.test.design.presentation.ivi.vehicle.components.VehicleMotionLabPanel
+import com.test.design.presentation.ivi.vehicle.components.AnimatedStatCounter
+import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSelector
+import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
+import com.test.design.presentation.ivi.vehicle.components.VehicleMotionStudio
+import com.test.design.presentation.ivi.vehicle.components.VehicleSchematic
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.VehicleCardActiveRadii
@@ -38,6 +38,8 @@ import com.test.design.theme.batteryToFraction
 import com.test.design.theme.rememberVehicleGaugeShape
 import com.test.design.theme.toMotionScheme
 import com.test.design.theme.vehicleColorScheme
+
+private const val MaxRangeMiles = 300
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -52,21 +54,28 @@ fun SharedTransitionScope.VehicleScreen(
     val dynamicScheme = vehicleColorScheme(
         driveMode = uiState.driveMode,
         batteryFraction = batteryFraction,
+        isCharging = uiState.isCharging,
     )
-    val screenMotionScheme = uiState.screenMotionScheme.toMotionScheme()
-    val gaugeShape = rememberVehicleGaugeShape(sportMode = uiState.driveMode == DriveMode.Sport)
+    val gaugeShape = rememberVehicleGaugeShape(
+        sportMode = uiState.driveMode == DriveMode.Sport || uiState.isCharging,
+    )
 
     MaterialTheme(
         colorScheme = dynamicScheme,
         typography = MaterialTheme.typography,
         shapes = ExpressiveShapes,
-        motionScheme = screenMotionScheme,
+        motionScheme = uiState.screenMotionScheme.toMotionScheme(),
     ) {
-        val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<androidx.compose.ui.graphics.Color>()
+        val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
         val animatedBackground by animateColorAsState(
             targetValue = dynamicScheme.background,
             animationSpec = motionSpec,
             label = "vehicle_bg",
+        )
+        val driveAccent by animateColorAsState(
+            targetValue = MaterialTheme.colorScheme.primary,
+            animationSpec = motionSpec,
+            label = "drive_accent",
         )
 
         Box(
@@ -75,13 +84,18 @@ fun SharedTransitionScope.VehicleScreen(
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = modifier.fillMaxSize(),
             )
-                .background(animatedBackground)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            animatedBackground,
+                            MaterialTheme.colorScheme.surfaceContainerLow,
+                        ),
+                    ),
+                )
                 .padding(CarDesignTokens.ContentPadding),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
             ) {
                 WidgetScreenHeader(
@@ -90,15 +104,11 @@ fun SharedTransitionScope.VehicleScreen(
                     animatedVisibilityScope = animatedVisibilityScope,
                     trailingContent = {
                         FilterChip(
-                            selected = uiState.motionLabExpanded,
-                            onClick = { onEvent(VehicleEvent.ToggleMotionLab) },
+                            selected = uiState.isCharging,
+                            onClick = { onEvent(VehicleEvent.ToggleCharging) },
                             label = {
                                 Text(
-                                    text = if (uiState.motionLabExpanded) {
-                                        uiState.screenMotionScheme.label
-                                    } else {
-                                        "Motion"
-                                    },
+                                    text = if (uiState.isCharging) "Charging" else "Charge",
                                     style = MaterialTheme.typography.labelLarge,
                                 )
                             },
@@ -107,78 +117,114 @@ fun SharedTransitionScope.VehicleScreen(
                 )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AnimatedBatteryGauge(
+                    VehicleEnergyCockpit(
                         percent = uiState.batteryPercent,
                         rangeMiles = uiState.rangeMiles,
+                        maxRangeMiles = MaxRangeMiles,
+                        isCharging = uiState.isCharging,
+                        chargeRateKw = uiState.chargeRateKw,
                         gaugeShape = gaugeShape,
-                        onClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
-                        modifier = Modifier.weight(0.38f),
+                        onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
+                        modifier = Modifier
+                            .weight(0.36f)
+                            .fillMaxHeight(),
                     )
 
                     Column(
-                        modifier = Modifier.weight(0.62f),
+                        modifier = Modifier
+                            .weight(0.34f)
+                            .fillMaxHeight(),
                         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                     ) {
-                        MorphingDetailSurfaceCard(
-                            morphExpanded = uiState.driveMode == DriveMode.Sport,
-                            compactRadii = VehicleCardRestRadii,
-                            expandedRadii = VehicleCardActiveRadii,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Drive mode", style = MaterialTheme.typography.titleMedium)
-                            DriveModeSelector(
-                                selected = uiState.driveMode,
-                                onSelected = { onEvent(VehicleEvent.SelectDriveMode(it)) },
-                                modifier = Modifier.padding(top = 12.dp),
-                            )
-                        }
+                        VehicleSchematic(
+                            tires = uiState.tirePressures,
+                            driveModeAccent = driveAccent,
+                            onTireClick = { onEvent(VehicleEvent.CycleTirePressure(it)) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                        )
+                        MorphingDriveModeSelector(
+                            selected = uiState.driveMode,
+                            onSelected = { onEvent(VehicleEvent.SelectDriveMode(it)) },
+                        )
+                    }
 
-                        MorphingDetailSurfaceCard(
-                            morphExpanded = uiState.batteryPercent < 35,
-                            compactRadii = VehicleCardRestRadii,
-                            expandedRadii = VehicleCardActiveRadii,
-                            emphasized = uiState.batteryPercent < 35,
+                    Column(
+                        modifier = Modifier
+                            .weight(0.30f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                    ) {
+                        VehicleStatsPanel(
+                            efficiencyMpkWh = uiState.efficiencyMpkWh,
+                            odometerMiles = uiState.odometerMiles,
+                            tripEnergyKwh = uiState.tripEnergyKwh,
+                            driveMode = uiState.driveMode,
                             modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Trip efficiency", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                text = "${uiState.efficiencyMpkWh} mi/kWh",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(
-                                text = "Odometer ${uiState.odometerMiles} mi · ${uiState.tripEnergyKwh} kWh used",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-
-                        VehicleMotionLabPanel(
+                        )
+                        VehicleMotionStudio(
                             selectedScheme = uiState.screenMotionScheme,
-                            expanded = uiState.motionLabExpanded,
+                            activeToken = uiState.activeMotionToken,
                             previewTrigger = uiState.motionPreviewTrigger,
                             onSchemeSelected = { onEvent(VehicleEvent.SelectScreenMotionScheme(it)) },
-                            onReplayPreview = { onEvent(VehicleEvent.ReplayMotionPreview) },
+                            onTokenSelected = { onEvent(VehicleEvent.SelectMotionToken(it)) },
+                            onReplay = { onEvent(VehicleEvent.ReplayMotionPreview) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
                         )
                     }
                 }
+            }
+        }
+    }
+}
 
-                MorphingDetailSurfaceCard(
-                    morphExpanded = uiState.tirePressures.any { !it.isOptimal },
-                    compactRadii = VehicleCardRestRadii,
-                    expandedRadii = VehicleCardActiveRadii,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text("Tire pressure", style = MaterialTheme.typography.titleMedium)
-                    TirePressureGrid(
-                        tires = uiState.tirePressures,
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
+@Composable
+private fun VehicleStatsPanel(
+    efficiencyMpkWh: Float,
+    odometerMiles: Int,
+    tripEnergyKwh: Float,
+    driveMode: DriveMode,
+    modifier: Modifier = Modifier,
+) {
+    MorphingDetailSurfaceCard(
+        morphExpanded = driveMode == DriveMode.Sport,
+        compactRadii = VehicleCardRestRadii,
+        expandedRadii = VehicleCardActiveRadii,
+        modifier = modifier,
+    ) {
+        Text("Trip", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "$efficiencyMpkWh mi/kWh",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column {
+                Text("Odometer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AnimatedStatCounter(
+                    value = odometerMiles,
+                    suffix = " mi",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                Text("Trip use", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "$tripEnergyKwh kWh",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }
