@@ -109,3 +109,35 @@ fun rememberClimateDialShape(acEnabled: Boolean): Shape = rememberMorphingRounde
 fun rememberMediaAlbumShape(playing: Boolean): Shape = rememberMorphingRoundedShape(
     target = if (playing) MediaAlbumExpandedRadii else MediaAlbumCompactRadii,
 )
+
+val VehicleGaugeRestRadii = MorphingCornerRadii.uniform(100.dp)
+val VehicleGaugeSportRadii = MorphingCornerRadii(
+    topStart = 120.dp,
+    topEnd = 48.dp,
+    bottomEnd = 120.dp,
+    bottomStart = 48.dp,
+)
+
+val VehicleCardRestRadii = MorphingCornerRadii(
+    topStart = 36.dp,
+    topEnd = 20.dp,
+    bottomEnd = 36.dp,
+    bottomStart = 20.dp,
+)
+val VehicleCardActiveRadii = MorphingCornerRadii(
+    topStart = 52.dp,
+    topEnd = 24.dp,
+    bottomEnd = 44.dp,
+    bottomStart = 32.dp,
+)
+
+@Composable
+fun rememberVehicleGaugeShape(sportMode: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (sportMode) VehicleGaugeSportRadii else VehicleGaugeRestRadii,
+    animationSpec = MaterialTheme.motionScheme.slowSpatialSpec(),
+)
+
+@Composable
+fun rememberVehicleCardShape(active: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (active) VehicleCardActiveRadii else VehicleCardRestRadii,
+)
