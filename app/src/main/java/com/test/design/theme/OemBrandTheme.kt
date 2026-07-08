@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 /**
- * Wraps [MaterialTheme] with a bold OEM brand identity for customized component demos.
+ * Wraps [MaterialTheme] with the Horizon OEM brand identity for customized component demos.
  */
 @Composable
 fun OemBrandTheme(content: @Composable () -> Unit) {

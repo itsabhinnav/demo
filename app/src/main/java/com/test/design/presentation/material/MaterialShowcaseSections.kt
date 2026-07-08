@@ -101,7 +101,6 @@ private fun CarButton(
         onClick = onClick,
         modifier = modifier.carTouchTarget(),
         contentPadding = CarButtonContentPadding,
-        shape = MaterialTheme.shapes.extraLarge,
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge)
     }
@@ -122,32 +121,27 @@ private fun ButtonsSection() {
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
                 contentPadding = CarButtonContentPadding,
-                shape = MaterialTheme.shapes.extraLarge,
             ) { Text("Tonal", style = MaterialTheme.typography.labelLarge) }
             ElevatedButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
                 contentPadding = CarButtonContentPadding,
-                shape = MaterialTheme.shapes.extraLarge,
             ) { Text("Elevated", style = MaterialTheme.typography.labelLarge) }
             OutlinedButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
                 contentPadding = CarButtonContentPadding,
-                shape = MaterialTheme.shapes.extraLarge,
             ) { Text("Outlined", style = MaterialTheme.typography.labelLarge) }
             TextButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
                 contentPadding = CarButtonContentPadding,
-                shape = MaterialTheme.shapes.extraLarge,
             ) { Text("Text", style = MaterialTheme.typography.labelLarge) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
             FilledIconButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
-                shape = MaterialTheme.shapes.medium,
             ) {
                 Icon(
                     Icons.Default.Favorite,
@@ -158,7 +152,6 @@ private fun ButtonsSection() {
             FilledTonalIconButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
-                shape = MaterialTheme.shapes.medium,
             ) {
                 Icon(
                     Icons.Default.Settings,
@@ -169,7 +162,6 @@ private fun ButtonsSection() {
             OutlinedIconButton(
                 onClick = {},
                 modifier = Modifier.carTouchTarget(),
-                shape = MaterialTheme.shapes.medium,
             ) {
                 Icon(
                     Icons.Default.Add,
@@ -216,7 +208,6 @@ private fun ChipsSection() {
                 onClick = {},
                 modifier = chipModifier,
                 label = { CarChipLabel("Assist") },
-                shape = MaterialTheme.shapes.extraLarge,
                 leadingIcon = {
                     Icon(
                         Icons.Default.Add,
@@ -230,14 +221,12 @@ private fun ChipsSection() {
                 onClick = { filterSelected = !filterSelected },
                 modifier = chipModifier,
                 label = { CarChipLabel("Filter") },
-                shape = MaterialTheme.shapes.extraLarge,
             )
             InputChip(
                 selected = false,
                 onClick = {},
                 modifier = chipModifier,
                 label = { CarChipLabel("Input") },
-                shape = MaterialTheme.shapes.extraLarge,
                 trailingIcon = {
                     Icon(
                         Icons.Default.Add,
@@ -250,7 +239,6 @@ private fun ChipsSection() {
                 onClick = {},
                 modifier = chipModifier,
                 label = { CarChipLabel("Suggestion") },
-                shape = MaterialTheme.shapes.extraLarge,
             )
         }
     }
@@ -381,7 +369,6 @@ private fun TextFieldsSection() {
                 .fillMaxWidth()
                 .height(CarDesignTokens.ListItemHeight),
             singleLine = true,
-            shape = MaterialTheme.shapes.medium,
         )
         OutlinedTextField(
             value = outlinedText,
@@ -393,7 +380,6 @@ private fun TextFieldsSection() {
                 .fillMaxWidth()
                 .height(CarDesignTokens.ListItemHeight),
             singleLine = true,
-            shape = MaterialTheme.shapes.medium,
         )
     }
 }
@@ -411,7 +397,6 @@ private fun CardsSection() {
             Card(
                 modifier = Modifier.weight(1f),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = MaterialTheme.shapes.large,
             ) {
                 Column(modifier = Modifier.padding(CarDesignTokens.TouchTargetSpacing)) {
                     Text("Elevated card", style = MaterialTheme.typography.titleSmall)
@@ -427,7 +412,6 @@ private fun CardsSection() {
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 ),
-                shape = MaterialTheme.shapes.large,
             ) {
                 Column(modifier = Modifier.padding(CarDesignTokens.TouchTargetSpacing)) {
                     Text("Filled card", style = MaterialTheme.typography.titleSmall)
@@ -472,7 +456,6 @@ private fun ProgressSection() {
                 FilledIconButton(
                     onClick = {},
                     modifier = Modifier.carTouchTarget(),
-                    shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         Icons.Default.Favorite,
@@ -498,7 +481,6 @@ private fun FabSection() {
             FloatingActionButton(
                 onClick = {},
                 modifier = Modifier.size(CarDesignTokens.MinTouchTarget),
-                shape = MaterialTheme.shapes.large,
             ) {
                 Icon(
                     Icons.Default.Add,
@@ -509,7 +491,6 @@ private fun FabSection() {
             ExtendedFloatingActionButton(
                 onClick = {},
                 modifier = Modifier.height(CarDesignTokens.MinTouchTarget),
-                shape = MaterialTheme.shapes.extraLarge,
                 icon = {
                     Icon(
                         Icons.Default.Add,
@@ -564,12 +545,11 @@ private fun ListItemsSection() {
                     Icons.Default.Favorite,
                     contentDescription = null,
                     modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-                    tint = MaterialTheme.colorScheme.primary,
                 )
             },
             colors = ListItemDefaults.colors(),
         )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        HorizontalDivider()
         ListItem(
             modifier = Modifier.carListItemHeight(),
             headlineContent = {
@@ -586,12 +566,11 @@ private fun ListItemsSection() {
                     Icons.Default.Settings,
                     contentDescription = null,
                     modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-                    tint = MaterialTheme.colorScheme.secondary,
                 )
             },
             colors = ListItemDefaults.colors(),
         )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+        HorizontalDivider()
         ListItem(
             modifier = Modifier.carListItemHeight(),
             overlineContent = {

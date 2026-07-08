@@ -108,7 +108,7 @@ fun HomeScreen(
                     )
                     HomeEntryCard(
                         title = "Customized Material",
-                        description = "Same M3 components with a bold OEM brand theme",
+                        description = "Production OEM brand system on Material foundations",
                         icon = Icons.Default.Palette,
                         onClick = onNavigateToCustomizedMaterialComponents,
                     )

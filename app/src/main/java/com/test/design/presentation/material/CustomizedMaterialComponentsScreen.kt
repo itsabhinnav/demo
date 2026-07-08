@@ -38,14 +38,13 @@ fun CustomizedMaterialComponentsScreen(
                     title = {
                         Column {
                             Text(
-                                text = "Customized Material",
+                                text = "Horizon Brand System",
                                 style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.primary,
                             )
                             Text(
-                                text = "OEM brand theme — same components, entirely different look",
+                                text = "Production OEM components built on Material theming",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     },
@@ -58,18 +57,17 @@ fun CustomizedMaterialComponentsScreen(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                                 modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-                                tint = MaterialTheme.colorScheme.primary,
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surface,
                     ),
                 )
             },
         ) { padding ->
             CompositionLocalProvider(LocalShowcaseSectionStyle provides ShowcaseSectionStyle.OemBranded) {
-                MaterialComponentShowcase(
+                OemComponentShowcase(
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()

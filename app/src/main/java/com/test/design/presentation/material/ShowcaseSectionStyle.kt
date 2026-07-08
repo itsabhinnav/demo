@@ -37,13 +37,13 @@ data class ShowcaseSectionStyle(
 
         val OemBranded = ShowcaseSectionStyle(
             containerColor = { MaterialTheme.colorScheme.surfaceContainer },
-            titleColor = { MaterialTheme.colorScheme.primary },
-            descriptionColor = { MaterialTheme.colorScheme.secondary },
+            titleColor = { MaterialTheme.colorScheme.onSurface },
+            descriptionColor = { MaterialTheme.colorScheme.onSurfaceVariant },
             shape = { MaterialTheme.shapes.large },
             border = {
                 BorderStroke(
-                    width = 2.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                 )
             },
         )
