@@ -18,17 +18,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
-import com.test.design.presentation.ivi.navigation.components.DummyRouteMap
+import com.test.design.presentation.ivi.navigation.components.DummyMapBackground
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
 import com.test.design.presentation.ivi.navigation.components.TurnInstructionCard
 import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.WidgetCardShape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -50,39 +55,56 @@ fun SharedTransitionScope.NavigationScreen(
                 animatedVisibilityScope = animatedVisibilityScope,
                 resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                 clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-            )
-            .background(MaterialTheme.colorScheme.background)
-            .padding(CarDesignTokens.ContentPadding),
+            ),
     ) {
+        DummyMapBackground(modifier = Modifier.fillMaxSize())
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.22f)
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent),
+                    ),
+                ),
+        )
+
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(CarDesignTokens.ContentPadding),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            WidgetScreenHeader(
-                title = "Navigation",
-                onBack = onBack,
-                trailingContent = {
-                    FilterChip(
-                        selected = uiState.showRouteDetails,
-                        onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
-                        label = { Text("Steps", style = MaterialTheme.typography.labelLarge) },
-                    )
-                },
-            )
+            Surface(
+                shape = ExpressiveShapes.large,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                shadowElevation = CarDesignTokens.TouchTargetSpacing,
+            ) {
+                WidgetScreenHeader(
+                    title = "Navigation",
+                    onBack = onBack,
+                    modifier = Modifier.padding(horizontal = CarDesignTokens.TouchTargetSpacing),
+                    trailingContent = {
+                        FilterChip(
+                            selected = uiState.showRouteDetails,
+                            onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
+                            label = { Text("Steps", style = MaterialTheme.typography.labelLarge) },
+                        )
+                    },
+                )
+            }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                verticalAlignment = Alignment.Bottom,
             ) {
                 Column(
-                    modifier = Modifier
-                        .weight(0.58f)
-                        .fillMaxHeight(),
+                    modifier = Modifier.weight(0.55f),
                     verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                 ) {
-                    DummyRouteMap(destination = uiState.destination, modifier = Modifier.weight(1f))
                     TurnInstructionCard(
                         instruction = uiState.currentInstruction,
                         maneuverIcon = uiState.maneuverIcon,
@@ -90,37 +112,48 @@ fun SharedTransitionScope.NavigationScreen(
                         etaMinutes = uiState.etaMinutes,
                         onClick = { onEvent(NavigationEvent.NextManeuver) },
                     )
+                    Surface(
+                        shape = ExpressiveShapes.large,
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                    ) {
+                        FavoriteDestinationsRow(
+                            favorites = uiState.favorites,
+                            selectedId = uiState.selectedFavoriteId,
+                            onSelected = { onEvent(NavigationEvent.SelectFavorite(it)) },
+                            modifier = Modifier.padding(CarDesignTokens.TouchTargetSpacing),
+                        )
+                    }
                 }
 
                 Column(
-                    modifier = Modifier
-                        .weight(0.42f)
-                        .fillMaxHeight(),
+                    modifier = Modifier.weight(0.35f),
                     verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                 ) {
-                    FavoriteDestinationsRow(
-                        favorites = uiState.favorites,
-                        selectedId = uiState.selectedFavoriteId,
-                        onSelected = { onEvent(NavigationEvent.SelectFavorite(it)) },
-                    )
                     DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
                         Text("Arrival ${uiState.arrivalTime}", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            text = "${uiState.distanceRemaining} remaining to ${uiState.destination}",
+                            text = "${uiState.distanceRemaining} to ${uiState.destination}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     AnimatedContent(
                         targetState = uiState.showRouteDetails,
-                        modifier = Modifier.weight(1f),
                         transitionSpec = {
                             fadeIn(animationSpec = motionSpec) togetherWith fadeOut(animationSpec = motionSpec)
                         },
                         label = "route_details",
                     ) { showDetails ->
                         if (showDetails) {
-                            RouteStepsList(steps = uiState.routeSteps)
+                            Surface(
+                                shape = ExpressiveShapes.large,
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                            ) {
+                                RouteStepsList(
+                                    steps = uiState.routeSteps,
+                                    modifier = Modifier.padding(CarDesignTokens.TouchTargetSpacing),
+                                )
+                            }
                         }
                     }
                 }

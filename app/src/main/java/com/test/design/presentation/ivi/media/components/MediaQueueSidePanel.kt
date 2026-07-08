@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
@@ -39,12 +38,10 @@ fun MediaQueueSidePanel(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxHeight()
-            .width(420.dp),
+        modifier = modifier.fillMaxHeight(),
         shape = ExpressiveShapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shadowElevation = 12.dp,
+        tonalElevation = 4.dp,
     ) {
         Column(
             modifier = Modifier

@@ -1,15 +1,10 @@
 package com.test.design.presentation.ivi.media
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,13 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
@@ -57,6 +51,8 @@ import com.test.design.theme.MediaAlbumShape
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
 
+private val QueuePanelWidth = 400.dp
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.MediaPlayerScreen(
@@ -66,7 +62,12 @@ fun SharedTransitionScope.MediaPlayerScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
-    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
+    val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<androidx.compose.ui.unit.Dp>()
+    val queueWidth by animateDpAsState(
+        targetValue = if (uiState.isQueueVisible) QueuePanelWidth else 0.dp,
+        animationSpec = spatialSpec,
+        label = "queue_panel_width",
+    )
 
     Box(
         modifier = modifier
@@ -80,35 +81,31 @@ fun SharedTransitionScope.MediaPlayerScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(CarDesignTokens.ContentPadding),
     ) {
-        MediaNowPlayingPanel(
-            uiState = uiState,
-            onEvent = onEvent,
-            onBack = onBack,
-            animatedVisibilityScope = animatedVisibilityScope,
+        Row(
             modifier = Modifier.fillMaxSize(),
-        )
-
-        if (uiState.isQueueVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.35f))
-                    .clickable { onEvent(MediaEvent.ToggleQueue) },
-            )
-        }
-
-        AnimatedVisibility(
-            visible = uiState.isQueueVisible,
-            modifier = Modifier.align(Alignment.CenterEnd),
-            enter = slideInHorizontally(animationSpec = spatialSpec) { it } + fadeIn(),
-            exit = slideOutHorizontally(animationSpec = spatialSpec) { it } + fadeOut(),
+            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {
-            MediaQueueSidePanel(
-                queue = uiState.queue,
-                currentTrackId = uiState.currentTrack.id,
-                onSelectTrack = { onEvent(MediaEvent.SelectTrack(it)) },
-                onClose = { onEvent(MediaEvent.ToggleQueue) },
+            MediaNowPlayingPanel(
+                uiState = uiState,
+                onEvent = onEvent,
+                onBack = onBack,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
             )
+
+            if (queueWidth > 0.dp) {
+                MediaQueueSidePanel(
+                    queue = uiState.queue,
+                    currentTrackId = uiState.currentTrack.id,
+                    onSelectTrack = { onEvent(MediaEvent.SelectTrack(it)) },
+                    onClose = { onEvent(MediaEvent.ToggleQueue) },
+                    modifier = Modifier
+                        .width(queueWidth)
+                        .fillMaxHeight(),
+                )
+            }
         }
     }
 }
