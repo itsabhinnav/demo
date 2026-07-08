@@ -12,7 +12,6 @@ private fun HomeScreenPreview() {
         HomeScreen(
             onNavigateToIviDemo = {},
             onNavigateToMaterialComponents = {},
-            onNavigateToMotionPhysicsSample = {},
         )
     }
 }

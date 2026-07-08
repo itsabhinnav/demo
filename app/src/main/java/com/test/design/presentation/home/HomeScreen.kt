@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Card
@@ -49,7 +48,6 @@ import com.test.design.theme.carTouchTarget
 fun HomeScreen(
     onNavigateToIviDemo: () -> Unit,
     onNavigateToMaterialComponents: () -> Unit,
-    onNavigateToMotionPhysicsSample: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -99,12 +97,6 @@ fun HomeScreen(
                         description = "Browse buttons, chips, cards, sliders, and more",
                         icon = Icons.Default.Widgets,
                         onClick = onNavigateToMaterialComponents,
-                    )
-                    HomeEntryCard(
-                        title = "Motion Physics Sample",
-                        description = "Tabs, lists, scroll, and expressive motion demos",
-                        icon = Icons.Default.Animation,
-                        onClick = onNavigateToMotionPhysicsSample,
                     )
                 }
                 VerticalDivider()

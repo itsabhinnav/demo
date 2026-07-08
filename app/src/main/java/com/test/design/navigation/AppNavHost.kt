@@ -28,9 +28,6 @@ fun AppNavHost(
                 onNavigateToMaterialComponents = {
                     navController.navigate(AppDestination.MaterialComponents)
                 },
-                onNavigateToMotionPhysicsSample = {
-                    navController.navigate(AppDestination.MotionPhysicsSample)
-                },
             )
         }
         composable(AppDestination.IviExpressiveDemo) {
