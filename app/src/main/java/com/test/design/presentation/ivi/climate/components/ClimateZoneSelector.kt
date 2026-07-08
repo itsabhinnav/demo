@@ -87,10 +87,9 @@ private fun ClimateZoneCard(
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            text = "$temperature°",
+        AnimatedTemperatureCounter(
+            temperature = temperature,
             style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
