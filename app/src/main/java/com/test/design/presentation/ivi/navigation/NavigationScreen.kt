@@ -11,11 +11,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,8 +24,8 @@ import androidx.compose.ui.Modifier
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.navigation.components.DummyRouteMap
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
-import com.test.design.presentation.ivi.navigation.components.RouteMapPlaceholder
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
 import com.test.design.presentation.ivi.navigation.components.TurnInstructionCard
 import com.test.design.theme.CarDesignTokens
@@ -55,9 +55,7 @@ fun SharedTransitionScope.NavigationScreen(
             .padding(CarDesignTokens.ContentPadding),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {
             WidgetScreenHeader(
@@ -72,40 +70,59 @@ fun SharedTransitionScope.NavigationScreen(
                 },
             )
 
-            TurnInstructionCard(
-                instruction = uiState.currentInstruction,
-                maneuverIcon = uiState.maneuverIcon,
-                distanceRemaining = uiState.distanceRemaining,
-                etaMinutes = uiState.etaMinutes,
-                onClick = { onEvent(NavigationEvent.NextManeuver) },
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(0.58f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                ) {
+                    DummyRouteMap(destination = uiState.destination, modifier = Modifier.weight(1f))
+                    TurnInstructionCard(
+                        instruction = uiState.currentInstruction,
+                        maneuverIcon = uiState.maneuverIcon,
+                        distanceRemaining = uiState.distanceRemaining,
+                        etaMinutes = uiState.etaMinutes,
+                        onClick = { onEvent(NavigationEvent.NextManeuver) },
+                    )
+                }
 
-            RouteMapPlaceholder(destination = uiState.destination)
-
-            FavoriteDestinationsRow(
-                favorites = uiState.favorites,
-                selectedId = uiState.selectedFavoriteId,
-                onSelected = { onEvent(NavigationEvent.SelectFavorite(it)) },
-            )
-
-            DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
-                Text("Arrival ${uiState.arrivalTime}", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = "${uiState.distanceRemaining} remaining to ${uiState.destination}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            AnimatedContent(
-                targetState = uiState.showRouteDetails,
-                transitionSpec = {
-                    fadeIn(animationSpec = motionSpec) togetherWith fadeOut(animationSpec = motionSpec)
-                },
-                label = "route_details",
-            ) { showDetails ->
-                if (showDetails) {
-                    RouteStepsList(steps = uiState.routeSteps)
+                Column(
+                    modifier = Modifier
+                        .weight(0.42f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                ) {
+                    FavoriteDestinationsRow(
+                        favorites = uiState.favorites,
+                        selectedId = uiState.selectedFavoriteId,
+                        onSelected = { onEvent(NavigationEvent.SelectFavorite(it)) },
+                    )
+                    DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                        Text("Arrival ${uiState.arrivalTime}", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "${uiState.distanceRemaining} remaining to ${uiState.destination}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    AnimatedContent(
+                        targetState = uiState.showRouteDetails,
+                        modifier = Modifier.weight(1f),
+                        transitionSpec = {
+                            fadeIn(animationSpec = motionSpec) togetherWith fadeOut(animationSpec = motionSpec)
+                        },
+                        label = "route_details",
+                    ) { showDetails ->
+                        if (showDetails) {
+                            RouteStepsList(steps = uiState.routeSteps)
+                        }
+                    }
                 }
             }
         }

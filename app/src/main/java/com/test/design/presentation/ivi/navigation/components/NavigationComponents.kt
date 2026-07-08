@@ -1,7 +1,6 @@
 package com.test.design.presentation.ivi.navigation.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -81,47 +80,6 @@ fun TurnInstructionCard(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun RouteMapPlaceholder(
-    destination: String,
-    modifier: Modifier = Modifier,
-) {
-    val pulse by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>(),
-        label = "map_pulse",
-    )
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(220.dp)
-            .clip(ExpressiveShapes.extraLarge)
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                        MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ),
-                ),
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .graphicsLayer { scaleX = pulse; scaleY = pulse }
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-        ) {
-            Text(
-                text = "Routing to $destination",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
         }
     }
 }
