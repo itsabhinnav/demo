@@ -111,6 +111,8 @@ fun IviDemoScreen(
                             onEvent = dashboardViewModel::onEvent,
                             widgetSubtitle = dashboardViewModel::widgetSubtitle,
                             animatedVisibilityScope = this@AnimatedContent,
+                            climateMorphExpanded = climateState.isAcEnabled,
+                            mediaMorphExpanded = mediaState.isPlaying,
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
@@ -151,6 +153,8 @@ private fun SharedTransitionScope.DashboardHubContent(
     onEvent: (DashboardEvent) -> Unit,
     widgetSubtitle: (DashboardWidget) -> String,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    climateMorphExpanded: Boolean,
+    mediaMorphExpanded: Boolean,
 ) {
     DashboardWidgetGrid(
         widgets = state.widgets,
@@ -164,6 +168,11 @@ private fun SharedTransitionScope.DashboardHubContent(
                 onClick = { onEvent(DashboardEvent.WidgetTapped(widget)) },
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = widgetModifier,
+                morphExpanded = when (widget) {
+                    DashboardWidget.Climate -> climateMorphExpanded
+                    DashboardWidget.Media -> mediaMorphExpanded
+                    else -> false
+                },
             )
         },
     )

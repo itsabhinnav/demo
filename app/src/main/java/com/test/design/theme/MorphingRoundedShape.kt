@@ -41,6 +41,20 @@ val ClimateDialExpandedRadii = MorphingCornerRadii(
     bottomStart = 32.dp,
 )
 
+/** Dashboard widget card + detail surface corners for climate. */
+val ClimateCardRestRadii = MorphingCornerRadii(
+    topStart = 40.dp,
+    topEnd = 16.dp,
+    bottomEnd = 40.dp,
+    bottomStart = 16.dp,
+)
+val ClimateCardActiveRadii = MorphingCornerRadii(
+    topStart = 56.dp,
+    topEnd = 20.dp,
+    bottomEnd = 48.dp,
+    bottomStart = 28.dp,
+)
+
 val MediaAlbumCompactRadii = MorphingCornerRadii(
     topStart = 48.dp,
     topEnd = 24.dp,
@@ -52,4 +66,46 @@ val MediaAlbumExpandedRadii = MorphingCornerRadii(
     topEnd = 48.dp,
     bottomEnd = 32.dp,
     bottomStart = 48.dp,
+)
+
+/** Dashboard widget card + detail surface corners for media. */
+val MediaCardRestRadii = MorphingCornerRadii(
+    topStart = 40.dp,
+    topEnd = 16.dp,
+    bottomEnd = 40.dp,
+    bottomStart = 16.dp,
+)
+val MediaCardPlayingRadii = MorphingCornerRadii(
+    topStart = 20.dp,
+    topEnd = 52.dp,
+    bottomEnd = 20.dp,
+    bottomStart = 52.dp,
+)
+
+val DetailCardRestRadii = MorphingCornerRadii.uniform(36.dp)
+val DetailCardExpandedRadii = MorphingCornerRadii(
+    topStart = 44.dp,
+    topEnd = 28.dp,
+    bottomEnd = 44.dp,
+    bottomStart = 28.dp,
+)
+
+@Composable
+fun rememberClimateCardShape(active: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (active) ClimateCardActiveRadii else ClimateCardRestRadii,
+)
+
+@Composable
+fun rememberMediaCardShape(playing: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (playing) MediaCardPlayingRadii else MediaCardRestRadii,
+)
+
+@Composable
+fun rememberClimateDialShape(acEnabled: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (acEnabled) ClimateDialExpandedRadii else ClimateDialCompactRadii,
+)
+
+@Composable
+fun rememberMediaAlbumShape(playing: Boolean): Shape = rememberMorphingRoundedShape(
+    target = if (playing) MediaAlbumExpandedRadii else MediaAlbumCompactRadii,
 )

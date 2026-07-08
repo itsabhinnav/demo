@@ -27,6 +27,9 @@ import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
+import com.test.design.theme.rememberClimateCardShape
+import com.test.design.theme.rememberMediaCardShape
+import androidx.compose.ui.graphics.Shape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -37,6 +40,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     isExpanded: Boolean = false,
+    morphExpanded: Boolean = false,
 ) {
     val containerColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
@@ -51,12 +55,18 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.onSurface
     }
 
+    val cardShape: Shape = when (widget) {
+        DashboardWidget.Climate -> rememberClimateCardShape(active = morphExpanded)
+        DashboardWidget.Media -> rememberMediaCardShape(playing = morphExpanded)
+        else -> WidgetCardShape
+    }
+
     Box(
         modifier = widgetContainerTransform(
             widget = widget,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier
-                .clip(WidgetCardShape)
+                .clip(cardShape)
                 .background(containerColor)
                 .clickable(enabled = !isExpanded, onClick = onClick)
                 .padding(CarDesignTokens.SectionPadding),

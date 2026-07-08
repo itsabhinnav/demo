@@ -38,16 +38,16 @@ import com.test.design.presentation.ivi.climate.components.ClimateZoneSelector
 import com.test.design.presentation.ivi.climate.components.FanSpeedBars
 import com.test.design.presentation.ivi.climate.components.MorphingAirflowSegmentedButton
 import com.test.design.presentation.ivi.climate.components.SeatHeatIndicator
-import com.test.design.presentation.ivi.common.DetailSurfaceCard
+import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.ClimateDialCompactRadii
-import com.test.design.theme.ClimateDialExpandedRadii
+import com.test.design.theme.ClimateCardActiveRadii
+import com.test.design.theme.ClimateCardRestRadii
 import com.test.design.theme.carTouchTarget
 import com.test.design.theme.climateColorScheme
-import com.test.design.theme.rememberMorphingRoundedShape
+import com.test.design.theme.rememberClimateDialShape
 import com.test.design.theme.temperatureToFraction
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -72,9 +72,7 @@ fun SharedTransitionScope.ClimateControlScreen(
         animationSpec = motionSpec,
         label = "climate_bg",
     )
-    val dialShape = rememberMorphingRoundedShape(
-        target = if (uiState.isAcEnabled) ClimateDialExpandedRadii else ClimateDialCompactRadii,
-    )
+    val dialShape = rememberClimateDialShape(acEnabled = uiState.isAcEnabled)
 
     MaterialTheme(
         colorScheme = dynamicScheme,
@@ -161,7 +159,12 @@ fun SharedTransitionScope.ClimateControlScreen(
                         modifier = Modifier.weight(0.55f),
                         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                     ) {
-                        DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                        MorphingDetailSurfaceCard(
+                            morphExpanded = uiState.isAcEnabled,
+                            compactRadii = ClimateCardRestRadii,
+                            expandedRadii = ClimateCardActiveRadii,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Text("Fan speed", style = MaterialTheme.typography.titleMedium)
                             FanSpeedBars(
                                 fanSpeed = uiState.fanSpeed,
@@ -170,7 +173,12 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 modifier = Modifier.padding(top = 12.dp),
                             )
                         }
-                        DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                        MorphingDetailSurfaceCard(
+                            morphExpanded = uiState.isAcEnabled,
+                            compactRadii = ClimateCardRestRadii,
+                            expandedRadii = ClimateCardActiveRadii,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Text("Airflow", style = MaterialTheme.typography.titleMedium)
                             MorphingAirflowSegmentedButton(
                                 selectedMode = uiState.airflowMode,
@@ -178,7 +186,12 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 modifier = Modifier.padding(top = 12.dp),
                             )
                         }
-                        DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                        MorphingDetailSurfaceCard(
+                            morphExpanded = uiState.isAcEnabled,
+                            compactRadii = ClimateCardRestRadii,
+                            expandedRadii = ClimateCardActiveRadii,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,

@@ -38,7 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.test.design.presentation.ivi.common.DetailSurfaceCard
+import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -49,10 +49,10 @@ import com.test.design.presentation.ivi.media.components.MorphingPlayPauseButton
 import com.test.design.presentation.ivi.media.components.PlaybackProgressSection
 import com.test.design.presentation.ivi.media.components.RepeatModeLabel
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.MediaAlbumCompactRadii
-import com.test.design.theme.MediaAlbumExpandedRadii
+import com.test.design.theme.MediaCardPlayingRadii
+import com.test.design.theme.MediaCardRestRadii
 import com.test.design.theme.carTouchTarget
-import com.test.design.theme.rememberMorphingRoundedShape
+import com.test.design.theme.rememberMediaAlbumShape
 
 private val QueuePanelWidth = 400.dp
 
@@ -71,9 +71,7 @@ fun SharedTransitionScope.MediaPlayerScreen(
         animationSpec = spatialSpec,
         label = "queue_panel_width",
     )
-    val albumShape = rememberMorphingRoundedShape(
-        target = if (uiState.isPlaying) MediaAlbumExpandedRadii else MediaAlbumCompactRadii,
-    )
+    val albumShape = rememberMediaAlbumShape(playing = uiState.isPlaying)
 
     Box(
         modifier = widgetContainerTransform(
@@ -188,6 +186,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
                     progress = uiState.progress,
                     elapsedLabel = uiState.elapsedLabel,
                     durationLabel = uiState.currentTrack.durationLabel,
+                    progressShape = albumShape,
                 )
                 Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
                 Row(
@@ -215,7 +214,12 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
                     )
                 }
                 Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
-                DetailSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                MorphingDetailSurfaceCard(
+                    morphExpanded = uiState.isPlaying,
+                    compactRadii = MediaCardRestRadii,
+                    expandedRadii = MediaCardPlayingRadii,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
