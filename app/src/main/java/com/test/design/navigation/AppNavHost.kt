@@ -9,7 +9,6 @@ import com.test.design.presentation.home.HomeScreen
 import com.test.design.presentation.ivi.dashboard.IviDemoScreen
 import com.test.design.presentation.material.CustomizedMaterialComponentsScreen
 import com.test.design.presentation.material.MaterialComponentsScreen
-import com.test.design.presentation.motion.MotionPhysicsSampleScreen
 
 @Composable
 fun AppNavHost(
@@ -32,9 +31,6 @@ fun AppNavHost(
                 onNavigateToCustomizedMaterialComponents = {
                     navController.navigate(AppDestination.CustomizedMaterialComponents)
                 },
-                onNavigateToMotionLab = {
-                    navController.navigate(AppDestination.MotionPhysicsSample)
-                },
             )
         }
         composable(AppDestination.IviExpressiveDemo) {
@@ -49,11 +45,6 @@ fun AppNavHost(
         }
         composable(AppDestination.CustomizedMaterialComponents) {
             CustomizedMaterialComponentsScreen(
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable(AppDestination.MotionPhysicsSample) {
-            MotionPhysicsSampleScreen(
                 onBack = { navController.popBackStack() },
             )
         }

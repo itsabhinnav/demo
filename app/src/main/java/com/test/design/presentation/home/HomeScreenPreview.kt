@@ -13,7 +13,6 @@ private fun HomeScreenPreview() {
             onNavigateToIviDemo = {},
             onNavigateToMaterialComponents = {},
             onNavigateToCustomizedMaterialComponents = {},
-            onNavigateToMotionLab = {},
         )
     }
 }

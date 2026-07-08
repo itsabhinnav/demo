@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Widgets
@@ -55,7 +54,6 @@ fun HomeScreen(
     onNavigateToIviDemo: () -> Unit,
     onNavigateToMaterialComponents: () -> Unit,
     onNavigateToCustomizedMaterialComponents: () -> Unit,
-    onNavigateToMotionLab: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -111,12 +109,6 @@ fun HomeScreen(
                         description = "Production OEM brand system on Material foundations",
                         icon = Icons.Default.Palette,
                         onClick = onNavigateToCustomizedMaterialComponents,
-                    )
-                    HomeEntryCard(
-                        title = "Motion System Lab",
-                        description = "Springs, transitions, and M3 motion tokens",
-                        icon = Icons.Default.Animation,
-                        onClick = onNavigateToMotionLab,
                     )
                 }
                 VerticalDivider()
