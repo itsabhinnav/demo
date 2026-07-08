@@ -19,10 +19,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BlurOn
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Gradient
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Waves
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +59,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.test.design.core.motion.LocalEffectiveMotionScheme
@@ -66,6 +79,34 @@ private enum class MotionTab(val label: String) {
     Cards("Cards"),
     Controls("Controls"),
 }
+
+private data class MotionListDemoItem(
+    val title: String,
+    val icon: ImageVector,
+)
+
+private val MotionListDemoItems = listOf(
+    MotionListDemoItem("Spring-damped list transitions", Icons.Default.MusicNote),
+    MotionListDemoItem("Expressive tab indicator motion", Icons.Default.Favorite),
+    MotionListDemoItem("Shared-axis content fades", Icons.Default.Place),
+    MotionListDemoItem("Physics-based chip selection", Icons.Default.Settings),
+    MotionListDemoItem("Container transform cards", Icons.Default.Widgets),
+    MotionListDemoItem("Emphasized deceleration curves", Icons.Default.Speed),
+    MotionListDemoItem("Spatial spring overshoot", Icons.Default.AutoAwesome),
+    MotionListDemoItem("Default effects cross-fade", Icons.Default.Layers),
+    MotionListDemoItem("Morphing corner radius", Icons.Default.Tune),
+    MotionListDemoItem("Predictive back gesture", Icons.Default.TouchApp),
+    MotionListDemoItem("Shared element bounds", Icons.Default.Gradient),
+    MotionListDemoItem("Elevated surface depth", Icons.Default.BlurOn),
+    MotionListDemoItem("List item placement animation", Icons.Default.Waves),
+    MotionListDemoItem("Chip selection spring", Icons.Default.ElectricBolt),
+    MotionListDemoItem("Tab content cross-fade", Icons.Default.Palette),
+    MotionListDemoItem("Switch thumb physics", Icons.Default.Star),
+    MotionListDemoItem("Carousel snap deceleration", Icons.Default.Speed),
+    MotionListDemoItem("Hero container morph", Icons.Default.Widgets),
+    MotionListDemoItem("Staggered reveal timing", Icons.Default.Layers),
+    MotionListDemoItem("Overshoot damping ratio", Icons.Default.Tune),
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,18 +203,7 @@ fun MotionPhysicsSampleScreen(
 
 @Composable
 private fun ListTabContent() {
-    var items by remember {
-        mutableStateOf(
-            listOf(
-                "Spring-damped list transitions" to Icons.Default.MusicNote,
-                "Expressive tab indicator motion" to Icons.Default.Favorite,
-                "Shared-axis content fades" to Icons.Default.Place,
-                "Physics-based chip selection" to Icons.Default.Settings,
-                "Container transform cards" to Icons.Default.MusicNote,
-                "Emphasized deceleration curves" to Icons.Default.Favorite,
-            ),
-        )
-    }
+    var items by remember { mutableStateOf(MotionListDemoItems) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -187,7 +217,7 @@ private fun ListTabContent() {
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Text(
-                    text = "Reorder rows to see spring-damped item placement.",
+                    text = "Scroll the list, then shuffle rows to see spring-damped item placement.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -199,23 +229,23 @@ private fun ListTabContent() {
                 )
             }
         }
-        items(items, key = { it.first }) { (title, icon) ->
+        items(items, key = { it.title }) { item ->
             ListItem(
                 modifier = Modifier
                     .animateItem()
                     .carListItemHeight(),
                 headlineContent = {
-                    Text(title, style = MaterialTheme.typography.bodyLarge)
+                    Text(item.title, style = MaterialTheme.typography.bodyLarge)
                 },
                 supportingContent = {
                     Text(
-                        "Tap rows to feel expressive list physics",
+                        "Scroll and shuffle to preview expressive list physics",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 },
                 leadingContent = {
                     Icon(
-                        imageVector = icon,
+                        imageVector = item.icon,
                         contentDescription = null,
                         modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
                     )
