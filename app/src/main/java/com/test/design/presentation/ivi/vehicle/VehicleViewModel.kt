@@ -6,7 +6,13 @@ class VehicleViewModel : MviViewModel<VehicleUiState, VehicleEvent>(VehicleUiSta
 
     override fun onEvent(event: VehicleEvent) {
         when (event) {
-            is VehicleEvent.SelectDriveMode -> setState { copy(driveMode = event.mode) }
+            is VehicleEvent.SelectDriveMode -> setState {
+                copy(
+                    driveMode = event.mode,
+                    regenLevel = event.mode.defaultRegenLevel(),
+                    motionPreviewTrigger = motionPreviewTrigger + 1,
+                )
+            }
             is VehicleEvent.SelectScreenMotionScheme -> setState {
                 copy(
                     screenMotionScheme = event.scheme,
