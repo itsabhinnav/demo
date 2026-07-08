@@ -8,7 +8,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -45,7 +43,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.vehicle.TirePressure
 import com.test.design.presentation.ivi.vehicle.TirePressureStatus
-import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.carTouchTarget
 import kotlin.math.roundToInt
@@ -57,10 +54,10 @@ private data class WheelLayout(
 )
 
 private val WheelLayouts = listOf(
-    WheelLayout("FL", 0.24f, 0.22f),
-    WheelLayout("FR", 0.76f, 0.22f),
-    WheelLayout("RL", 0.24f, 0.78f),
-    WheelLayout("RR", 0.76f, 0.78f),
+    WheelLayout("FL", 0.24f, 0.26f),
+    WheelLayout("FR", 0.76f, 0.26f),
+    WheelLayout("RL", 0.24f, 0.74f),
+    WheelLayout("RR", 0.76f, 0.74f),
 )
 
 @Composable
@@ -73,18 +70,16 @@ fun VehicleSchematic(
 ) {
     val tiresByPosition = remember(tires) { tires.associateBy { it.position } }
     val alertCount = tires.count { !it.isOptimal }
-    val averagePsi = remember(tires) { tires.map { it.psi }.average().toInt() }
-    val errorColor = MaterialTheme.colorScheme.error
-    val primarySoft = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+    val avgPsi = remember(tires) { tires.map { it.psi }.average().toInt() }
 
     BoxWithConstraints(
         modifier = modifier
             .clip(ExpressiveShapes.large)
             .background(
-                Brush.radialGradient(
+                Brush.verticalGradient(
                     colors = listOf(
-                        driveModeAccent.copy(alpha = 0.12f),
-                        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+                        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f),
+                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.92f),
                     ),
                 ),
             ),
@@ -92,63 +87,40 @@ fun VehicleSchematic(
         val density = LocalDensity.current
         val widthPx = with(density) { maxWidth.roundToPx() }
         val heightPx = with(density) { maxHeight.roundToPx() }
-        val wheelSize = minOf(maxWidth, maxHeight) * 0.28f
+        val wheelSize = minOf(maxWidth, maxHeight) * 0.27f
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val bodyWidth = size.width * 0.34f
-            val bodyHeight = size.height * 0.62f
+            val bodyWidth = size.width * 0.30f
+            val bodyHeight = size.height * 0.64f
             val bodyLeft = (size.width - bodyWidth) / 2f
             val bodyTop = (size.height - bodyHeight) / 2f
 
             drawRoundRect(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        driveModeAccent.copy(alpha = 0.28f),
-                        driveModeAccent.copy(alpha = 0.10f),
+                        driveModeAccent.copy(alpha = 0.20f),
+                        Color.White.copy(alpha = 0.04f),
                     ),
                 ),
                 topLeft = Offset(bodyLeft, bodyTop),
                 size = Size(bodyWidth, bodyHeight),
-                cornerRadius = CornerRadius(bodyWidth * 0.22f, bodyWidth * 0.22f),
+                cornerRadius = CornerRadius(bodyWidth * 0.26f, bodyWidth * 0.26f),
             )
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.14f),
+                color = Color.White.copy(alpha = 0.16f),
                 topLeft = Offset(bodyLeft, bodyTop),
                 size = Size(bodyWidth, bodyHeight),
-                cornerRadius = CornerRadius(bodyWidth * 0.22f, bodyWidth * 0.22f),
-                style = Stroke(width = 2.5.dp.toPx()),
+                cornerRadius = CornerRadius(bodyWidth * 0.26f, bodyWidth * 0.26f),
+                style = Stroke(width = 2.dp.toPx()),
             )
-
-            val windshieldHeight = bodyHeight * 0.22f
-            drawRoundRect(
-                color = Color.White.copy(alpha = 0.08f),
-                topLeft = Offset(bodyLeft + bodyWidth * 0.12f, bodyTop + bodyHeight * 0.08f),
-                size = Size(bodyWidth * 0.76f, windshieldHeight),
-                cornerRadius = CornerRadius(bodyWidth * 0.08f, bodyWidth * 0.08f),
-            )
-
-            val center = Offset(size.width / 2f, size.height / 2f)
-            WheelLayouts.forEach { layout ->
-                val wheelCenter = Offset(size.width * layout.xFraction, size.height * layout.yFraction)
-                val tire = tiresByPosition[layout.position]
-                val lineColor = when (tire?.status) {
-                    TirePressureStatus.Low, TirePressureStatus.High -> errorColor
-                    else -> Color.White.copy(alpha = 0.16f)
-                }
-                drawLine(
-                    color = lineColor.copy(alpha = if (tire?.isOptimal == false) 0.75f else 0.35f),
-                    start = center,
-                    end = wheelCenter,
-                    strokeWidth = if (tire?.isOptimal == false) 3.dp.toPx() else 1.5.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-            }
         }
 
-        TpmsHub(
+        PressureStatusStrip(
             alertCount = alertCount,
-            averagePsi = averagePsi,
-            modifier = Modifier.align(Alignment.Center),
+            avgPsi = avgPsi,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 10.dp),
         )
 
         WheelLayouts.forEach { layout ->
@@ -158,66 +130,43 @@ fun VehicleSchematic(
             TirePressureWheel(
                 tire = tire,
                 selected = selectedPosition == tire.position,
-                optimalBandColor = primarySoft,
                 onClick = { onTireClick(tire.position) },
                 modifier = Modifier
                     .offset { IntOffset(offsetX, offsetY) }
                     .size(wheelSize),
             )
         }
-
-        TirePressureLegend(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 10.dp, start = 12.dp, end = 12.dp),
-        )
     }
 }
 
 @Composable
-private fun TpmsHub(
+private fun PressureStatusStrip(
     alertCount: Int,
-    averagePsi: Int,
+    avgPsi: Int,
     modifier: Modifier = Modifier,
 ) {
     val statusColor by animateColorAsState(
-        targetValue = if (alertCount == 0) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.error
-        },
+        targetValue = if (alertCount == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "tpms_status",
+        label = "pressure_status_strip_color",
     )
     Surface(
         modifier = modifier,
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
-        shadowElevation = 4.dp,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("TPMS", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("$avgPsi psi avg", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
             Text(
-                text = "$averagePsi",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                text = if (alertCount == 0) "Balanced" else "$alertCount alert",
+                style = MaterialTheme.typography.labelMedium,
+                color = statusColor,
             )
-            Text("avg psi", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = statusColor.copy(alpha = 0.18f),
-            ) {
-                Text(
-                    text = if (alertCount == 0) "All OK" else "$alertCount alert",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = statusColor,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                )
-            }
         }
     }
 }
@@ -226,7 +175,6 @@ private fun TpmsHub(
 private fun TirePressureWheel(
     tire: TirePressure,
     selected: Boolean,
-    optimalBandColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -241,144 +189,83 @@ private fun TirePressureWheel(
         animationSpec = motionScheme.defaultEffectsSpec(),
         label = "tire_arc_${tire.position}",
     )
+    val cardColor by animateColorAsState(
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        },
+        animationSpec = motionScheme.defaultEffectsSpec(),
+        label = "tire_card_${tire.position}",
+    )
     val emphasisScale by animateFloatAsState(
         targetValue = when {
-            selected -> 1.12f
-            !tire.isOptimal -> 1.06f
+            selected -> 1.08f
+            !tire.isOptimal -> 1.04f
             else -> 1f
         },
         animationSpec = motionScheme.defaultSpatialSpec(),
         label = "tire_scale_${tire.position}",
     )
-    val borderColor by animateColorAsState(
-        targetValue = when {
-            selected -> MaterialTheme.colorScheme.primary
-            !tire.isOptimal -> MaterialTheme.colorScheme.error
-            else -> Color.Transparent
-        },
-        animationSpec = motionScheme.defaultEffectsSpec(),
-        label = "tire_border_${tire.position}",
-    )
 
-    Box(
+    Surface(
         modifier = modifier
             .scale(emphasisScale)
             .carTouchTarget()
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+        shape = RoundedCornerShape(20.dp),
+        color = cardColor,
+        shadowElevation = if (!tire.isOptimal) 8.dp else 3.dp,
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke = 7.dp.toPx()
-            val optimalStart = ((TirePressure.OPTIMAL_MIN_PSI - TirePressure.MIN_PSI).toFloat() /
-                (TirePressure.MAX_PSI - TirePressure.MIN_PSI).toFloat()) * 270f
-            val optimalSweep = ((TirePressure.OPTIMAL_MAX_PSI - TirePressure.OPTIMAL_MIN_PSI).toFloat() /
-                (TirePressure.MAX_PSI - TirePressure.MIN_PSI).toFloat()) * 270f
-
-            drawArc(
-                color = Color.White.copy(alpha = 0.12f),
-                startAngle = 135f,
-                sweepAngle = 270f,
-                useCenter = false,
-                style = Stroke(width = stroke, cap = StrokeCap.Round),
-            )
-            drawArc(
-                color = optimalBandColor,
-                startAngle = 135f + optimalStart,
-                sweepAngle = optimalSweep,
-                useCenter = false,
-                style = Stroke(width = stroke * 0.55f, cap = StrokeCap.Round),
-            )
-            drawArc(
-                color = arcColor,
-                startAngle = 135f,
-                sweepAngle = 270f * animatedFill,
-                useCenter = false,
-                style = Stroke(width = stroke, cap = StrokeCap.Round),
-            )
-            if (!tire.isOptimal) {
-                drawCircle(
-                    color = arcColor.copy(alpha = 0.15f),
-                    radius = size.minDimension * 0.52f,
-                    style = Stroke(width = 2.dp.toPx()),
-                )
-            }
-        }
-
         Column(
             modifier = Modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
-                .border(
-                    width = if (selected || !tire.isOptimal) 2.dp else 0.dp,
-                    color = borderColor,
-                    shape = CircleShape,
-                )
-                .padding(6.dp),
+                .fillMaxSize()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                tire.position,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            AnimatedContent(
-                targetState = tire.psi,
-                transitionSpec = {
-                    val direction = if (targetState > initialState) 1 else -1
-                    slideInVertically(animationSpec = motionScheme.defaultSpatialSpec()) { h -> direction * h } togetherWith
-                        slideOutVertically(animationSpec = motionScheme.defaultSpatialSpec()) { h -> -direction * h }
-                },
-                label = "psi_${tire.position}",
-            ) { psi ->
-                Text(
-                    text = "$psi",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = arcColor,
-                    textAlign = TextAlign.Center,
-                )
+            Text(tire.position, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Box(contentAlignment = Alignment.Center) {
+                Canvas(modifier = Modifier.size(52.dp)) {
+                    val stroke = 6.dp.toPx()
+                    drawArc(
+                        color = Color.White.copy(alpha = 0.16f),
+                        startAngle = 135f,
+                        sweepAngle = 270f,
+                        useCenter = false,
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                    drawArc(
+                        color = arcColor,
+                        startAngle = 135f,
+                        sweepAngle = 270f * animatedFill,
+                        useCenter = false,
+                        style = Stroke(width = stroke, cap = StrokeCap.Round),
+                    )
+                }
+                AnimatedContent(
+                    targetState = tire.psi,
+                    transitionSpec = {
+                        val direction = if (targetState > initialState) 1 else -1
+                        slideInVertically(animationSpec = motionScheme.defaultSpatialSpec()) { h -> direction * h } togetherWith
+                            slideOutVertically(animationSpec = motionScheme.defaultSpatialSpec()) { h -> -direction * h }
+                    },
+                    label = "psi_${tire.position}",
+                ) { psi ->
+                    Text(
+                        text = "$psi",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = arcColor,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
             Text(
                 text = tire.status.label(),
                 style = MaterialTheme.typography.labelSmall,
-                color = arcColor.copy(alpha = 0.85f),
+                color = arcColor,
             )
         }
-    }
-}
-
-@Composable
-private fun TirePressureLegend(modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            LegendItem(color = MaterialTheme.colorScheme.primary, label = "Optimal ${TirePressure.OPTIMAL_MIN_PSI}–${TirePressure.OPTIMAL_MAX_PSI}")
-            LegendItem(color = MaterialTheme.colorScheme.error, label = "Low / High")
-        }
-    }
-}
-
-@Composable
-private fun LegendItem(color: Color, label: String) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .clip(CircleShape)
-                .background(color),
-        )
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -391,6 +278,6 @@ private fun TirePressureStatus.color(): Color = when (this) {
 
 private fun TirePressureStatus.label(): String = when (this) {
     TirePressureStatus.Optimal -> "OK"
-    TirePressureStatus.Low -> "Low"
-    TirePressureStatus.High -> "High"
+    TirePressureStatus.Low -> "LOW"
+    TirePressureStatus.High -> "HIGH"
 }
