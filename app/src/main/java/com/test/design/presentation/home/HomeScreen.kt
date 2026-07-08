@@ -57,17 +57,10 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Oem AAOS Playground",
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                        Text(
-                            text = "Material 3 expressive motion for landscape displays",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Text(
+                        text = "Oem AAOS Playground",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -94,18 +87,6 @@ fun HomeScreen(
                     Text(
                         text = "Welcome",
                         style = MaterialTheme.typography.headlineMedium,
-                    )
-                    Text(
-                        text = "This app is a clean Material 3 shell for AAOS landscape (1920×720). " +
-                            "Custom OEM components, template zones, and demo galleries have been removed.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = "Use the side panel to simulate driving restrictions. " +
-                            "MotionScheme switches between expressive (parked) and standard (driving).",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     HomeEntryCard(
                         title = "IVI Expressive Demo",
