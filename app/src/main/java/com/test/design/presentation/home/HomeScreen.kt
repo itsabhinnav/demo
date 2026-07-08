@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -46,6 +47,7 @@ import com.test.design.theme.carTouchTarget
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    onNavigateToIviDemo: () -> Unit,
     onNavigateToMaterialComponents: () -> Unit,
     onNavigateToMotionPhysicsSample: () -> Unit,
     modifier: Modifier = Modifier,
@@ -104,6 +106,12 @@ fun HomeScreen(
                             "MotionScheme switches between expressive (parked) and standard (driving).",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    HomeEntryCard(
+                        title = "IVI Expressive Demo",
+                        description = "Dashboard, climate, and media with M3 motion",
+                        icon = Icons.Default.Dashboard,
+                        onClick = onNavigateToIviDemo,
                     )
                     HomeEntryCard(
                         title = "Material Components",

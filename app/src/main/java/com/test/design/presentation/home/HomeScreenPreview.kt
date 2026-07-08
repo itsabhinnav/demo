@@ -10,6 +10,7 @@ import com.test.design.theme.AppTheme
 private fun HomeScreenPreview() {
     AppTheme {
         HomeScreen(
+            onNavigateToIviDemo = {},
             onNavigateToMaterialComponents = {},
             onNavigateToMotionPhysicsSample = {},
         )

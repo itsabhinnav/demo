@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.test.design.presentation.home.HomeScreen
+import com.test.design.presentation.ivi.dashboard.IviDemoScreen
 import com.test.design.presentation.material.MaterialComponentsScreen
 import com.test.design.presentation.motion.MotionPhysicsSampleScreen
 
@@ -21,12 +22,20 @@ fun AppNavHost(
     ) {
         composable(AppDestination.Home) {
             HomeScreen(
+                onNavigateToIviDemo = {
+                    navController.navigate(AppDestination.IviExpressiveDemo)
+                },
                 onNavigateToMaterialComponents = {
                     navController.navigate(AppDestination.MaterialComponents)
                 },
                 onNavigateToMotionPhysicsSample = {
                     navController.navigate(AppDestination.MotionPhysicsSample)
                 },
+            )
+        }
+        composable(AppDestination.IviExpressiveDemo) {
+            IviDemoScreen(
+                onExit = { navController.popBackStack() },
             )
         }
         composable(AppDestination.MaterialComponents) {
