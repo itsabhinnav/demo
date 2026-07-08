@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
@@ -81,6 +82,7 @@ fun IviDemoScreen(
 
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
             Scaffold(
+                containerColor = Color.Transparent,
                 topBar = {
                     if (dashboardState.expandedWidget == null) {
                         TopAppBar(

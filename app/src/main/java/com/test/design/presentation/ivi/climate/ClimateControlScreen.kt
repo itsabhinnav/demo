@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.climate.components.AnimatedTemperatureCounter
 import com.test.design.presentation.ivi.climate.components.ClimateZoneSelector
 import com.test.design.presentation.ivi.climate.components.FanSpeedBars
@@ -85,10 +86,15 @@ fun SharedTransitionScope.ClimateControlScreen(
                 widget = DashboardWidget.Climate,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = modifier.fillMaxSize(),
-            )
-                .background(animatedBackground)
-                .padding(CarDesignTokens.ContentPadding),
+            ),
         ) {
+            ScreenBackground()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(animatedBackground.copy(alpha = 0.72f))
+                    .padding(CarDesignTokens.ContentPadding),
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -233,6 +239,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                         }
                     }
                 }
+            }
             }
         }
     }

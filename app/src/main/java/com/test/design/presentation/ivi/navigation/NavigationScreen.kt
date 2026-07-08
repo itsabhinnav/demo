@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -54,6 +55,7 @@ fun SharedTransitionScope.NavigationScreen(
             modifier = modifier.fillMaxSize(),
         ),
     ) {
+        ScreenBackground(modifier = Modifier.fillMaxSize())
         DummyMapBackground(modifier = Modifier.fillMaxSize())
 
         Box(
