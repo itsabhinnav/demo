@@ -12,17 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -30,15 +25,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
 import com.test.design.theme.CarBackgroundTokens
-import com.test.design.presentation.ivi.climate.components.AnimatedTemperatureCounter
+import com.test.design.presentation.ivi.climate.components.ClimateFanSpeedCard
+import com.test.design.presentation.ivi.climate.components.ClimateTemperatureSection
 import com.test.design.presentation.ivi.climate.components.ClimateZoneSelector
-import com.test.design.presentation.ivi.climate.components.FanSpeedBars
+import com.test.design.presentation.ivi.climate.components.TemperatureAdjustButton
 import com.test.design.presentation.ivi.climate.components.MorphingAirflowSegmentedButton
 import com.test.design.presentation.ivi.climate.components.SeatHeatIndicator
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
@@ -50,7 +45,6 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateCardActiveRadii
 import com.test.design.theme.ClimateCardRestRadii
-import com.test.design.theme.carTouchTarget
 import com.test.design.theme.climateColorScheme
 import com.test.design.theme.rememberClimateDialShape
 import com.test.design.theme.temperatureToFraction
@@ -135,41 +129,18 @@ fun SharedTransitionScope.ClimateControlScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TemperatureAdjustButton(
-                                icon = Icons.Default.Remove,
-                                contentDescription = "Decrease temperature",
-                                onClick = { onEvent(ClimateEvent.DecreaseTemperature) },
-                            )
-                            Box(
-                                modifier = widgetContentSharedElement(
-                                    widget = DashboardWidget.Climate,
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    modifier = Modifier
-                                        .size(240.dp)
-                                        .clip(dialShape)
-                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
-                                ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    AnimatedTemperatureCounter(temperature = activeTemperature)
-                                    Text(
-                                        text = if (uiState.isAcEnabled) "A/C On" else "A/C Off",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    )
-                                }
-                            }
-                            TemperatureAdjustButton(
-                                icon = Icons.Default.Add,
-                                contentDescription = "Increase temperature",
-                                onClick = { onEvent(ClimateEvent.IncreaseTemperature) },
-                            )
-                        }
+                        ClimateTemperatureSection(
+                            temperature = activeTemperature,
+                            isAcEnabled = uiState.isAcEnabled,
+                            dialShape = dialShape,
+                            onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
+                            onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
+                            modifier = widgetContentSharedElement(
+                                widget = DashboardWidget.Climate,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                modifier = Modifier.fillMaxWidth(),
+                            ),
+                        )
                         ClimateZoneSelector(
                             driverTemp = uiState.temperatureCelsius,
                             passengerTemp = uiState.passengerTemperatureCelsius,
@@ -182,24 +153,16 @@ fun SharedTransitionScope.ClimateControlScreen(
                         modifier = Modifier.weight(0.55f),
                         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                     ) {
-                        MorphingDetailSurfaceCard(
-                            morphExpanded = uiState.isAcEnabled,
-                            compactRadii = ClimateCardRestRadii,
-                            expandedRadii = ClimateCardActiveRadii,
+                        ClimateFanSpeedCard(
+                            fanSpeed = uiState.fanSpeed,
+                            maxFanSpeed = uiState.maxFanSpeed,
+                            isAcEnabled = uiState.isAcEnabled,
+                            onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
                             modifier = widgetControlsSharedElement(
                                 widget = DashboardWidget.Climate,
                                 animatedVisibilityScope = animatedVisibilityScope,
-                                modifier = Modifier.fillMaxWidth(),
                             ),
-                        ) {
-                            Text("Fan speed", style = MaterialTheme.typography.titleMedium)
-                            FanSpeedBars(
-                                fanSpeed = uiState.fanSpeed,
-                                maxFanSpeed = uiState.maxFanSpeed,
-                                onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
-                                modifier = Modifier.padding(top = 12.dp),
-                            )
-                        }
+                        )
                         MorphingDetailSurfaceCard(
                             morphExpanded = uiState.isAcEnabled,
                             compactRadii = ClimateCardRestRadii,
@@ -266,27 +229,3 @@ fun SharedTransitionScope.ClimateControlScreen(
     }
 }
 
-@Composable
-private fun TemperatureAdjustButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-) {
-    FilledIconButton(
-        onClick = onClick,
-        modifier = Modifier
-            .size(CarDesignTokens.MinTouchTarget)
-            .clip(CircleShape)
-            .carTouchTarget(),
-        colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-        )
-    }
-}

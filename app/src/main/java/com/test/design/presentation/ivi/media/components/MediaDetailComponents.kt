@@ -34,6 +34,7 @@ import com.test.design.theme.carTouchTarget
 fun AnimatedTrackInfo(
     track: Track,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
     val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
@@ -46,28 +47,30 @@ fun AnimatedTrackInfo(
         },
         label = "track_info",
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)) {
             Text(
                 text = track.title,
-                style = MaterialTheme.typography.displaySmall,
+                style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 2,
+                maxLines = if (compact) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = track.artist,
-                style = MaterialTheme.typography.headlineSmall,
+                style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = track.album,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (!compact) {
+                Text(
+                    text = track.album,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

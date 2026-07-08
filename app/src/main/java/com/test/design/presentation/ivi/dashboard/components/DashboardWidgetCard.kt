@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,13 +21,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
+import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
+import com.test.design.presentation.ivi.navigation.NavigationEvent
 import com.test.design.presentation.ivi.navigation.NavigationUiState
+import com.test.design.presentation.ivi.vehicle.VehicleEvent
 import com.test.design.presentation.ivi.vehicle.VehicleUiState
 import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
@@ -47,10 +52,14 @@ fun SharedTransitionScope.DashboardWidgetCard(
     isExpanded: Boolean = false,
     morphExpanded: Boolean = false,
     mediaState: MediaUiState? = null,
+    onMediaEvent: ((MediaEvent) -> Unit)? = null,
     climateState: ClimateUiState? = null,
     climateTemperature: Int? = null,
+    onClimateEvent: ((ClimateEvent) -> Unit)? = null,
     navigationState: NavigationUiState? = null,
+    onNavigationEvent: ((NavigationEvent) -> Unit)? = null,
     vehicleState: VehicleUiState? = null,
+    onVehicleEvent: ((VehicleEvent) -> Unit)? = null,
 ) {
     val containerColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
@@ -87,45 +96,52 @@ fun SharedTransitionScope.DashboardWidgetCard(
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(
-                imageVector = widget.icon,
-                contentDescription = null,
-                modifier = widgetIconSharedElement(
-                    widget = widget,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    modifier = Modifier
-                        .size(CarDesignTokens.PrimaryIcon)
-                        .carTouchTarget(),
-                ),
-                tint = contentColor,
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    imageVector = widget.icon,
+                    contentDescription = null,
+                    modifier = widgetIconSharedElement(
+                        widget = widget,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier
+                            .size(CarDesignTokens.PrimaryIcon)
+                            .carTouchTarget(),
+                    ),
+                    tint = contentColor,
+                )
                 Text(
                     text = widget.title,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = widgetTitleSharedElement(
                         widget = widget,
                         animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier,
+                        modifier = Modifier.weight(1f),
                     ),
                 )
-                if (!isExpanded) {
-                    WidgetPreviewContent(
-                        widget = widget,
-                        contentColor = contentColor,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        mediaState = mediaState,
-                        climateState = climateState,
-                        climateTemperature = climateTemperature,
-                        navigationState = navigationState,
-                        vehicleState = vehicleState,
-                    )
-                }
+            }
+            if (!isExpanded) {
+                WidgetEmbeddedContent(
+                    widget = widget,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    mediaState = mediaState,
+                    onMediaEvent = onMediaEvent,
+                    climateState = climateState,
+                    climateTemperature = climateTemperature,
+                    onClimateEvent = onClimateEvent,
+                    navigationState = navigationState,
+                    onNavigationEvent = onNavigationEvent,
+                    vehicleState = vehicleState,
+                    onVehicleEvent = onVehicleEvent,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }

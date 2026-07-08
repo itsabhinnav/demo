@@ -127,10 +127,14 @@ fun IviDemoScreen(
                             onEvent = dashboardViewModel::onEvent,
                             animatedVisibilityScope = this@AnimatedContent,
                             mediaState = mediaState,
+                            onMediaEvent = mediaViewModel::onEvent,
                             climateState = climateState,
                             climateTemperature = climateViewModel.activeTemperature(),
+                            onClimateEvent = climateViewModel::onEvent,
                             navigationState = navigationState,
+                            onNavigationEvent = navigationViewModel::onEvent,
                             vehicleState = vehicleState,
+                            onVehicleEvent = vehicleViewModel::onEvent,
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
@@ -237,10 +241,14 @@ private fun SharedTransitionScope.DashboardHubContent(
     onEvent: (DashboardEvent) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     mediaState: com.test.design.presentation.ivi.media.MediaUiState,
+    onMediaEvent: (com.test.design.presentation.ivi.media.MediaEvent) -> Unit,
     climateState: com.test.design.presentation.ivi.climate.ClimateUiState,
     climateTemperature: Int,
+    onClimateEvent: (com.test.design.presentation.ivi.climate.ClimateEvent) -> Unit,
     navigationState: com.test.design.presentation.ivi.navigation.NavigationUiState,
+    onNavigationEvent: (com.test.design.presentation.ivi.navigation.NavigationEvent) -> Unit,
     vehicleState: com.test.design.presentation.ivi.vehicle.VehicleUiState,
+    onVehicleEvent: (com.test.design.presentation.ivi.vehicle.VehicleEvent) -> Unit,
 ) {
     DashboardWidgetGrid(
         widgets = state.widgets,
@@ -261,10 +269,14 @@ private fun SharedTransitionScope.DashboardHubContent(
                     else -> false
                 },
                 mediaState = mediaState,
+                onMediaEvent = onMediaEvent,
                 climateState = climateState,
                 climateTemperature = climateTemperature,
+                onClimateEvent = onClimateEvent,
                 navigationState = navigationState,
+                onNavigationEvent = onNavigationEvent,
                 vehicleState = vehicleState,
+                onVehicleEvent = onVehicleEvent,
             )
         },
     )

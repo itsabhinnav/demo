@@ -101,17 +101,21 @@ fun FanSpeedBars(
     maxFanSpeed: Int,
     onSpeedSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val motionSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+    val barSpacing = if (compact) 4.dp else 8.dp
+    val baseHeight = if (compact) 12 else 24
+    val heightStep = if (compact) 8 else 14
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(barSpacing),
         verticalAlignment = Alignment.Bottom,
     ) {
         repeat(maxFanSpeed) { index ->
             val level = index + 1
             val active = level <= fanSpeed
-            val targetHeight = (24 + level * 14).dp
+            val targetHeight = (baseHeight + level * heightStep).dp
             val animatedFraction by animateFloatAsState(
                 targetValue = if (active) 1f else 0.35f,
                 animationSpec = motionSpec,

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.unit.dp
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -33,8 +34,11 @@ fun MorphingPlayPauseButton(
     isPlaying: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+    val buttonSize = if (compact) 32.dp else CarDesignTokens.MinTouchTarget
+    val iconSize = if (compact) 20.dp else CarDesignTokens.PrimaryIcon
     val pressScale by animateFloatAsState(
         targetValue = if (isPlaying) 1f else 0.96f,
         animationSpec = motionSpec,
@@ -43,7 +47,7 @@ fun MorphingPlayPauseButton(
 
     Box(
         modifier = modifier
-            .size(CarDesignTokens.MinTouchTarget)
+            .size(buttonSize)
             .scale(pressScale)
             .clip(CircleShape)
             .background(
@@ -59,7 +63,7 @@ fun MorphingPlayPauseButton(
         FilledIconButton(
             onClick = onClick,
             modifier = Modifier
-                .size(CarDesignTokens.MinTouchTarget)
+                .size(buttonSize)
                 .carTouchTarget(),
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0f),
@@ -80,7 +84,7 @@ fun MorphingPlayPauseButton(
                 Icon(
                     imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = if (playing) "Pause" else "Play",
-                    modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                    modifier = Modifier.size(iconSize),
                 )
             }
         }

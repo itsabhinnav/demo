@@ -55,7 +55,12 @@ fun VehicleEnergyCockpit(
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
     controlsModifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
+    val gaugeSize = if (compact) 100.dp else 260.dp
+    val strokeDp = if (compact) 6.dp else 14.dp
+    val rangeStrokeDp = if (compact) 4.dp else 8.dp
+    val padding = if (compact) 4.dp else CarDesignTokens.TouchTargetSpacing
     val motionScheme = MaterialTheme.motionScheme
     val animatedPercent by animateFloatAsState(
         targetValue = percent / 100f,
@@ -131,35 +136,33 @@ fun VehicleEnergyCockpit(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(CarDesignTokens.TouchTargetSpacing),
+                .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                text = if (isCharging) "Charging" else "Energy",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (!compact) {
+                Text(
+                    text = if (isCharging) "Charging" else "Energy",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
             Box(
-                modifier = Modifier
-                    .size(260.dp)
-                    .then(
-                        if (isCharging) Modifier else Modifier,
-                    ),
+                modifier = Modifier.size(gaugeSize),
                 contentAlignment = Alignment.Center,
             ) {
                 val gaugeScale = if (isCharging) chargePulse else 1f
                 Canvas(
                     modifier = Modifier
-                        .size(260.dp)
+                        .size(gaugeSize)
                         .graphicsLayer {
                             scaleX = gaugeScale
                             scaleY = gaugeScale
                         },
                 ) {
-                    val stroke = 14.dp.toPx()
-                    val rangeStroke = 8.dp.toPx()
+                    val stroke = strokeDp.toPx()
+                    val rangeStroke = rangeStrokeDp.toPx()
                     rotate(135f) {
                         drawArc(
                             color = Color.White.copy(alpha = 0.08f),
@@ -209,32 +212,46 @@ fun VehicleEnergyCockpit(
                     AnimatedStatCounter(
                         value = percent,
                         suffix = "%",
-                        style = MaterialTheme.typography.displayLarge,
+                        style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displayLarge,
                     )
                     Text(
                         text = "$rangeMiles mi",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
-            Row(
-                modifier = controlsModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                EnergyStatChip(
-                    label = if (isCharging) "Rate" else "Range",
-                    value = if (isCharging) "${chargeRateKw.toInt()} kW" else "$maxRangeMiles mi max",
-                )
-                EnergyStatChip(
-                    label = "Status",
-                    value = when {
-                        isCharging -> "Plugged in"
-                        percent < 30 -> "Low"
-                        else -> "Ready"
+            if (compact) {
+                Text(
+                    text = when {
+                        isCharging -> "Charging · ${chargeRateKw.toInt()} kW"
+                        percent < 30 -> "Low · $rangeMiles mi"
+                        else -> "Ready · $rangeMiles mi"
                     },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = controlsModifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
                 )
+            } else {
+                Row(
+                    modifier = controlsModifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    EnergyStatChip(
+                        label = if (isCharging) "Rate" else "Range",
+                        value = if (isCharging) "${chargeRateKw.toInt()} kW" else "$maxRangeMiles mi max",
+                    )
+                    EnergyStatChip(
+                        label = "Status",
+                        value = when {
+                            isCharging -> "Plugged in"
+                            percent < 30 -> "Low"
+                            else -> "Ready"
+                        },
+                    )
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.IntOffset
 fun AnimatedTemperatureCounter(
     temperature: Int,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntOffset>()
 
@@ -30,7 +31,7 @@ fun AnimatedTemperatureCounter(
     ) { targetTemp ->
         Text(
             text = "$targetTemp°",
-            style = MaterialTheme.typography.displayLarge,
+            style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
