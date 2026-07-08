@@ -113,6 +113,8 @@ fun IviDemoScreen(
                             animatedVisibilityScope = this@AnimatedContent,
                             climateMorphExpanded = climateState.isAcEnabled,
                             mediaMorphExpanded = mediaState.isPlaying,
+                            vehicleMorphExpanded = vehicleState.driveMode == com.test.design.presentation.ivi.vehicle.DriveMode.Sport ||
+                                vehicleState.motionLabExpanded,
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
@@ -155,6 +157,7 @@ private fun SharedTransitionScope.DashboardHubContent(
     animatedVisibilityScope: AnimatedVisibilityScope,
     climateMorphExpanded: Boolean,
     mediaMorphExpanded: Boolean,
+    vehicleMorphExpanded: Boolean,
 ) {
     DashboardWidgetGrid(
         widgets = state.widgets,
@@ -171,6 +174,7 @@ private fun SharedTransitionScope.DashboardHubContent(
                 morphExpanded = when (widget) {
                     DashboardWidget.Climate -> climateMorphExpanded
                     DashboardWidget.Media -> mediaMorphExpanded
+                    DashboardWidget.Vehicle -> vehicleMorphExpanded
                     else -> false
                 },
             )
