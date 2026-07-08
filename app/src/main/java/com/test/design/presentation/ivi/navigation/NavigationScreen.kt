@@ -28,13 +28,13 @@ import androidx.compose.ui.graphics.Color
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.navigation.components.DummyMapBackground
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
 import com.test.design.presentation.ivi.navigation.components.TurnInstructionCard
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
-import com.test.design.theme.WidgetCardShape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -48,14 +48,11 @@ fun SharedTransitionScope.NavigationScreen(
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .sharedBounds(
-                rememberSharedContentState(key = DashboardWidget.Navigation.sharedElementKey),
-                animatedVisibilityScope = animatedVisibilityScope,
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-            ),
+        modifier = widgetContainerTransform(
+            widget = DashboardWidget.Navigation,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier.fillMaxSize(),
+        ),
     ) {
         DummyMapBackground(modifier = Modifier.fillMaxSize())
 
@@ -83,10 +80,8 @@ fun SharedTransitionScope.NavigationScreen(
                 shadowElevation = CarDesignTokens.TouchTargetSpacing,
             ) {
                 WidgetScreenHeader(
-                    title = "Navigation",
+                    widget = DashboardWidget.Navigation,
                     onBack = onBack,
-                    widgetIcon = DashboardWidget.Navigation.icon,
-                    sharedElementKey = DashboardWidget.Navigation.sharedElementKey,
                     animatedVisibilityScope = animatedVisibilityScope,
                     modifier = Modifier.padding(horizontal = CarDesignTokens.TouchTargetSpacing),
                     trailingContent = {

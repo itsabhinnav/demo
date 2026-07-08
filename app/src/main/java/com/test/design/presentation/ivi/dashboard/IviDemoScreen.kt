@@ -7,10 +7,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -96,27 +94,14 @@ fun IviDemoScreen(
                     }
                 },
             ) { padding ->
-                val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
-                val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
                 AnimatedContent(
                     targetState = dashboardState.expandedWidget,
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize(),
                     transitionSpec = {
-                        (
-                            fadeIn(animationSpec = effectsSpec) +
-                                scaleIn(
-                                    initialScale = 0.92f,
-                                    animationSpec = spatialSpec,
-                                )
-                            ) togetherWith (
-                            fadeOut(animationSpec = effectsSpec) +
-                                scaleOut(
-                                    targetScale = 0.92f,
-                                    animationSpec = spatialSpec,
-                                )
-                            )
+                        // Let sharedBounds drive the container transform; only cross-fade siblings.
+                        EnterTransition.None togetherWith ExitTransition.None
                     },
                     label = "dashboard_container_transform",
                 ) { expandedWidget ->

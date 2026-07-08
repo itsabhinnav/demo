@@ -16,7 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -38,35 +40,33 @@ fun WidgetScreenHeader(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.WidgetScreenHeader(
-    title: String,
+    widget: DashboardWidget,
     onBack: () -> Unit,
-    widgetIcon: ImageVector,
-    sharedElementKey: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     trailingContent: @Composable () -> Unit = {},
 ) {
     WidgetScreenHeaderContent(
-        title = title,
+        title = widget.title,
         onBack = onBack,
         modifier = modifier,
         trailingContent = trailingContent,
         iconContent = {
             Icon(
-                imageVector = widgetIcon,
+                imageVector = widget.icon,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(CarDesignTokens.PrimaryIcon)
-                    .sharedElement(
-                        rememberSharedContentState(key = "${sharedElementKey}_icon"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                    ),
+                modifier = widgetIconSharedElement(
+                    widget = widget,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                ),
                 tint = MaterialTheme.colorScheme.onBackground,
             )
         },
-        titleModifier = Modifier.sharedElement(
-            rememberSharedContentState(key = "${sharedElementKey}_title"),
+        titleModifier = widgetTitleSharedElement(
+            widget = widget,
             animatedVisibilityScope = animatedVisibilityScope,
+            modifier = Modifier,
         ),
     )
 }

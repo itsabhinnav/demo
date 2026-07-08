@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.media.components.AnimatedTrackInfo
 import com.test.design.presentation.ivi.media.components.MediaQueueSidePanel
 import com.test.design.presentation.ivi.media.components.MediaSourceChips
@@ -50,7 +51,6 @@ import com.test.design.presentation.ivi.media.components.RepeatModeLabel
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.MediaAlbumCompactRadii
 import com.test.design.theme.MediaAlbumExpandedRadii
-import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
 import com.test.design.theme.rememberMorphingRoundedShape
 
@@ -76,14 +76,11 @@ fun SharedTransitionScope.MediaPlayerScreen(
     )
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .sharedBounds(
-                rememberSharedContentState(key = DashboardWidget.Media.sharedElementKey),
-                animatedVisibilityScope = animatedVisibilityScope,
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-            )
+        modifier = widgetContainerTransform(
+            widget = DashboardWidget.Media,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier.fillMaxSize(),
+        )
             .background(MaterialTheme.colorScheme.background)
             .padding(CarDesignTokens.ContentPadding),
     ) {
@@ -132,10 +129,8 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
     ) {
         WidgetScreenHeader(
-            title = "Media",
+            widget = DashboardWidget.Media,
             onBack = onBack,
-            widgetIcon = DashboardWidget.Media.icon,
-            sharedElementKey = DashboardWidget.Media.sharedElementKey,
             animatedVisibilityScope = animatedVisibilityScope,
         )
 

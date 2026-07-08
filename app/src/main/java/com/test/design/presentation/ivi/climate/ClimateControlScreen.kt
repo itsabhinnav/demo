@@ -41,10 +41,10 @@ import com.test.design.presentation.ivi.climate.components.SeatHeatIndicator
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateDialCompactRadii
 import com.test.design.theme.ClimateDialExpandedRadii
-import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
 import com.test.design.theme.climateColorScheme
 import com.test.design.theme.rememberMorphingRoundedShape
@@ -83,14 +83,11 @@ fun SharedTransitionScope.ClimateControlScreen(
         motionScheme = MaterialTheme.motionScheme,
     ) {
         Box(
-            modifier = modifier
-                .fillMaxSize()
-                .sharedBounds(
-                    rememberSharedContentState(key = DashboardWidget.Climate.sharedElementKey),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                    clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-                )
+            modifier = widgetContainerTransform(
+                widget = DashboardWidget.Climate,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = modifier.fillMaxSize(),
+            )
                 .background(animatedBackground)
                 .padding(CarDesignTokens.ContentPadding),
         ) {
@@ -101,10 +98,8 @@ fun SharedTransitionScope.ClimateControlScreen(
                 verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
             ) {
                 WidgetScreenHeader(
-                    title = "Climate",
+                    widget = DashboardWidget.Climate,
                     onBack = onBack,
-                    widgetIcon = DashboardWidget.Climate.icon,
-                    sharedElementKey = DashboardWidget.Climate.sharedElementKey,
                     animatedVisibilityScope = animatedVisibilityScope,
                     trailingContent = {
                         Switch(

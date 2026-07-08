@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.vehicle.components.AnimatedBatteryGauge
 import com.test.design.presentation.ivi.vehicle.components.DriveModeSelector
 import com.test.design.presentation.ivi.vehicle.components.TirePressureGrid
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.WidgetCardShape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -38,14 +38,11 @@ fun SharedTransitionScope.VehicleScreen(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .sharedBounds(
-                rememberSharedContentState(key = DashboardWidget.Vehicle.sharedElementKey),
-                animatedVisibilityScope = animatedVisibilityScope,
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-            )
+        modifier = widgetContainerTransform(
+            widget = DashboardWidget.Vehicle,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier.fillMaxSize(),
+        )
             .background(MaterialTheme.colorScheme.background)
             .padding(CarDesignTokens.ContentPadding),
     ) {
@@ -56,10 +53,8 @@ fun SharedTransitionScope.VehicleScreen(
             verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {
             WidgetScreenHeader(
-                title = "Vehicle",
+                widget = DashboardWidget.Vehicle,
                 onBack = onBack,
-                widgetIcon = DashboardWidget.Vehicle.icon,
-                sharedElementKey = DashboardWidget.Vehicle.sharedElementKey,
                 animatedVisibilityScope = animatedVisibilityScope,
             )
 

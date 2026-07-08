@@ -21,6 +21,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
@@ -49,17 +52,15 @@ fun SharedTransitionScope.DashboardWidgetCard(
     }
 
     Box(
-        modifier = modifier
-            .sharedBounds(
-                rememberSharedContentState(key = widget.sharedElementKey),
-                animatedVisibilityScope = animatedVisibilityScope,
-                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                clipInOverlayDuringTransition = OverlayClip(WidgetCardShape),
-            )
-            .clip(WidgetCardShape)
-            .background(containerColor)
-            .clickable(enabled = !isExpanded, onClick = onClick)
-            .padding(CarDesignTokens.SectionPadding),
+        modifier = widgetContainerTransform(
+            widget = widget,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier
+                .clip(WidgetCardShape)
+                .background(containerColor)
+                .clickable(enabled = !isExpanded, onClick = onClick)
+                .padding(CarDesignTokens.SectionPadding),
+        ),
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -68,13 +69,13 @@ fun SharedTransitionScope.DashboardWidgetCard(
             Icon(
                 imageVector = widget.icon,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(CarDesignTokens.PrimaryIcon)
-                    .carTouchTarget()
-                    .sharedElement(
-                        rememberSharedContentState(key = "${widget.sharedElementKey}_icon"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                    ),
+                modifier = widgetIconSharedElement(
+                    widget = widget,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .size(CarDesignTokens.PrimaryIcon)
+                        .carTouchTarget(),
+                ),
                 tint = contentColor,
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -84,9 +85,10 @@ fun SharedTransitionScope.DashboardWidgetCard(
                     color = contentColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.sharedElement(
-                        rememberSharedContentState(key = "${widget.sharedElementKey}_title"),
+                    modifier = widgetTitleSharedElement(
+                        widget = widget,
                         animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier,
                     ),
                 )
                 if (!isExpanded) {
