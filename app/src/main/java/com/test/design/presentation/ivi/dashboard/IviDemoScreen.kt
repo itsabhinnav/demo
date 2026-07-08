@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -32,10 +31,13 @@ import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
-import com.test.design.presentation.ivi.dashboard.components.WidgetPlaceholderScreen
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
+import com.test.design.presentation.ivi.navigation.NavigationScreen
+import com.test.design.presentation.ivi.navigation.NavigationViewModel
+import com.test.design.presentation.ivi.vehicle.VehicleScreen
+import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -47,10 +49,14 @@ fun IviDemoScreen(
     dashboardViewModel: DashboardViewModel = viewModel(),
     climateViewModel: ClimateViewModel = viewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
+    navigationViewModel: NavigationViewModel = viewModel(),
+    vehicleViewModel: VehicleViewModel = viewModel(),
 ) {
     val dashboardState by dashboardViewModel.state.collectAsStateWithLifecycle()
     val climateState by climateViewModel.state.collectAsStateWithLifecycle()
     val mediaState by mediaViewModel.state.collectAsStateWithLifecycle()
+    val navigationState by navigationViewModel.state.collectAsStateWithLifecycle()
+    val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
 
     IviExpressiveTheme {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
@@ -109,6 +115,7 @@ fun IviDemoScreen(
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
+                            activeTemperature = climateViewModel.activeTemperature(),
                             onEvent = climateViewModel::onEvent,
                             onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
                             animatedVisibilityScope = this@AnimatedContent,
@@ -119,10 +126,15 @@ fun IviDemoScreen(
                             onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
                             animatedVisibilityScope = this@AnimatedContent,
                         )
-                        DashboardWidget.Navigation,
-                        DashboardWidget.Vehicle,
-                        -> WidgetPlaceholderScreen(
-                            widget = expandedWidget,
+                        DashboardWidget.Navigation -> NavigationScreen(
+                            uiState = navigationState,
+                            onEvent = navigationViewModel::onEvent,
+                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            animatedVisibilityScope = this@AnimatedContent,
+                        )
+                        DashboardWidget.Vehicle -> VehicleScreen(
+                            uiState = vehicleState,
+                            onEvent = vehicleViewModel::onEvent,
                             onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
                             animatedVisibilityScope = this@AnimatedContent,
                         )

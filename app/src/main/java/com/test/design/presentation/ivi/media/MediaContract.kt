@@ -1,5 +1,17 @@
 package com.test.design.presentation.ivi.media
 
+enum class MediaSource(val label: String) {
+    Bluetooth("Bluetooth"),
+    Radio("Radio"),
+    Usb("USB"),
+}
+
+enum class RepeatMode {
+    Off,
+    All,
+    One,
+}
+
 data class Track(
     val id: String,
     val title: String,
@@ -25,7 +37,11 @@ data class MediaUiState(
     ),
     val isPlaying: Boolean = true,
     val progress: Float = 0.42f,
+    val elapsedLabel: String = "1:45",
     val isQueueVisible: Boolean = false,
+    val isShuffleOn: Boolean = false,
+    val repeatMode: RepeatMode = RepeatMode.Off,
+    val source: MediaSource = MediaSource.Bluetooth,
 )
 
 sealed interface MediaEvent {
@@ -34,4 +50,7 @@ sealed interface MediaEvent {
     data object NextTrack : MediaEvent
     data object PreviousTrack : MediaEvent
     data class SelectTrack(val track: Track) : MediaEvent
+    data object ToggleShuffle : MediaEvent
+    data object CycleRepeat : MediaEvent
+    data class SelectSource(val source: MediaSource) : MediaEvent
 }
