@@ -48,12 +48,14 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primaryContainer
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> MaterialTheme.colorScheme.surfaceContainer
     }
     val contentColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.onTertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.onPrimaryContainer
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     val cardShape: Shape = when (widget) {

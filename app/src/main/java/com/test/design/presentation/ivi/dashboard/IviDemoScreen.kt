@@ -11,14 +11,20 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,6 +35,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
+import com.test.design.presentation.ivi.common.DetailSurfaceCard
+import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -39,6 +47,7 @@ import com.test.design.presentation.ivi.navigation.NavigationViewModel
 import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.carListItemHeight
 import com.test.design.theme.carTouchTarget
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -141,8 +150,46 @@ fun IviDemoScreen(
                             onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
                         )
+                        else -> DummyWidgetDetailScreen(
+                            widget = expandedWidget,
+                            onBack = collapseWidget,
+                            animatedVisibilityScope = this@AnimatedContent,
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.DummyWidgetDetailScreen(
+    widget: DashboardWidget,
+    onBack: () -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) {
+    DetailSurfaceCard(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(CarDesignTokens.ContentPadding),
+    ) {
+        WidgetScreenHeader(
+            widget = widget,
+            onBack = onBack,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            items(8) { index ->
+                ListItem(
+                    modifier = Modifier.carListItemHeight(),
+                    headlineContent = { Text("${widget.title} demo item ${index + 1}") },
+                    supportingContent = { Text("Dummy content for motion and scrolling preview") },
+                )
+                HorizontalDivider()
             }
         }
     }
