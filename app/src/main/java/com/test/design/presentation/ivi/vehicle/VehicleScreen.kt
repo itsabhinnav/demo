@@ -7,6 +7,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -16,11 +17,13 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -28,11 +31,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
@@ -228,6 +237,8 @@ private fun DriveModeLayoutBanner(
     }
 }
 
+private val DriveSelectorFallbackHeight = 148.dp
+
 @Composable
 private fun CenterDriveColumn(
     layoutProfile: VehicleDriveModeLayout,
@@ -235,38 +246,61 @@ private fun CenterDriveColumn(
     onEvent: (VehicleEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntSize>()
-    Column(
-        modifier = modifier.animateContentSize(animationSpec = spatialSpec),
-        verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
-    ) {
-        val driveSelector = @Composable {
-            MorphingDriveModeSelector(
-                selected = uiState.driveMode,
-                onSelected = { onEvent(VehicleEvent.SelectDriveMode(it)) },
-            )
-        }
-        val systemsPanel = @Composable {
-            VehicleSystemsPanel(
-                systems = uiState.systems,
-                regenLevel = uiState.regenLevel,
-                selectedSystemId = uiState.selectedSystemId,
-                isCharging = uiState.isCharging,
-                onRegenClick = { onEvent(VehicleEvent.CycleRegenLevel) },
-                onSystemClick = { onEvent(VehicleEvent.SelectSystem(it)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            )
-        }
+    var selectorHeightPx by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+    val measuredSelectorHeight = with(density) { selectorHeightPx.toDp() }
+    val selectorSlotHeight = if (measuredSelectorHeight > 0.dp) {
+        measuredSelectorHeight
+    } else {
+        DriveSelectorFallbackHeight
+    }
+    val motionSpec = MaterialTheme.motionScheme.slowSpatialSpec<androidx.compose.ui.unit.Dp>()
+    val sectionGap = CarDesignTokens.TouchTargetSpacing
 
-        if (layoutProfile.driveSelectorFirst) {
-            driveSelector()
-            systemsPanel()
-        } else {
-            systemsPanel()
-            driveSelector()
-        }
+    BoxWithConstraints(
+        modifier = modifier.fillMaxHeight(),
+    ) {
+        val selectorYOffset by animateDpAsState(
+            targetValue = if (layoutProfile.driveSelectorFirst) {
+                0.dp
+            } else {
+                (maxHeight - selectorSlotHeight).coerceAtLeast(0.dp)
+            },
+            animationSpec = motionSpec,
+            label = "drive_selector_offset",
+        )
+        val systemsTopPadding by animateDpAsState(
+            targetValue = if (layoutProfile.driveSelectorFirst) selectorSlotHeight + sectionGap else 0.dp,
+            animationSpec = motionSpec,
+            label = "systems_top_padding",
+        )
+        val systemsBottomPadding by animateDpAsState(
+            targetValue = if (layoutProfile.driveSelectorFirst) 0.dp else selectorSlotHeight + sectionGap,
+            animationSpec = motionSpec,
+            label = "systems_bottom_padding",
+        )
+
+        VehicleSystemsPanel(
+            systems = uiState.systems,
+            regenLevel = uiState.regenLevel,
+            selectedSystemId = uiState.selectedSystemId,
+            isCharging = uiState.isCharging,
+            onRegenClick = { onEvent(VehicleEvent.CycleRegenLevel) },
+            onSystemClick = { onEvent(VehicleEvent.SelectSystem(it)) },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = systemsTopPadding, bottom = systemsBottomPadding),
+        )
+
+        MorphingDriveModeSelector(
+            selected = uiState.driveMode,
+            onSelected = { onEvent(VehicleEvent.SelectDriveMode(it)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset(y = selectorYOffset)
+                .onSizeChanged { selectorHeightPx = it.height }
+                .zIndex(1f),
+        )
     }
 }
 
