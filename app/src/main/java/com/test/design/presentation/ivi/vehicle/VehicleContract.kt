@@ -12,7 +12,30 @@ data class TirePressure(
     val position: String,
     val psi: Int,
     val isOptimal: Boolean,
-)
+) {
+    val status: TirePressureStatus
+        get() = when {
+            psi < OPTIMAL_MIN_PSI -> TirePressureStatus.Low
+            psi > OPTIMAL_MAX_PSI -> TirePressureStatus.High
+            else -> TirePressureStatus.Optimal
+        }
+
+    val fillFraction: Float
+        get() = ((psi - MIN_PSI).toFloat() / (MAX_PSI - MIN_PSI).toFloat()).coerceIn(0f, 1f)
+
+    companion object {
+        const val MIN_PSI = 28
+        const val MAX_PSI = 42
+        const val OPTIMAL_MIN_PSI = 34
+        const val OPTIMAL_MAX_PSI = 37
+    }
+}
+
+enum class TirePressureStatus {
+    Optimal,
+    Low,
+    High,
+}
 
 data class VehicleUiState(
     val batteryPercent: Int = 82,
@@ -32,6 +55,7 @@ data class VehicleUiState(
     val screenMotionScheme: AppMotionScheme = AppMotionScheme.Expressive,
     val motionPreviewTrigger: Int = 0,
     val activeMotionToken: Int = 0,
+    val selectedTirePosition: String? = null,
 )
 
 sealed interface VehicleEvent {

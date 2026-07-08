@@ -143,6 +143,7 @@ fun SharedTransitionScope.VehicleScreen(
                     ) {
                         VehicleSchematic(
                             tires = uiState.tirePressures,
+                            selectedPosition = uiState.selectedTirePosition,
                             driveModeAccent = driveAccent,
                             onTireClick = { onEvent(VehicleEvent.CycleTirePressure(it)) },
                             modifier = Modifier

@@ -25,12 +25,16 @@ class VehicleViewModel : MviViewModel<VehicleUiState, VehicleEvent>(VehicleUiSta
             VehicleEvent.ToggleCharging -> setState { copy(isCharging = !isCharging) }
             is VehicleEvent.CycleTirePressure -> setState {
                 copy(
+                    selectedTirePosition = event.position,
                     tirePressures = tirePressures.map { tire ->
                         if (tire.position != event.position) tire
-                        else tire.copy(
-                            psi = if (tire.psi >= 38) 32 else tire.psi + 1,
-                            isOptimal = (if (tire.psi >= 38) 32 else tire.psi + 1) in 34..37,
-                        )
+                        else {
+                            val nextPsi = if (tire.psi >= 38) 32 else tire.psi + 1
+                            tire.copy(
+                                psi = nextPsi,
+                                isOptimal = nextPsi in TirePressure.OPTIMAL_MIN_PSI..TirePressure.OPTIMAL_MAX_PSI,
+                            )
+                        }
                     },
                 )
             }
