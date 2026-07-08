@@ -42,6 +42,7 @@ import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetPreviewSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateCardActiveRadii
 import com.test.design.theme.ClimateCardRestRadii
@@ -59,6 +60,7 @@ fun SharedTransitionScope.ClimateControlScreen(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    headerSubtitle: String? = null,
 ) {
     val temperatureFraction = temperatureToFraction(
         celsius = activeTemperature,
@@ -99,6 +101,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                     widget = DashboardWidget.Climate,
                     onBack = onBack,
                     animatedVisibilityScope = animatedVisibilityScope,
+                    subtitle = headerSubtitle,
                     trailingContent = {
                         Switch(
                             checked = uiState.isAcEnabled,
@@ -126,8 +129,11 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 onClick = { onEvent(ClimateEvent.DecreaseTemperature) },
                             )
                             Box(
-                                modifier = Modifier
-                                    .size(240.dp)
+                                modifier = this@ClimateControlScreen.widgetPreviewSharedElement(
+                                    widget = DashboardWidget.Climate,
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    modifier = Modifier.size(240.dp),
+                                )
                                     .clip(dialShape)
                                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
                                 contentAlignment = Alignment.Center,

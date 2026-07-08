@@ -4,8 +4,10 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,8 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetSubtitleSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
@@ -44,31 +48,50 @@ fun SharedTransitionScope.WidgetScreenHeader(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     trailingContent: @Composable () -> Unit = {},
 ) {
-    WidgetScreenHeaderContent(
-        title = widget.title,
-        onBack = onBack,
-        modifier = modifier,
-        trailingContent = trailingContent,
-        iconContent = {
-            Icon(
-                imageVector = widget.icon,
-                contentDescription = null,
-                modifier = widgetIconSharedElement(
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        WidgetScreenHeaderContent(
+            title = widget.title,
+            onBack = onBack,
+            trailingContent = trailingContent,
+            iconContent = {
+                Icon(
+                    imageVector = widget.icon,
+                    contentDescription = null,
+                    modifier = widgetIconSharedElement(
+                        widget = widget,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                    ),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            },
+            titleModifier = widgetTitleSharedElement(
+                widget = widget,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier,
+            ),
+        )
+        if (subtitle != null) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = widgetSubtitleSharedElement(
                     widget = widget,
                     animatedVisibilityScope = animatedVisibilityScope,
-                    modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
+                    modifier = Modifier.padding(
+                        start = CarDesignTokens.MinTouchTarget + CarDesignTokens.TouchTargetSpacing,
+                    ),
                 ),
-                tint = MaterialTheme.colorScheme.onBackground,
             )
-        },
-        titleModifier = widgetTitleSharedElement(
-            widget = widget,
-            animatedVisibilityScope = animatedVisibilityScope,
-            modifier = Modifier,
-        ),
-    )
+        }
+    }
 }
 
 @Composable

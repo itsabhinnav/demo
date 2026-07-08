@@ -25,6 +25,7 @@ import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetPreviewSharedElement
 import com.test.design.presentation.ivi.vehicle.components.AnimatedStatCounter
 import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSelector
 import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
@@ -49,6 +50,7 @@ fun SharedTransitionScope.VehicleScreen(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    headerSubtitle: String? = null,
 ) {
     val batteryFraction = batteryToFraction(uiState.batteryPercent)
     val dynamicScheme = vehicleColorScheme(
@@ -102,6 +104,7 @@ fun SharedTransitionScope.VehicleScreen(
                     widget = DashboardWidget.Vehicle,
                     onBack = onBack,
                     animatedVisibilityScope = animatedVisibilityScope,
+                    subtitle = headerSubtitle,
                     trailingContent = {
                         FilterChip(
                             selected = uiState.isCharging,
@@ -130,9 +133,13 @@ fun SharedTransitionScope.VehicleScreen(
                         chargeRateKw = uiState.chargeRateKw,
                         gaugeShape = gaugeShape,
                         onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
-                        modifier = Modifier
-                            .weight(0.36f)
-                            .fillMaxHeight(),
+                        modifier = this@VehicleScreen.widgetPreviewSharedElement(
+                            widget = DashboardWidget.Vehicle,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier
+                                .weight(0.36f)
+                                .fillMaxHeight(),
+                        ),
                     )
 
                     Column(

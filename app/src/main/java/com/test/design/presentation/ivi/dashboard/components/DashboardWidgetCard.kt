@@ -9,20 +9,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetSubtitleSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.WidgetCardShape
@@ -30,7 +33,6 @@ import com.test.design.theme.carTouchTarget
 import com.test.design.theme.rememberClimateCardShape
 import com.test.design.theme.rememberMediaCardShape
 import com.test.design.theme.rememberVehicleCardShape
-import androidx.compose.ui.graphics.Shape
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -42,6 +44,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     modifier: Modifier = Modifier,
     isExpanded: Boolean = false,
     morphExpanded: Boolean = false,
+    previewContent: @Composable () -> Unit = {},
 ) {
     val containerColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
@@ -90,6 +93,16 @@ fun SharedTransitionScope.DashboardWidgetCard(
                 ),
                 tint = contentColor,
             )
+            if (!isExpanded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(vertical = 8.dp),
+                ) {
+                    previewContent()
+                }
+            }
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     text = widget.title,
@@ -110,6 +123,11 @@ fun SharedTransitionScope.DashboardWidgetCard(
                         color = contentColor.copy(alpha = 0.75f),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = widgetSubtitleSharedElement(
+                            widget = widget,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier,
+                        ),
                     )
                 }
             }

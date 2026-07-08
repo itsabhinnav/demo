@@ -42,6 +42,7 @@ import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetPreviewSharedElement
 import com.test.design.presentation.ivi.media.components.AnimatedTrackInfo
 import com.test.design.presentation.ivi.media.components.MediaQueueSidePanel
 import com.test.design.presentation.ivi.media.components.MediaSourceChips
@@ -64,6 +65,7 @@ fun SharedTransitionScope.MediaPlayerScreen(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    headerSubtitle: String? = null,
 ) {
     val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<androidx.compose.ui.unit.Dp>()
     val queueWidth by animateDpAsState(
@@ -92,6 +94,7 @@ fun SharedTransitionScope.MediaPlayerScreen(
                 onBack = onBack,
                 animatedVisibilityScope = animatedVisibilityScope,
                 albumShape = albumShape,
+                headerSubtitle = headerSubtitle,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
@@ -120,6 +123,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     albumShape: Shape,
+    headerSubtitle: String?,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -130,6 +134,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
             widget = DashboardWidget.Media,
             onBack = onBack,
             animatedVisibilityScope = animatedVisibilityScope,
+            subtitle = headerSubtitle,
         )
 
         MediaSourceChips(
@@ -145,13 +150,13 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier
-                    .weight(0.36f)
-                    .fillMaxHeight(0.9f)
-                    .sharedElement(
-                        rememberSharedContentState(key = "album_art"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                    )
+                modifier = widgetPreviewSharedElement(
+                    widget = DashboardWidget.Media,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .weight(0.36f)
+                        .fillMaxHeight(0.9f),
+                )
                     .clip(albumShape)
                     .background(
                         Brush.linearGradient(

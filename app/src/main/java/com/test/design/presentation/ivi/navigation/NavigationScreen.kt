@@ -29,6 +29,7 @@ import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetPreviewSharedElement
 import com.test.design.presentation.ivi.navigation.components.DummyMapBackground
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
@@ -44,6 +45,7 @@ fun SharedTransitionScope.NavigationScreen(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    headerSubtitle: String? = null,
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
@@ -83,6 +85,7 @@ fun SharedTransitionScope.NavigationScreen(
                     widget = DashboardWidget.Navigation,
                     onBack = onBack,
                     animatedVisibilityScope = animatedVisibilityScope,
+                    subtitle = headerSubtitle,
                     modifier = Modifier.padding(horizontal = CarDesignTokens.TouchTargetSpacing),
                     trailingContent = {
                         FilterChip(
@@ -109,6 +112,11 @@ fun SharedTransitionScope.NavigationScreen(
                         distanceRemaining = uiState.distanceRemaining,
                         etaMinutes = uiState.etaMinutes,
                         onClick = { onEvent(NavigationEvent.NextManeuver) },
+                        modifier = this@NavigationScreen.widgetPreviewSharedElement(
+                            widget = DashboardWidget.Navigation,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier,
+                        ),
                     )
                     Surface(
                         shape = ExpressiveShapes.large,

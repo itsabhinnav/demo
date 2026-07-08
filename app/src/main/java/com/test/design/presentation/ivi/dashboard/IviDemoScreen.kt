@@ -29,8 +29,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
+import com.test.design.presentation.ivi.dashboard.components.ClimateWidgetPreview
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
+import com.test.design.presentation.ivi.dashboard.components.MediaWidgetPreview
+import com.test.design.presentation.ivi.dashboard.components.NavigationWidgetPreview
+import com.test.design.presentation.ivi.dashboard.components.VehicleWidgetPreview
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -109,12 +113,21 @@ fun IviDemoScreen(
                         null -> DashboardHubContent(
                             state = dashboardState,
                             onEvent = dashboardViewModel::onEvent,
-                            widgetSubtitle = dashboardViewModel::widgetSubtitle,
                             animatedVisibilityScope = this@AnimatedContent,
                             climateMorphExpanded = climateState.isAcEnabled,
                             mediaMorphExpanded = mediaState.isPlaying,
                             vehicleMorphExpanded = vehicleState.driveMode == com.test.design.presentation.ivi.vehicle.DriveMode.Sport ||
                                 vehicleState.isCharging,
+                            mediaAlbum = mediaState.currentTrack.album,
+                            mediaSubtitle = "Now playing · ${mediaState.currentTrack.title}",
+                            climateTemperature = climateViewModel.activeTemperature(),
+                            climateSubtitle = "${climateViewModel.activeTemperature()}°C · ${climateState.airflowMode.name} airflow",
+                            navigationDestination = navigationState.destination,
+                            navigationEtaMinutes = navigationState.etaMinutes,
+                            navigationSubtitle = "${navigationState.destination} · ${navigationState.etaMinutes} min",
+                            vehicleBatteryPercent = vehicleState.batteryPercent,
+                            vehicleRangeMiles = vehicleState.rangeMiles,
+                            vehicleSubtitle = "${vehicleState.batteryPercent}% charge · ${vehicleState.rangeMiles} mi",
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
@@ -122,24 +135,28 @@ fun IviDemoScreen(
                             onEvent = climateViewModel::onEvent,
                             onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
+                            headerSubtitle = "${climateViewModel.activeTemperature()}°C · ${climateState.airflowMode.name} airflow",
                         )
                         DashboardWidget.Media -> MediaPlayerScreen(
                             uiState = mediaState,
                             onEvent = mediaViewModel::onEvent,
                             onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
+                            headerSubtitle = "Now playing · ${mediaState.currentTrack.title}",
                         )
                         DashboardWidget.Navigation -> NavigationScreen(
                             uiState = navigationState,
                             onEvent = navigationViewModel::onEvent,
                             onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
+                            headerSubtitle = "${navigationState.destination} · ${navigationState.etaMinutes} min",
                         )
                         DashboardWidget.Vehicle -> VehicleScreen(
                             uiState = vehicleState,
                             onEvent = vehicleViewModel::onEvent,
                             onBack = collapseWidget,
                             animatedVisibilityScope = this@AnimatedContent,
+                            headerSubtitle = "${vehicleState.batteryPercent}% charge · ${vehicleState.rangeMiles} mi",
                         )
                     }
                 }
@@ -153,11 +170,20 @@ fun IviDemoScreen(
 private fun SharedTransitionScope.DashboardHubContent(
     state: DashboardUiState,
     onEvent: (DashboardEvent) -> Unit,
-    widgetSubtitle: (DashboardWidget) -> String,
     animatedVisibilityScope: AnimatedVisibilityScope,
     climateMorphExpanded: Boolean,
     mediaMorphExpanded: Boolean,
     vehicleMorphExpanded: Boolean,
+    mediaAlbum: String,
+    mediaSubtitle: String,
+    climateTemperature: Int,
+    climateSubtitle: String,
+    navigationDestination: String,
+    navigationEtaMinutes: Int,
+    navigationSubtitle: String,
+    vehicleBatteryPercent: Int,
+    vehicleRangeMiles: Int,
+    vehicleSubtitle: String,
 ) {
     DashboardWidgetGrid(
         widgets = state.widgets,
@@ -165,9 +191,15 @@ private fun SharedTransitionScope.DashboardHubContent(
             .fillMaxSize()
             .padding(CarDesignTokens.ContentPadding),
         widgetContent = { widget, widgetModifier ->
+            val subtitle = when (widget) {
+                DashboardWidget.Media -> mediaSubtitle
+                DashboardWidget.Climate -> climateSubtitle
+                DashboardWidget.Navigation -> navigationSubtitle
+                DashboardWidget.Vehicle -> vehicleSubtitle
+            }
             DashboardWidgetCard(
                 widget = widget,
-                subtitle = widgetSubtitle(widget),
+                subtitle = subtitle,
                 onClick = { onEvent(DashboardEvent.WidgetTapped(widget)) },
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = widgetModifier,
@@ -176,6 +208,35 @@ private fun SharedTransitionScope.DashboardHubContent(
                     DashboardWidget.Media -> mediaMorphExpanded
                     DashboardWidget.Vehicle -> vehicleMorphExpanded
                     else -> false
+                },
+                previewContent = {
+                    when (widget) {
+                        DashboardWidget.Media -> MediaWidgetPreview(
+                            album = mediaAlbum,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            playing = mediaMorphExpanded,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        DashboardWidget.Climate -> ClimateWidgetPreview(
+                            temperature = climateTemperature,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            acEnabled = climateMorphExpanded,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        DashboardWidget.Navigation -> NavigationWidgetPreview(
+                            destination = navigationDestination,
+                            etaMinutes = navigationEtaMinutes,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        DashboardWidget.Vehicle -> VehicleWidgetPreview(
+                            batteryPercent = vehicleBatteryPercent,
+                            rangeMiles = vehicleRangeMiles,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            sportMode = vehicleMorphExpanded,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 },
             )
         },

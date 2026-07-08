@@ -18,6 +18,12 @@ val DashboardWidget.iconKey: String
 val DashboardWidget.titleKey: String
     get() = "${sharedElementKey}_title"
 
+val DashboardWidget.subtitleKey: String
+    get() = "${sharedElementKey}_subtitle"
+
+val DashboardWidget.previewKey: String
+    get() = "${sharedElementKey}_preview"
+
 /**
  * Morphs a dashboard widget card into its full-screen detail surface (container transform).
  * Apply to the outer colored bounds on both the grid card and the matching detail screen.
@@ -59,4 +65,30 @@ fun SharedTransitionScope.widgetTitleSharedElement(
     sharedContentState = rememberSharedContentState(key = widget.titleKey),
     animatedVisibilityScope = animatedVisibilityScope,
     zIndexInOverlay = 2f,
+)
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.widgetSubtitleSharedElement(
+    widget: DashboardWidget,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+): Modifier = modifier.sharedElement(
+    sharedContentState = rememberSharedContentState(key = widget.subtitleKey),
+    animatedVisibilityScope = animatedVisibilityScope,
+    zIndexInOverlay = 2f,
+)
+
+/** Hero preview (album art, dial, map strip, gauge) shared between grid card and detail screen. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.widgetPreviewSharedElement(
+    widget: DashboardWidget,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+): Modifier = modifier.sharedElement(
+    sharedContentState = rememberSharedContentState(key = widget.previewKey),
+    animatedVisibilityScope = animatedVisibilityScope,
+    renderInOverlayDuringTransition = true,
+    zIndexInOverlay = 1f,
 )
