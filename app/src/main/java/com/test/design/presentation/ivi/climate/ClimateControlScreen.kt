@@ -31,9 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.presentation.ivi.climate.components.AnimatedTemperatureCounter
 import com.test.design.presentation.ivi.climate.components.ClimateZoneSelector
 import com.test.design.presentation.ivi.climate.components.FanSpeedBars
@@ -68,10 +70,10 @@ fun SharedTransitionScope.ClimateControlScreen(
     )
     val dynamicScheme = climateColorScheme(temperatureFraction)
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
-    val animatedBackground by animateColorAsState(
-        targetValue = dynamicScheme.background,
+    val animatedPrimary by animateColorAsState(
+        targetValue = dynamicScheme.primary,
         animationSpec = motionSpec,
-        label = "climate_bg",
+        label = "climate_tint",
     )
     val dialShape = rememberClimateDialShape(acEnabled = uiState.isAcEnabled)
 
@@ -92,7 +94,16 @@ fun SharedTransitionScope.ClimateControlScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(animatedBackground.copy(alpha = 0.72f))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                animatedPrimary.copy(alpha = CarBackgroundTokens.DetailTintAlpha),
+                                MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                                    alpha = CarBackgroundTokens.DetailOverlayAlpha,
+                                ),
+                            ),
+                        ),
+                    )
                     .padding(CarDesignTokens.ContentPadding),
             ) {
             Column(

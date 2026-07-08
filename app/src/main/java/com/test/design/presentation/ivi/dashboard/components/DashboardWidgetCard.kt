@@ -24,6 +24,7 @@ import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.WidgetCardShape
 import com.test.design.theme.carTouchTarget
@@ -49,7 +50,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primaryContainer
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.surfaceContainerHigh
         else -> MaterialTheme.colorScheme.surfaceContainer
-    }
+    }.copy(alpha = CarBackgroundTokens.GlassSurfaceAlpha)
     val contentColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.onTertiaryContainer

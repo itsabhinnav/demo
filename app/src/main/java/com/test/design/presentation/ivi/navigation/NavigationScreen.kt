@@ -35,7 +35,9 @@ import com.test.design.presentation.ivi.navigation.components.FavoriteDestinatio
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
 import com.test.design.presentation.ivi.navigation.components.TurnInstructionCard
 import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.ExpressiveShapes
+import com.test.design.theme.navigationGlassPanelColor
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -65,7 +67,10 @@ fun SharedTransitionScope.NavigationScreen(
                 .align(Alignment.TopCenter)
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent),
+                        colors = listOf(
+                            CarBackgroundTokens.CanvasGray.copy(alpha = CarBackgroundTokens.NavigationScrimAlpha),
+                            Color.Transparent,
+                        ),
                     ),
                 ),
         )
@@ -78,7 +83,7 @@ fun SharedTransitionScope.NavigationScreen(
         ) {
             Surface(
                 shape = ExpressiveShapes.large,
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                color = navigationGlassPanelColor(),
                 shadowElevation = CarDesignTokens.TouchTargetSpacing,
             ) {
                 WidgetScreenHeader(
@@ -114,7 +119,7 @@ fun SharedTransitionScope.NavigationScreen(
                     )
                     Surface(
                         shape = ExpressiveShapes.large,
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                        color = navigationGlassPanelColor(),
                     ) {
                         FavoriteDestinationsRow(
                             favorites = uiState.favorites,
@@ -147,7 +152,7 @@ fun SharedTransitionScope.NavigationScreen(
                         if (showDetails) {
                             Surface(
                                 shape = ExpressiveShapes.large,
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                                color = navigationGlassPanelColor(),
                             ) {
                                 RouteStepsList(
                                     steps = uiState.routeSteps,

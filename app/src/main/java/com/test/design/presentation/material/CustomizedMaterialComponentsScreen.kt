@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.OemBrandTheme
+import com.test.design.theme.carTopAppBarColors
 import com.test.design.theme.carTouchTarget
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,9 +62,7 @@ fun CustomizedMaterialComponentsScreen(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ),
+                    colors = carTopAppBarColors(),
                 )
             },
         ) { padding ->

@@ -18,6 +18,7 @@ import com.test.design.theme.DetailCardExpandedRadii
 import com.test.design.theme.DetailCardRestRadii
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.MorphingCornerRadii
+import com.test.design.theme.glassSurfaceColor
 import com.test.design.theme.rememberMorphingRoundedShape
 
 @Composable
@@ -74,7 +75,7 @@ private fun DetailSurfaceCard(
         },
         shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            containerColor = glassSurfaceColor(),
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (emphasized) 8.dp else 2.dp),
     ) {

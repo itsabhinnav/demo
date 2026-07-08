@@ -69,6 +69,7 @@ import com.test.design.presentation.motion.components.MotionSpringShowcase
 import com.test.design.presentation.motion.components.MotionTokenReference
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
+import com.test.design.theme.carTopAppBarColors
 import com.test.design.theme.carTouchTarget
 
 private enum class MotionTab(val label: String) {
@@ -150,9 +151,7 @@ fun MotionPhysicsSampleScreen(
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                        ),
+                        colors = carTopAppBarColors(),
                     )
                     ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex,

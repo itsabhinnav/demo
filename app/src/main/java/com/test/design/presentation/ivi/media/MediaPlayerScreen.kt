@@ -49,6 +49,7 @@ import com.test.design.presentation.ivi.media.components.MediaSourceChips
 import com.test.design.presentation.ivi.media.components.MorphingPlayPauseButton
 import com.test.design.presentation.ivi.media.components.PlaybackProgressSection
 import com.test.design.presentation.ivi.media.components.RepeatModeLabel
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.MediaCardPlayingRadii
 import com.test.design.theme.MediaCardRestRadii
@@ -85,7 +86,11 @@ fun SharedTransitionScope.MediaPlayerScreen(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
+                .background(
+                    MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                        alpha = CarBackgroundTokens.MediaOverlayAlpha,
+                    ),
+                )
                 .padding(CarDesignTokens.ContentPadding),
             horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
         ) {

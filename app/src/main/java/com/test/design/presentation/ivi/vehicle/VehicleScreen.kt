@@ -52,11 +52,13 @@ import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSele
 import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
 import com.test.design.presentation.ivi.vehicle.components.VehicleMotionStudio
 import com.test.design.presentation.ivi.vehicle.components.VehicleSystemsPanel
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.VehicleCardActiveRadii
 import com.test.design.theme.VehicleCardRestRadii
 import com.test.design.theme.batteryToFraction
+import com.test.design.theme.glassSurfaceColor
 import com.test.design.theme.rememberVehicleGaugeShape
 import com.test.design.theme.toMotionScheme
 import com.test.design.theme.vehicleColorScheme
@@ -91,10 +93,10 @@ fun SharedTransitionScope.VehicleScreen(
     ) {
         val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
         val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
-        val animatedBackground by animateColorAsState(
-            targetValue = dynamicScheme.background,
+        val animatedPrimary by animateColorAsState(
+            targetValue = dynamicScheme.primary,
             animationSpec = effectsSpec,
-            label = "vehicle_bg",
+            label = "vehicle_tint",
         )
         val energyWeight by animateFloatAsState(layoutProfile.energyWeight, animationSpec = spatialSpec, label = "energy_weight")
         val centerWeight by animateFloatAsState(layoutProfile.centerWeight, animationSpec = spatialSpec, label = "center_weight")
@@ -116,8 +118,10 @@ fun SharedTransitionScope.VehicleScreen(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                animatedBackground.copy(alpha = 0.72f),
-                                MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.72f),
+                                animatedPrimary.copy(alpha = CarBackgroundTokens.DetailTintAlpha),
+                                MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                                    alpha = CarBackgroundTokens.DetailOverlayAlpha,
+                                ),
                             ),
                         ),
                     )
@@ -210,7 +214,7 @@ private fun DriveModeLayoutBanner(
     ) { mode ->
         Surface(
             shape = ExpressiveShapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f),
+            color = glassSurfaceColor(),
         ) {
             Row(
                 modifier = Modifier

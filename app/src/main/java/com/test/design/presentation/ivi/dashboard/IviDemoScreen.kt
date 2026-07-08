@@ -49,6 +49,7 @@ import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
+import com.test.design.theme.carTopAppBarColors
 import com.test.design.theme.carTouchTarget
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -98,9 +99,7 @@ fun IviDemoScreen(
                                     )
                                 }
                             },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                            ),
+                            colors = carTopAppBarColors(),
                         )
                     }
                 },

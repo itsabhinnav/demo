@@ -47,7 +47,10 @@ import com.test.design.core.motion.LocalEffectiveMotionScheme
 import com.test.design.core.motion.LocalMotionSchemeUpdater
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
+import com.test.design.theme.carTopAppBarColors
 import com.test.design.theme.carTouchTarget
+import com.test.design.theme.glassPanelColor
+import com.test.design.theme.glassSurfaceColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,9 +71,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = carTopAppBarColors(),
             )
         },
     ) { padding ->
@@ -139,7 +140,7 @@ private fun HomeEntryCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = glassSurfaceColor(),
         ),
     ) {
         ListItem(
@@ -148,14 +149,14 @@ private fun HomeEntryCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             },
             supportingContent = {
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
             leadingContent = {
@@ -163,7 +164,7 @@ private fun HomeEntryCard(
                     imageVector = icon,
                     contentDescription = null,
                     modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             },
             trailingContent = {
@@ -171,7 +172,7 @@ private fun HomeEntryCard(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     modifier = Modifier.size(CarDesignTokens.PrimaryIcon),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
         )
@@ -193,7 +194,7 @@ private fun HomeSidePanel(
 
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = glassPanelColor(),
     ) {
         Column(
             modifier = Modifier
