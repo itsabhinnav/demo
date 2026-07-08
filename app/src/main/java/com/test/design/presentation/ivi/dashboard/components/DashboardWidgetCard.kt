@@ -38,10 +38,14 @@ fun SharedTransitionScope.DashboardWidgetCard(
     val containerColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiaryContainer
+        DashboardWidget.Navigation -> MaterialTheme.colorScheme.primaryContainer
+        DashboardWidget.Vehicle -> MaterialTheme.colorScheme.surfaceContainerHigh
     }
     val contentColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.onTertiaryContainer
+        DashboardWidget.Navigation -> MaterialTheme.colorScheme.onPrimaryContainer
+        DashboardWidget.Vehicle -> MaterialTheme.colorScheme.onSurface
     }
 
     Box(

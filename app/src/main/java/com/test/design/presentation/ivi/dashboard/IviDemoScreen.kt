@@ -8,14 +8,9 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,15 +24,15 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
+import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
+import com.test.design.presentation.ivi.dashboard.components.WidgetPlaceholderScreen
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -124,6 +119,13 @@ fun IviDemoScreen(
                             onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
                             animatedVisibilityScope = this@AnimatedContent,
                         )
+                        DashboardWidget.Navigation,
+                        DashboardWidget.Vehicle,
+                        -> WidgetPlaceholderScreen(
+                            widget = expandedWidget,
+                            onBack = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) },
+                            animatedVisibilityScope = this@AnimatedContent,
+                        )
                     }
                 }
             }
@@ -139,66 +141,19 @@ private fun SharedTransitionScope.DashboardHubContent(
     widgetSubtitle: (DashboardWidget) -> String,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    Row(
+    DashboardWidgetGrid(
+        widgets = state.widgets,
         modifier = Modifier
             .fillMaxSize()
             .padding(CarDesignTokens.ContentPadding),
-        horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(0.55f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-        ) {
-            Text(
-                text = "Your cockpit",
-                style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            Text(
-                text = "Tap a widget to expand with a container transform",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        widgetContent = { widget, widgetModifier ->
             DashboardWidgetCard(
-                widget = DashboardWidget.Media,
-                subtitle = widgetSubtitle(DashboardWidget.Media),
-                onClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Media)) },
+                widget = widget,
+                subtitle = widgetSubtitle(widget),
+                onClick = { onEvent(DashboardEvent.WidgetTapped(widget)) },
                 animatedVisibilityScope = animatedVisibilityScope,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1.2f),
+                modifier = widgetModifier,
             )
-        }
-        Column(
-            modifier = Modifier
-                .weight(0.45f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-        ) {
-            DashboardWidgetCard(
-                widget = DashboardWidget.Climate,
-                subtitle = widgetSubtitle(DashboardWidget.Climate),
-                onClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Climate)) },
-                animatedVisibilityScope = animatedVisibilityScope,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .padding(top = 8.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Text(
-                    text = "Landscape · 1920×720 optimized",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-            }
-        }
-    }
+        },
+    )
 }

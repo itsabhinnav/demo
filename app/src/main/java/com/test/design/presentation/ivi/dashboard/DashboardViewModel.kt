@@ -12,8 +12,5 @@ class DashboardViewModel : MviViewModel<DashboardUiState, DashboardEvent>(Dashbo
         }
     }
 
-    fun widgetSubtitle(widget: DashboardWidget): String = when (widget) {
-        DashboardWidget.Media -> "Now playing · Synthwave Nights"
-        DashboardWidget.Climate -> "22°C · Auto airflow"
-    }
+    fun widgetSubtitle(widget: DashboardWidget): String = widget.subtitle
 }
