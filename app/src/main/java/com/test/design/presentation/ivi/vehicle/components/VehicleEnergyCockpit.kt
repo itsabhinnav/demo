@@ -53,6 +53,8 @@ fun VehicleEnergyCockpit(
     gaugeShape: Shape,
     onGaugeClick: () -> Unit,
     modifier: Modifier = Modifier,
+    contentModifier: Modifier = Modifier,
+    controlsModifier: Modifier = Modifier,
 ) {
     val motionScheme = MaterialTheme.motionScheme
     val animatedPercent by animateFloatAsState(
@@ -200,7 +202,10 @@ fun VehicleEnergyCockpit(
                         }
                     }
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = contentModifier,
+                ) {
                     AnimatedStatCounter(
                         value = percent,
                         suffix = "%",
@@ -215,7 +220,7 @@ fun VehicleEnergyCockpit(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = controlsModifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 EnergyStatChip(

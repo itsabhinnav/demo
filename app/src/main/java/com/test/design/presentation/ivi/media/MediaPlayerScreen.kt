@@ -43,6 +43,8 @@ import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.media.components.AnimatedTrackInfo
 import com.test.design.presentation.ivi.media.components.MediaQueueSidePanel
 import com.test.design.presentation.ivi.media.components.MediaSourceChips
@@ -188,7 +190,13 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.Center,
             ) {
-                AnimatedTrackInfo(track = uiState.currentTrack)
+                AnimatedTrackInfo(
+                    track = uiState.currentTrack,
+                    modifier = widgetContentSharedElement(
+                        widget = DashboardWidget.Media,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ),
+                )
                 Spacer(modifier = Modifier.height(CarDesignTokens.SectionSpacing))
                 PlaybackProgressSection(
                     progress = uiState.progress,
@@ -226,7 +234,11 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
                     morphExpanded = uiState.isPlaying,
                     compactRadii = MediaCardRestRadii,
                     expandedRadii = MediaCardPlayingRadii,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = widgetControlsSharedElement(
+                        widget = DashboardWidget.Media,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.fillMaxWidth(),
+                    ),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),

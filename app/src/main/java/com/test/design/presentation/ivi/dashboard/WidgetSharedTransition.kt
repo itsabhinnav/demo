@@ -18,6 +18,12 @@ val DashboardWidget.iconKey: String
 val DashboardWidget.titleKey: String
     get() = "${sharedElementKey}_title"
 
+val DashboardWidget.contentKey: String
+    get() = "${sharedElementKey}_content"
+
+val DashboardWidget.controlsKey: String
+    get() = "${sharedElementKey}_controls"
+
 /**
  * Morphs a dashboard widget card into its full-screen detail surface (container transform).
  * Apply to the outer colored bounds on both the grid card and the matching detail screen.
@@ -57,6 +63,30 @@ fun SharedTransitionScope.widgetTitleSharedElement(
     modifier: Modifier = Modifier,
 ): Modifier = modifier.sharedElement(
     sharedContentState = rememberSharedContentState(key = widget.titleKey),
+    animatedVisibilityScope = animatedVisibilityScope,
+    zIndexInOverlay = 2f,
+)
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.widgetContentSharedElement(
+    widget: DashboardWidget,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+): Modifier = modifier.sharedElement(
+    sharedContentState = rememberSharedContentState(key = widget.contentKey),
+    animatedVisibilityScope = animatedVisibilityScope,
+    zIndexInOverlay = 2f,
+)
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.widgetControlsSharedElement(
+    widget: DashboardWidget,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+): Modifier = modifier.sharedElement(
+    sharedContentState = rememberSharedContentState(key = widget.controlsKey),
     animatedVisibilityScope = animatedVisibilityScope,
     zIndexInOverlay = 2f,
 )

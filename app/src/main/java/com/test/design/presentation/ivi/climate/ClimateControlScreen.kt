@@ -44,6 +44,8 @@ import com.test.design.presentation.ivi.climate.components.SeatHeatIndicator
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateCardActiveRadii
@@ -143,10 +145,14 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 onClick = { onEvent(ClimateEvent.DecreaseTemperature) },
                             )
                             Box(
-                                modifier = Modifier
-                                    .size(240.dp)
-                                    .clip(dialShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
+                                modifier = widgetContentSharedElement(
+                                    widget = DashboardWidget.Climate,
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    modifier = Modifier
+                                        .size(240.dp)
+                                        .clip(dialShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)),
+                                ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -180,7 +186,11 @@ fun SharedTransitionScope.ClimateControlScreen(
                             morphExpanded = uiState.isAcEnabled,
                             compactRadii = ClimateCardRestRadii,
                             expandedRadii = ClimateCardActiveRadii,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = widgetControlsSharedElement(
+                                widget = DashboardWidget.Climate,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                modifier = Modifier.fillMaxWidth(),
+                            ),
                         ) {
                             Text("Fan speed", style = MaterialTheme.typography.titleMedium)
                             FanSpeedBars(

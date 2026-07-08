@@ -46,6 +46,8 @@ import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.vehicle.components.AnimatedStatCounter
 import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSelector
@@ -168,6 +170,14 @@ fun SharedTransitionScope.VehicleScreen(
                         chargeRateKw = uiState.chargeRateKw,
                         gaugeShape = gaugeShape,
                         onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
+                        contentModifier = widgetContentSharedElement(
+                            widget = DashboardWidget.Vehicle,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        ),
+                        controlsModifier = widgetControlsSharedElement(
+                            widget = DashboardWidget.Vehicle,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        ),
                         modifier = Modifier
                             .weight(energyWeight)
                             .fillMaxHeight(),

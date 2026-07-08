@@ -29,6 +29,8 @@ import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.navigation.components.DummyMapBackground
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
@@ -110,12 +112,26 @@ fun SharedTransitionScope.NavigationScreen(
                     modifier = Modifier.weight(0.55f),
                     verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
                 ) {
+                    Text(
+                        text = "${uiState.destination} · ${uiState.etaMinutes} min",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = widgetContentSharedElement(
+                            widget = DashboardWidget.Navigation,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier.fillMaxWidth(),
+                        ),
+                    )
                     TurnInstructionCard(
                         instruction = uiState.currentInstruction,
                         maneuverIcon = uiState.maneuverIcon,
                         distanceRemaining = uiState.distanceRemaining,
                         etaMinutes = uiState.etaMinutes,
                         onClick = { onEvent(NavigationEvent.NextManeuver) },
+                        modifier = widgetControlsSharedElement(
+                            widget = DashboardWidget.Navigation,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        ),
                     )
                     Surface(
                         shape = ExpressiveShapes.large,

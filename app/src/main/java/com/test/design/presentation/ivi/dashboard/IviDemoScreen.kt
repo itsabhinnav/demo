@@ -11,7 +11,10 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,6 +44,8 @@ import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
 import com.test.design.presentation.ivi.navigation.NavigationScreen
@@ -48,6 +53,7 @@ import com.test.design.presentation.ivi.navigation.NavigationViewModel
 import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import com.test.design.theme.CarDesignTokens
+import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.carListItemHeight
 import com.test.design.theme.carTopAppBarColors
 import com.test.design.theme.carTouchTarget
@@ -119,12 +125,12 @@ fun IviDemoScreen(
                         null -> DashboardHubContent(
                             state = dashboardState,
                             onEvent = dashboardViewModel::onEvent,
-                            widgetSubtitle = dashboardViewModel::widgetSubtitle,
                             animatedVisibilityScope = this@AnimatedContent,
-                            climateMorphExpanded = climateState.isAcEnabled,
-                            mediaMorphExpanded = mediaState.isPlaying,
-                            vehicleMorphExpanded = vehicleState.driveMode == com.test.design.presentation.ivi.vehicle.DriveMode.Sport ||
-                                vehicleState.isCharging,
+                            mediaState = mediaState,
+                            climateState = climateState,
+                            climateTemperature = climateViewModel.activeTemperature(),
+                            navigationState = navigationState,
+                            vehicleState = vehicleState,
                         )
                         DashboardWidget.Climate -> ClimateControlScreen(
                             uiState = climateState,
@@ -181,6 +187,34 @@ private fun SharedTransitionScope.DummyWidgetDetailScreen(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier.fillMaxWidth(),
         )
+        Text(
+            text = widget.subtitle,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = widgetContentSharedElement(
+                widget = widget,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        Surface(
+            shape = ExpressiveShapes.small,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = widgetControlsSharedElement(
+                widget = widget,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(CarDesignTokens.MinTouchTarget),
+            ),
+        ) {
+            Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Text(
+                    text = "Open ${widget.title}",
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
         ) {
@@ -201,11 +235,12 @@ private fun SharedTransitionScope.DummyWidgetDetailScreen(
 private fun SharedTransitionScope.DashboardHubContent(
     state: DashboardUiState,
     onEvent: (DashboardEvent) -> Unit,
-    widgetSubtitle: (DashboardWidget) -> String,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    climateMorphExpanded: Boolean,
-    mediaMorphExpanded: Boolean,
-    vehicleMorphExpanded: Boolean,
+    mediaState: com.test.design.presentation.ivi.media.MediaUiState,
+    climateState: com.test.design.presentation.ivi.climate.ClimateUiState,
+    climateTemperature: Int,
+    navigationState: com.test.design.presentation.ivi.navigation.NavigationUiState,
+    vehicleState: com.test.design.presentation.ivi.vehicle.VehicleUiState,
 ) {
     DashboardWidgetGrid(
         widgets = state.widgets,
@@ -215,16 +250,21 @@ private fun SharedTransitionScope.DashboardHubContent(
         widgetContent = { widget, widgetModifier ->
             DashboardWidgetCard(
                 widget = widget,
-                subtitle = widgetSubtitle(widget),
                 onClick = { onEvent(DashboardEvent.WidgetTapped(widget)) },
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = widgetModifier,
                 morphExpanded = when (widget) {
-                    DashboardWidget.Climate -> climateMorphExpanded
-                    DashboardWidget.Media -> mediaMorphExpanded
-                    DashboardWidget.Vehicle -> vehicleMorphExpanded
+                    DashboardWidget.Climate -> climateState.isAcEnabled
+                    DashboardWidget.Media -> mediaState.isPlaying
+                    DashboardWidget.Vehicle -> vehicleState.driveMode == com.test.design.presentation.ivi.vehicle.DriveMode.Sport ||
+                        vehicleState.isCharging
                     else -> false
                 },
+                mediaState = mediaState,
+                climateState = climateState,
+                climateTemperature = climateTemperature,
+                navigationState = navigationState,
+                vehicleState = vehicleState,
             )
         },
     )

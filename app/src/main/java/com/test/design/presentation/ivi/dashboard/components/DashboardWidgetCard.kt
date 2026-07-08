@@ -20,10 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetIconSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetTitleSharedElement
+import com.test.design.presentation.ivi.media.MediaUiState
+import com.test.design.presentation.ivi.navigation.NavigationUiState
+import com.test.design.presentation.ivi.vehicle.VehicleUiState
 import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.WidgetCardShape
@@ -37,12 +41,16 @@ import androidx.compose.ui.graphics.Shape
 @Composable
 fun SharedTransitionScope.DashboardWidgetCard(
     widget: DashboardWidget,
-    subtitle: String,
     onClick: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     isExpanded: Boolean = false,
     morphExpanded: Boolean = false,
+    mediaState: MediaUiState? = null,
+    climateState: ClimateUiState? = null,
+    climateTemperature: Int? = null,
+    navigationState: NavigationUiState? = null,
+    vehicleState: VehicleUiState? = null,
 ) {
     val containerColor = when (widget) {
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
@@ -107,12 +115,15 @@ fun SharedTransitionScope.DashboardWidgetCard(
                     ),
                 )
                 if (!isExpanded) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = contentColor.copy(alpha = 0.75f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                    WidgetPreviewContent(
+                        widget = widget,
+                        contentColor = contentColor,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        mediaState = mediaState,
+                        climateState = climateState,
+                        climateTemperature = climateTemperature,
+                        navigationState = navigationState,
+                        vehicleState = vehicleState,
                     )
                 }
             }
