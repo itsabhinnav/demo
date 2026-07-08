@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,6 +54,7 @@ import com.test.design.theme.carTouchTarget
 fun HomeScreen(
     onNavigateToIviDemo: () -> Unit,
     onNavigateToMaterialComponents: () -> Unit,
+    onNavigateToCustomizedMaterialComponents: () -> Unit,
     onNavigateToMotionLab: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -103,6 +105,12 @@ fun HomeScreen(
                         description = "Browse buttons, chips, cards, sliders, and more",
                         icon = Icons.Default.Widgets,
                         onClick = onNavigateToMaterialComponents,
+                    )
+                    HomeEntryCard(
+                        title = "Customized Material",
+                        description = "Same M3 components with a bold OEM brand theme",
+                        icon = Icons.Default.Palette,
+                        onClick = onNavigateToCustomizedMaterialComponents,
                     )
                     HomeEntryCard(
                         title = "Motion System Lab",
