@@ -260,6 +260,8 @@ private fun CenterDriveColumn(
     BoxWithConstraints(
         modifier = modifier.fillMaxHeight(),
     ) {
+        val targetTopPadding = if (layoutProfile.driveSelectorFirst) selectorSlotHeight + sectionGap else 0.dp
+        val targetBottomPadding = if (layoutProfile.driveSelectorFirst) 0.dp else selectorSlotHeight + sectionGap
         val selectorYOffset by animateDpAsState(
             targetValue = if (layoutProfile.driveSelectorFirst) {
                 0.dp
@@ -270,15 +272,17 @@ private fun CenterDriveColumn(
             label = "drive_selector_offset",
         )
         val systemsTopPadding by animateDpAsState(
-            targetValue = if (layoutProfile.driveSelectorFirst) selectorSlotHeight + sectionGap else 0.dp,
+            targetValue = targetTopPadding,
             animationSpec = motionSpec,
             label = "systems_top_padding",
         )
         val systemsBottomPadding by animateDpAsState(
-            targetValue = if (layoutProfile.driveSelectorFirst) 0.dp else selectorSlotHeight + sectionGap,
+            targetValue = targetBottomPadding,
             animationSpec = motionSpec,
             label = "systems_bottom_padding",
         )
+        val safeTopPadding = systemsTopPadding.coerceAtLeast(0.dp)
+        val safeBottomPadding = systemsBottomPadding.coerceAtLeast(0.dp)
 
         VehicleSystemsPanel(
             systems = uiState.systems,
@@ -289,7 +293,7 @@ private fun CenterDriveColumn(
             onSystemClick = { onEvent(VehicleEvent.SelectSystem(it)) },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = systemsTopPadding, bottom = systemsBottomPadding),
+                .padding(top = safeTopPadding, bottom = safeBottomPadding),
         )
 
         MorphingDriveModeSelector(
