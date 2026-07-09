@@ -76,6 +76,7 @@ private fun DetailSurfaceCard(
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = glassSurfaceColor(),
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (emphasized) 8.dp else 2.dp),
     ) {

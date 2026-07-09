@@ -102,6 +102,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
                 WidgetEmbeddedContent(
                     widget = widget,
                     animatedVisibilityScope = animatedVisibilityScope,
+                    contentColor = contentColor,
                     mediaState = mediaState,
                     onMediaEvent = onMediaEvent,
                     climateState = climateState,

@@ -216,6 +216,7 @@ private fun SharedTransitionScope.DummyWidgetDetailScreen(
                 Text(
                     text = "Open ${widget.title}",
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -225,8 +226,18 @@ private fun SharedTransitionScope.DummyWidgetDetailScreen(
             items(8) { index ->
                 ListItem(
                     modifier = Modifier.carListItemHeight(),
-                    headlineContent = { Text("${widget.title} demo item ${index + 1}") },
-                    supportingContent = { Text("Dummy content for motion and scrolling preview") },
+                    headlineContent = {
+                        Text(
+                            "${widget.title} demo item ${index + 1}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            "Dummy content for motion and scrolling preview",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
                 )
                 HorizontalDivider()
             }

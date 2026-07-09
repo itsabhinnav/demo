@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.ClimateEvent
@@ -53,6 +54,7 @@ private const val VehicleMaxRangeMiles = 300
 fun SharedTransitionScope.WidgetEmbeddedContent(
     widget: DashboardWidget,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    contentColor: Color,
     mediaState: MediaUiState? = null,
     onMediaEvent: ((MediaEvent) -> Unit)? = null,
     climateState: ClimateUiState? = null,
@@ -73,6 +75,7 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
                 state = state,
                 albumShape = albumShape,
                 onEvent = onEvent,
+                contentColor = contentColor,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = modifier,
             )
@@ -97,6 +100,7 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
             NavigationWidgetEmbedded(
                 state = state,
                 onEvent = onEvent,
+                contentColor = contentColor,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = modifier,
             )
@@ -118,6 +122,7 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
         }
         else -> PlaceholderWidgetEmbedded(
             widget = widget,
+            contentColor = contentColor,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         )
@@ -130,6 +135,7 @@ private fun SharedTransitionScope.MediaWidgetEmbedded(
     state: MediaUiState,
     albumShape: Shape,
     onEvent: (MediaEvent) -> Unit,
+    contentColor: Color,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
@@ -155,6 +161,8 @@ private fun SharedTransitionScope.MediaWidgetEmbedded(
             AnimatedTrackInfo(
                 track = state.currentTrack,
                 compact = true,
+                titleColor = contentColor,
+                subtitleColor = contentColor.copy(alpha = 0.75f),
                 modifier = widgetContentSharedElement(
                     widget = DashboardWidget.Media,
                     animatedVisibilityScope = animatedVisibilityScope,
@@ -234,6 +242,7 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
 private fun SharedTransitionScope.NavigationWidgetEmbedded(
     state: NavigationUiState,
     onEvent: (NavigationEvent) -> Unit,
+    contentColor: Color,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
@@ -245,7 +254,7 @@ private fun SharedTransitionScope.NavigationWidgetEmbedded(
         Text(
             text = "${state.destination} · ${state.etaMinutes} min",
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = contentColor,
             maxLines = 1,
             modifier = widgetContentSharedElement(
                 widget = DashboardWidget.Navigation,
@@ -309,6 +318,7 @@ private fun SharedTransitionScope.VehicleWidgetEmbedded(
 @Composable
 private fun SharedTransitionScope.PlaceholderWidgetEmbedded(
     widget: DashboardWidget,
+    contentColor: Color,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
@@ -320,7 +330,7 @@ private fun SharedTransitionScope.PlaceholderWidgetEmbedded(
         Text(
             text = widget.subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = contentColor.copy(alpha = 0.75f),
             maxLines = 2,
             modifier = widgetContentSharedElement(
                 widget = widget,
@@ -343,6 +353,7 @@ private fun SharedTransitionScope.PlaceholderWidgetEmbedded(
                 Text(
                     text = "Open ${widget.title}",
                     style = MaterialTheme.typography.labelLarge,
+                    color = contentColor,
                 )
             }
         }

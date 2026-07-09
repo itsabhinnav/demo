@@ -69,6 +69,7 @@ fun HomeScreen(
                     Text(
                         text = "AAOS Playground",
                         style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 },
                 colors = carTopAppBarColors(),
@@ -94,6 +95,7 @@ fun HomeScreen(
                     Text(
                         text = "Welcome",
                         style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     HomeEntryCard(
                         title = "Material 3 Expressive Sample",
@@ -141,6 +143,7 @@ private fun HomeEntryCard(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = glassSurfaceColor(),
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
         ListItem(
@@ -203,7 +206,11 @@ private fun HomeSidePanel(
                 .padding(CarDesignTokens.ContentPadding),
             verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
         ) {
-            Text(text = "Driving state", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "Driving state",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
                 items(DrivingUxState.entries, key = { it.name }) { state ->
                     FilterChip(
@@ -217,7 +224,11 @@ private fun HomeSidePanel(
                 }
             }
             HorizontalDivider()
-            Text(text = "Motion scheme", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "Motion scheme",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
                 items(AppMotionScheme.entries, key = { it.name }) { scheme ->
                     FilterChip(
@@ -239,22 +250,38 @@ private fun HomeSidePanel(
                 )
             }
             HorizontalDivider()
-            Text(text = "Display", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = "Display",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             ListItem(
                 modifier = Modifier.carListItemHeight(),
-                headlineContent = { Text("Viewport", style = MaterialTheme.typography.bodyLarge) },
+                headlineContent = {
+                    Text("Viewport", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                },
                 supportingContent = {
-                    Text("${widthDp}dp × ${heightDp}dp", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        "${widthDp}dp × ${heightDp}dp",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 },
             )
             ListItem(
                 modifier = Modifier.carListItemHeight(),
-                headlineContent = { Text("Orientation", style = MaterialTheme.typography.bodyLarge) },
-                supportingContent = { Text("Landscape", style = MaterialTheme.typography.bodyMedium) },
+                headlineContent = {
+                    Text("Orientation", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                },
+                supportingContent = {
+                    Text("Landscape", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                },
             )
             ListItem(
                 modifier = Modifier.carListItemHeight(),
-                headlineContent = { Text("Motion scheme", style = MaterialTheme.typography.bodyLarge) },
+                headlineContent = {
+                    Text("Motion scheme", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+                },
                 supportingContent = {
                     Text(
                         text = buildString {
@@ -264,6 +291,7 @@ private fun HomeSidePanel(
                             }
                         },
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 },
             )
