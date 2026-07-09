@@ -10,19 +10,6 @@ class VehicleViewModel : MviViewModel<VehicleUiState, VehicleEvent>(VehicleUiSta
                 copy(
                     driveMode = event.mode,
                     regenLevel = event.mode.defaultRegenLevel(),
-                    motionPreviewTrigger = motionPreviewTrigger + 1,
-                )
-            }
-            is VehicleEvent.SelectScreenMotionScheme -> setState {
-                copy(
-                    screenMotionScheme = event.scheme,
-                    motionPreviewTrigger = motionPreviewTrigger + 1,
-                )
-            }
-            is VehicleEvent.SelectMotionToken -> setState {
-                copy(
-                    activeMotionToken = event.index,
-                    motionPreviewTrigger = motionPreviewTrigger + 1,
                 )
             }
             is VehicleEvent.SelectSystem -> setState {
@@ -52,9 +39,6 @@ class VehicleViewModel : MviViewModel<VehicleUiState, VehicleEvent>(VehicleUiSta
                 val levels = RegenLevel.entries
                 val next = levels[(levels.indexOf(regenLevel) + 1) % levels.size]
                 copy(regenLevel = next)
-            }
-            VehicleEvent.ReplayMotionPreview -> setState {
-                copy(motionPreviewTrigger = motionPreviewTrigger + 1)
             }
             VehicleEvent.ToggleCharging -> setState { copy(isCharging = !isCharging) }
             VehicleEvent.CycleBatteryDemo -> setState {

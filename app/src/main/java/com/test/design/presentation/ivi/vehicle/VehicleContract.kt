@@ -1,7 +1,5 @@
 package com.test.design.presentation.ivi.vehicle
 
-import com.test.design.core.motion.AppMotionScheme
-
 enum class DriveMode(val label: String, val subtitle: String) {
     Eco("Eco", "Max range"),
     Comfort("Comfort", "Balanced"),
@@ -41,9 +39,6 @@ data class VehicleUiState(
     val regenLevel: RegenLevel = RegenLevel.Standard,
     val systems: List<VehicleSystemMetric> = defaultSystems(),
     val selectedSystemId: String? = null,
-    val screenMotionScheme: AppMotionScheme = AppMotionScheme.Expressive,
-    val motionPreviewTrigger: Int = 0,
-    val activeMotionToken: Int = 0,
 )
 
 sealed interface VehicleEvent {
@@ -52,9 +47,6 @@ sealed interface VehicleEvent {
     data object ToggleCharging : VehicleEvent
     data object CycleRegenLevel : VehicleEvent
     data class SelectSystem(val id: String) : VehicleEvent
-    data class SelectScreenMotionScheme(val scheme: AppMotionScheme) : VehicleEvent
-    data object ReplayMotionPreview : VehicleEvent
-    data class SelectMotionToken(val index: Int) : VehicleEvent
 }
 
 private fun defaultSystems() = listOf(

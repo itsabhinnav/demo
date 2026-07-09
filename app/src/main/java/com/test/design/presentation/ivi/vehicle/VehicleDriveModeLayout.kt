@@ -2,17 +2,14 @@ package com.test.design.presentation.ivi.vehicle
 
 /**
  * Per-mode layout profile for in-place Vehicle screen rearrangement.
- *
- * Eco prioritizes range/energy, Comfort keeps a balanced three-column grid,
- * Sport expands performance/motion tooling on the right.
  */
 data class VehicleDriveModeLayout(
     val energyWeight: Float,
     val centerWeight: Float,
     val sideWeight: Float,
-    val motionStudioWeight: Float,
+    val insightsWeight: Float,
     val statsWeight: Float,
-    val showMotionStudio: Boolean,
+    val showDriveInsights: Boolean,
     val driveSelectorFirst: Boolean,
     val layoutLabel: String,
 )
@@ -22,9 +19,9 @@ fun DriveMode.layoutProfile(): VehicleDriveModeLayout = when (this) {
         energyWeight = 0.44f,
         centerWeight = 0.38f,
         sideWeight = 0.18f,
-        motionStudioWeight = 0f,
+        insightsWeight = 0f,
         statsWeight = 1f,
-        showMotionStudio = false,
+        showDriveInsights = false,
         driveSelectorFirst = true,
         layoutLabel = "Range-first layout",
     )
@@ -32,9 +29,9 @@ fun DriveMode.layoutProfile(): VehicleDriveModeLayout = when (this) {
         energyWeight = 0.36f,
         centerWeight = 0.34f,
         sideWeight = 0.30f,
-        motionStudioWeight = 0.58f,
-        statsWeight = 0.42f,
-        showMotionStudio = true,
+        insightsWeight = 0.55f,
+        statsWeight = 0.45f,
+        showDriveInsights = true,
         driveSelectorFirst = false,
         layoutLabel = "Balanced layout",
     )
@@ -42,9 +39,9 @@ fun DriveMode.layoutProfile(): VehicleDriveModeLayout = when (this) {
         energyWeight = 0.28f,
         centerWeight = 0.30f,
         sideWeight = 0.42f,
-        motionStudioWeight = 0.72f,
-        statsWeight = 0.28f,
-        showMotionStudio = true,
+        insightsWeight = 0.65f,
+        statsWeight = 0.35f,
+        showDriveInsights = true,
         driveSelectorFirst = false,
         layoutLabel = "Performance layout",
     )

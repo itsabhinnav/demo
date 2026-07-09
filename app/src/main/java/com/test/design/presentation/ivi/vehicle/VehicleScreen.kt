@@ -51,8 +51,8 @@ import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.vehicle.components.AnimatedStatCounter
 import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSelector
+import com.test.design.presentation.ivi.vehicle.components.VehicleDriveInsightsCard
 import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
-import com.test.design.presentation.ivi.vehicle.components.VehicleMotionStudio
 import com.test.design.presentation.ivi.vehicle.components.VehicleSystemsPanel
 import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
@@ -62,7 +62,6 @@ import com.test.design.theme.VehicleCardRestRadii
 import com.test.design.theme.batteryToFraction
 import com.test.design.theme.glassSurfaceColor
 import com.test.design.theme.rememberVehicleGaugeShape
-import com.test.design.theme.toMotionScheme
 import com.test.design.theme.vehicleColorScheme
 
 private const val MaxRangeMiles = 300
@@ -91,7 +90,7 @@ fun SharedTransitionScope.VehicleScreen(
         colorScheme = dynamicScheme,
         typography = MaterialTheme.typography,
         shapes = ExpressiveShapes,
-        motionScheme = uiState.screenMotionScheme.toMotionScheme(),
+        motionScheme = MaterialTheme.motionScheme,
     ) {
         val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
         val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
@@ -103,7 +102,7 @@ fun SharedTransitionScope.VehicleScreen(
         val energyWeight by animateFloatAsState(layoutProfile.energyWeight, animationSpec = spatialSpec, label = "energy_weight")
         val centerWeight by animateFloatAsState(layoutProfile.centerWeight, animationSpec = spatialSpec, label = "center_weight")
         val sideWeight by animateFloatAsState(layoutProfile.sideWeight, animationSpec = spatialSpec, label = "side_weight")
-        val motionWeight by animateFloatAsState(layoutProfile.motionStudioWeight, animationSpec = spatialSpec, label = "motion_weight")
+        val insightsWeight by animateFloatAsState(layoutProfile.insightsWeight, animationSpec = spatialSpec, label = "insights_weight")
         val statsWeight by animateFloatAsState(layoutProfile.statsWeight, animationSpec = spatialSpec, label = "stats_weight")
 
         Box(
@@ -195,8 +194,7 @@ fun SharedTransitionScope.VehicleScreen(
                     SideInsightsColumn(
                         layoutProfile = layoutProfile,
                         uiState = uiState,
-                        onEvent = onEvent,
-                        motionWeight = motionWeight,
+                        insightsWeight = insightsWeight,
                         statsWeight = statsWeight,
                         modifier = Modifier
                             .weight(sideWeight)
@@ -326,8 +324,7 @@ private fun CenterDriveColumn(
 private fun SideInsightsColumn(
     layoutProfile: VehicleDriveModeLayout,
     uiState: VehicleUiState,
-    onEvent: (VehicleEvent) -> Unit,
-    motionWeight: Float,
+    insightsWeight: Float,
     statsWeight: Float,
     modifier: Modifier = Modifier,
 ) {
@@ -336,17 +333,15 @@ private fun SideInsightsColumn(
         modifier = modifier.animateContentSize(animationSpec = spatialSpec),
         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
     ) {
-        if (layoutProfile.showMotionStudio && uiState.driveMode == DriveMode.Sport) {
-            VehicleMotionStudio(
-                selectedScheme = uiState.screenMotionScheme,
-                activeToken = uiState.activeMotionToken,
-                previewTrigger = uiState.motionPreviewTrigger,
-                onSchemeSelected = { onEvent(VehicleEvent.SelectScreenMotionScheme(it)) },
-                onTokenSelected = { onEvent(VehicleEvent.SelectMotionToken(it)) },
-                onReplay = { onEvent(VehicleEvent.ReplayMotionPreview) },
+        if (layoutProfile.showDriveInsights && uiState.driveMode == DriveMode.Sport) {
+            VehicleDriveInsightsCard(
+                driveMode = uiState.driveMode,
+                regenLevel = uiState.regenLevel,
+                efficiencyMpkWh = uiState.efficiencyMpkWh,
+                rangeMiles = uiState.rangeMiles,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(motionWeight.coerceAtLeast(0.01f)),
+                    .weight(insightsWeight.coerceAtLeast(0.01f)),
             )
             VehicleStatsPanel(
                 efficiencyMpkWh = uiState.efficiencyMpkWh,
@@ -366,7 +361,7 @@ private fun SideInsightsColumn(
                 modifier = Modifier.fillMaxWidth(),
             )
             AnimatedVisibility(
-                visible = layoutProfile.showMotionStudio,
+                visible = layoutProfile.showDriveInsights,
                 enter = expandVertically(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()) +
                     fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
                 exit = shrinkVertically(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()) +
@@ -375,13 +370,11 @@ private fun SideInsightsColumn(
                     .fillMaxWidth()
                     .weight(1f),
             ) {
-                VehicleMotionStudio(
-                    selectedScheme = uiState.screenMotionScheme,
-                    activeToken = uiState.activeMotionToken,
-                    previewTrigger = uiState.motionPreviewTrigger,
-                    onSchemeSelected = { onEvent(VehicleEvent.SelectScreenMotionScheme(it)) },
-                    onTokenSelected = { onEvent(VehicleEvent.SelectMotionToken(it)) },
-                    onReplay = { onEvent(VehicleEvent.ReplayMotionPreview) },
+                VehicleDriveInsightsCard(
+                    driveMode = uiState.driveMode,
+                    regenLevel = uiState.regenLevel,
+                    efficiencyMpkWh = uiState.efficiencyMpkWh,
+                    rangeMiles = uiState.rangeMiles,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
