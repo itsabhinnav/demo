@@ -27,7 +27,7 @@ fun ClimateFanSpeedCard(
         modifier = modifier.fillMaxWidth(),
     ) {
         if (!compact) {
-            Text("Fan speed", style = MaterialTheme.typography.titleMedium)
+            Text("Fan speed", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
         }
         FanSpeedBars(
             fanSpeed = fanSpeed,

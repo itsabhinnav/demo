@@ -39,6 +39,7 @@ fun MaterialComponentsScreen(
                         Text(
                             text = "Material Components",
                             style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = "AAOS-sized touch targets and typography",

@@ -35,6 +35,8 @@ fun AnimatedTrackInfo(
     track: Track,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    titleColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onBackground,
+    subtitleColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
     val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
@@ -51,14 +53,14 @@ fun AnimatedTrackInfo(
             Text(
                 text = track.title,
                 style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = titleColor,
                 maxLines = if (compact) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = track.artist,
                 style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = subtitleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

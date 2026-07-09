@@ -24,6 +24,9 @@ fun carTopAppBarColors() = TopAppBarDefaults.topAppBarColors(
     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(
         alpha = CarBackgroundTokens.TopBarAlpha,
     ),
+    titleContentColor = MaterialTheme.colorScheme.onSurface,
+    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
 )
 
 @Composable
