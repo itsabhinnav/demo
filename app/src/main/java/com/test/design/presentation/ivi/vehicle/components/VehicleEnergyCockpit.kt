@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,6 +105,7 @@ fun VehicleEnergyCockpit(
 
     Box(
         modifier = modifier
+            .then(if (compact) Modifier.wrapContentHeight() else Modifier)
             .clip(gaugeShape)
             .background(
                 Brush.radialGradient(
@@ -118,111 +120,45 @@ fun VehicleEnergyCockpit(
             .carTouchTarget()
             .clickable(onClick = onGaugeClick),
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        arcColor.copy(alpha = 0.18f),
-                        Color.Transparent,
+        if (!compact) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            arcColor.copy(alpha = 0.18f),
+                            Color.Transparent,
+                        ),
+                        center = center,
+                        radius = size.minDimension * 0.55f,
                     ),
-                    center = center,
                     radius = size.minDimension * 0.55f,
-                ),
-                radius = size.minDimension * 0.55f,
-                center = center,
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            if (!compact) {
-                Text(
-                    text = if (isCharging) "Charging" else "Energy",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    center = center,
                 )
             }
+        }
 
-            Box(
-                modifier = Modifier.size(gaugeSize),
-                contentAlignment = Alignment.Center,
+        if (compact) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(padding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                val gaugeScale = if (isCharging) chargePulse else 1f
-                Canvas(
-                    modifier = Modifier
-                        .size(gaugeSize)
-                        .graphicsLayer {
-                            scaleX = gaugeScale
-                            scaleY = gaugeScale
-                        },
-                ) {
-                    val stroke = strokeDp.toPx()
-                    val rangeStroke = rangeStrokeDp.toPx()
-                    rotate(135f) {
-                        drawArc(
-                            color = Color.White.copy(alpha = 0.08f),
-                            startAngle = 0f,
-                            sweepAngle = 270f,
-                            useCenter = false,
-                            style = Stroke(width = rangeStroke, cap = StrokeCap.Round),
-                        )
-                        drawArc(
-                            color = arcColor.copy(alpha = 0.35f),
-                            startAngle = 0f,
-                            sweepAngle = 270f * animatedRange,
-                            useCenter = false,
-                            style = Stroke(width = rangeStroke, cap = StrokeCap.Round),
-                        )
-                    }
-                    rotate(135f) {
-                        drawArc(
-                            color = Color.White.copy(alpha = 0.14f),
-                            startAngle = 0f,
-                            sweepAngle = 270f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round),
-                        )
-                        drawArc(
-                            color = arcColor,
-                            startAngle = 0f,
-                            sweepAngle = 270f * animatedPercent,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round),
-                        )
-                        if (isCharging) {
-                            drawArc(
-                                color = arcColor.copy(alpha = 0.35f),
-                                startAngle = 0f,
-                                sweepAngle = 270f * animatedPercent,
-                                useCenter = false,
-                                style = Stroke(width = stroke * 2.2f, cap = StrokeCap.Round),
-                            )
-                        }
-                    }
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = contentModifier,
-                ) {
-                    AnimatedStatCounter(
-                        value = percent,
-                        suffix = "%",
-                        style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displayLarge,
-                    )
-                    Text(
-                        text = "$rangeMiles mi",
-                        style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            if (compact) {
+                GaugeWithStats(
+                    percent = percent,
+                    rangeMiles = rangeMiles,
+                    gaugeSize = gaugeSize,
+                    strokeDp = strokeDp,
+                    rangeStrokeDp = rangeStrokeDp,
+                    animatedPercent = animatedPercent,
+                    animatedRange = animatedRange,
+                    arcColor = arcColor,
+                    isCharging = isCharging,
+                    chargePulse = chargePulse,
+                    compact = true,
+                    contentModifier = contentModifier,
+                )
                 Text(
                     text = when {
                         isCharging -> "Charging · ${chargeRateKw.toInt()} kW"
@@ -234,25 +170,144 @@ fun VehicleEnergyCockpit(
                     modifier = controlsModifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                 )
-            } else {
-                Row(
-                    modifier = controlsModifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    EnergyStatChip(
-                        label = if (isCharging) "Rate" else "Range",
-                        value = if (isCharging) "${chargeRateKw.toInt()} kW" else "$maxRangeMiles mi max",
-                    )
-                    EnergyStatChip(
-                        label = "Status",
-                        value = when {
-                            isCharging -> "Plugged in"
-                            percent < 30 -> "Low"
-                            else -> "Ready"
-                        },
+            }
+        } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = if (isCharging) "Charging" else "Energy",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            GaugeWithStats(
+                percent = percent,
+                rangeMiles = rangeMiles,
+                gaugeSize = gaugeSize,
+                strokeDp = strokeDp,
+                rangeStrokeDp = rangeStrokeDp,
+                animatedPercent = animatedPercent,
+                animatedRange = animatedRange,
+                arcColor = arcColor,
+                isCharging = isCharging,
+                chargePulse = chargePulse,
+                compact = false,
+                contentModifier = contentModifier,
+            )
+
+            Row(
+                modifier = controlsModifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                EnergyStatChip(
+                    label = if (isCharging) "Rate" else "Range",
+                    value = if (isCharging) "${chargeRateKw.toInt()} kW" else "$maxRangeMiles mi max",
+                )
+                EnergyStatChip(
+                    label = "Status",
+                    value = when {
+                        isCharging -> "Plugged in"
+                        percent < 30 -> "Low"
+                        else -> "Ready"
+                    },
+                )
+            }
+        }
+        }
+    }
+}
+
+@Composable
+private fun GaugeWithStats(
+    percent: Int,
+    rangeMiles: Int,
+    gaugeSize: androidx.compose.ui.unit.Dp,
+    strokeDp: androidx.compose.ui.unit.Dp,
+    rangeStrokeDp: androidx.compose.ui.unit.Dp,
+    animatedPercent: Float,
+    animatedRange: Float,
+    arcColor: Color,
+    isCharging: Boolean,
+    chargePulse: Float,
+    compact: Boolean,
+    contentModifier: Modifier,
+) {
+    Box(
+        modifier = Modifier.size(gaugeSize),
+        contentAlignment = Alignment.Center,
+    ) {
+        val gaugeScale = if (isCharging) chargePulse else 1f
+        Canvas(
+            modifier = Modifier
+                .size(gaugeSize)
+                .graphicsLayer {
+                    scaleX = gaugeScale
+                    scaleY = gaugeScale
+                },
+        ) {
+            val stroke = strokeDp.toPx()
+            val rangeStroke = rangeStrokeDp.toPx()
+            rotate(135f) {
+                drawArc(
+                    color = Color.White.copy(alpha = 0.08f),
+                    startAngle = 0f,
+                    sweepAngle = 270f,
+                    useCenter = false,
+                    style = Stroke(width = rangeStroke, cap = StrokeCap.Round),
+                )
+                drawArc(
+                    color = arcColor.copy(alpha = 0.35f),
+                    startAngle = 0f,
+                    sweepAngle = 270f * animatedRange,
+                    useCenter = false,
+                    style = Stroke(width = rangeStroke, cap = StrokeCap.Round),
+                )
+            }
+            rotate(135f) {
+                drawArc(
+                    color = Color.White.copy(alpha = 0.14f),
+                    startAngle = 0f,
+                    sweepAngle = 270f,
+                    useCenter = false,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                )
+                drawArc(
+                    color = arcColor,
+                    startAngle = 0f,
+                    sweepAngle = 270f * animatedPercent,
+                    useCenter = false,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                )
+                if (isCharging) {
+                    drawArc(
+                        color = arcColor.copy(alpha = 0.35f),
+                        startAngle = 0f,
+                        sweepAngle = 270f * animatedPercent,
+                        useCenter = false,
+                        style = Stroke(width = stroke * 2.2f, cap = StrokeCap.Round),
                     )
                 }
             }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = contentModifier,
+        ) {
+            AnimatedStatCounter(
+                value = percent,
+                suffix = "%",
+                style = if (compact) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.displayLarge,
+            )
+            Text(
+                text = "$rangeMiles mi",
+                style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
