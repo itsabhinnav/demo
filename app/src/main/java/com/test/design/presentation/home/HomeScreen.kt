@@ -96,7 +96,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.headlineMedium,
                     )
                     HomeEntryCard(
-                        title = "IVI Expressive Demo",
+                        title = "Material 3 Expressive Sample",
                         description = "Dashboard, climate, and media with M3 motion",
                         icon = Icons.Default.Dashboard,
                         onClick = onNavigateToIviDemo,
