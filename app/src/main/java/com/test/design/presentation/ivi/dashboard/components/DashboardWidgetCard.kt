@@ -7,9 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -94,40 +94,11 @@ fun SharedTransitionScope.DashboardWidgetCard(
                 .padding(CarDesignTokens.SectionPadding),
         ),
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+        if (!isExpanded) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = widget.icon,
-                    contentDescription = null,
-                    modifier = widgetIconSharedElement(
-                        widget = widget,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier
-                            .size(CarDesignTokens.PrimaryIcon)
-                            .carTouchTarget(),
-                    ),
-                    tint = contentColor,
-                )
-                Text(
-                    text = widget.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = contentColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = widgetTitleSharedElement(
-                        widget = widget,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier.weight(1f),
-                    ),
-                )
-            }
-            if (!isExpanded) {
                 WidgetEmbeddedContent(
                     widget = widget,
                     animatedVisibilityScope = animatedVisibilityScope,
@@ -140,9 +111,41 @@ fun SharedTransitionScope.DashboardWidgetCard(
                     onNavigationEvent = onNavigationEvent,
                     vehicleState = vehicleState,
                     onVehicleEvent = onVehicleEvent,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = widget.icon,
+                contentDescription = null,
+                modifier = widgetIconSharedElement(
+                    widget = widget,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .size(CarDesignTokens.PrimaryIcon)
+                        .carTouchTarget(),
+                ),
+                tint = contentColor,
+            )
+            Text(
+                text = widget.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = contentColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = widgetTitleSharedElement(
+                    widget = widget,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier.weight(1f),
+                ),
+            )
         }
     }
 }

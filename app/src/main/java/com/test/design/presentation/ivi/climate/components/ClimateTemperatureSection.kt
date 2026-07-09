@@ -44,7 +44,7 @@ fun ClimateTemperatureSection(
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(spacing),
+        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TemperatureAdjustButton(

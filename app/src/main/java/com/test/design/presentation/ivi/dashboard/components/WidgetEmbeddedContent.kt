@@ -134,12 +134,13 @@ private fun SharedTransitionScope.MediaWidgetEmbedded(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             MediaAlbumArt(
@@ -195,7 +196,7 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
     )
     MaterialTheme(colorScheme = climateColorScheme(temperatureFraction)) {
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -237,7 +238,8 @@ private fun SharedTransitionScope.NavigationWidgetEmbedded(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
@@ -298,7 +300,7 @@ private fun SharedTransitionScope.VehicleWidgetEmbedded(
                 widget = DashboardWidget.Vehicle,
                 animatedVisibilityScope = animatedVisibilityScope,
             ),
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxWidth(),
         )
     }
 }
@@ -311,7 +313,8 @@ private fun SharedTransitionScope.PlaceholderWidgetEmbedded(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
