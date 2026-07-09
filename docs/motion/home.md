@@ -2,7 +2,7 @@
 
 Configure global motion before opening the **Material 3 Expressive Sample**.
 
-[← Back to master guide](../../motion.md)
+[← Back to master guide](../../motion.md) · [Expressive features](./expressive-features.md)
 
 ---
 
