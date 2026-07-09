@@ -1,20 +1,18 @@
 package com.test.design.presentation.ivi.vehicle
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -102,8 +100,6 @@ fun SharedTransitionScope.VehicleScreen(
         val energyWeight by animateFloatAsState(layoutProfile.energyWeight, animationSpec = spatialSpec, label = "energy_weight")
         val centerWeight by animateFloatAsState(layoutProfile.centerWeight, animationSpec = spatialSpec, label = "center_weight")
         val sideWeight by animateFloatAsState(layoutProfile.sideWeight, animationSpec = spatialSpec, label = "side_weight")
-        val insightsWeight by animateFloatAsState(layoutProfile.insightsWeight, animationSpec = spatialSpec, label = "insights_weight")
-        val statsWeight by animateFloatAsState(layoutProfile.statsWeight, animationSpec = spatialSpec, label = "stats_weight")
 
         Box(
             modifier = widgetContainerTransform(
@@ -194,8 +190,6 @@ fun SharedTransitionScope.VehicleScreen(
                     SideInsightsColumn(
                         layoutProfile = layoutProfile,
                         uiState = uiState,
-                        insightsWeight = insightsWeight,
-                        statsWeight = statsWeight,
                         modifier = Modifier
                             .weight(sideWeight)
                             .fillMaxHeight(),
@@ -324,60 +318,29 @@ private fun CenterDriveColumn(
 private fun SideInsightsColumn(
     layoutProfile: VehicleDriveModeLayout,
     uiState: VehicleUiState,
-    insightsWeight: Float,
-    statsWeight: Float,
     modifier: Modifier = Modifier,
 ) {
-    val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntSize>()
     Column(
-        modifier = modifier.animateContentSize(animationSpec = spatialSpec),
+        modifier = modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
     ) {
-        if (layoutProfile.showDriveInsights && uiState.driveMode == DriveMode.Sport) {
+        VehicleStatsPanel(
+            efficiencyMpkWh = uiState.efficiencyMpkWh,
+            odometerMiles = uiState.odometerMiles,
+            tripEnergyKwh = uiState.tripEnergyKwh,
+            driveMode = uiState.driveMode,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (layoutProfile.showDriveInsights) {
             VehicleDriveInsightsCard(
                 driveMode = uiState.driveMode,
                 regenLevel = uiState.regenLevel,
                 efficiencyMpkWh = uiState.efficiencyMpkWh,
                 rangeMiles = uiState.rangeMiles,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(insightsWeight.coerceAtLeast(0.01f)),
-            )
-            VehicleStatsPanel(
-                efficiencyMpkWh = uiState.efficiencyMpkWh,
-                odometerMiles = uiState.odometerMiles,
-                tripEnergyKwh = uiState.tripEnergyKwh,
-                driveMode = uiState.driveMode,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(statsWeight.coerceAtLeast(0.01f)),
-            )
-        } else {
-            VehicleStatsPanel(
-                efficiencyMpkWh = uiState.efficiencyMpkWh,
-                odometerMiles = uiState.odometerMiles,
-                tripEnergyKwh = uiState.tripEnergyKwh,
-                driveMode = uiState.driveMode,
                 modifier = Modifier.fillMaxWidth(),
             )
-            AnimatedVisibility(
-                visible = layoutProfile.showDriveInsights,
-                enter = expandVertically(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()) +
-                    fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
-                exit = shrinkVertically(animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()) +
-                    fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            ) {
-                VehicleDriveInsightsCard(
-                    driveMode = uiState.driveMode,
-                    regenLevel = uiState.regenLevel,
-                    efficiencyMpkWh = uiState.efficiencyMpkWh,
-                    rangeMiles = uiState.rangeMiles,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
         }
     }
 }
@@ -391,7 +354,7 @@ private fun VehicleStatsPanel(
     modifier: Modifier = Modifier,
 ) {
     MorphingDetailSurfaceCard(
-        morphExpanded = driveMode == DriveMode.Sport,
+        morphExpanded = false,
         compactRadii = VehicleCardRestRadii,
         expandedRadii = VehicleCardActiveRadii,
         modifier = modifier,
@@ -399,7 +362,7 @@ private fun VehicleStatsPanel(
         Text("Trip", style = MaterialTheme.typography.titleMedium)
         Text(
             text = "$efficiencyMpkWh mi/kWh",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
         )
         Row(
