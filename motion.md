@@ -4,6 +4,15 @@ Use this guide while presenting the **Material 3 Expressive Sample** from the AA
 
 ---
 
+## Guides
+
+| Doc | Purpose |
+|-----|---------|
+| [Expressive features](docs/motion/expressive-features.md) | **Feature-first** — container transforms, shape morphing, tokens, etc. |
+| Screen guides (below) | **Screen-first** — per-widget motion details |
+
+---
+
 ## Screen guides
 
 | Screen | Doc | Highlights |
