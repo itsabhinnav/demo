@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AAOS Branch Diff — {{ branch_a }} → {{ branch_b }}</title>
+  <title>{{ branch_a }} → {{ branch_b }} · Branch Diff</title>
   <style>
     :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --surface2: #243044;
-      --text: #e6edf3;
-      --muted: #8b9cb3;
-      --accent: #58a6ff;
-      --added: #3fb950;
-      --removed: #f85149;
-      --modified: #d29922;
-      --renamed: #a371f7;
-      --border: #30363d;
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --text: #1f2328;
+      --muted: #656d76;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --added: #1a7f37;
+      --removed: #cf222e;
+      --modified: #9a6700;
+      --renamed: #8250df;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,475 +23,396 @@
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
+      font-size: 15px;
     }
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 1.5rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+    header { margin-bottom: 2rem; }
+    h1 { font-size: 1.75rem; font-weight: 600; margin: 0 0 .5rem; }
+    .subtitle { color: var(--muted); font-size: .95rem; }
+    .subtitle code {
+      background: #eaeef2;
+      padding: .1rem .35rem;
+      border-radius: 4px;
+      font-size: .85rem;
     }
-    header h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
-    header .meta { color: var(--muted); font-size: .9rem; }
-    nav {
-      background: var(--surface2);
-      padding: .75rem 2rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 72px;
-      z-index: 99;
-    }
-    nav a {
-      color: var(--accent);
-      text-decoration: none;
-      font-size: .9rem;
-    }
-    nav a:hover { text-decoration: underline; }
-    main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-    section { margin-bottom: 3rem; }
-    h2 {
-      font-size: 1.25rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: .5rem;
-      margin-bottom: 1rem;
-    }
-    h3 { font-size: 1rem; color: var(--muted); margin: 1.5rem 0 .75rem; }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-    .card {
-      background: var(--surface);
+    .hero {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .card .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
-    .card .value { font-size: 1.75rem; font-weight: 600; margin-top: .25rem; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: .875rem;
-      background: var(--surface);
-      border-radius: 8px;
-      overflow: hidden;
+    .hero p { margin: 0 0 1rem; font-size: 1.05rem; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: .75rem;
     }
-    th, td {
-      padding: .6rem .75rem;
+    .stat {
+      text-align: center;
+      padding: .75rem;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .stat .n { font-size: 1.5rem; font-weight: 700; display: block; }
+    .stat .l { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+    .stat.added .n { color: var(--added); }
+    .stat.removed .n { color: var(--removed); }
+    .stat.modified .n { color: var(--modified); }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    h2 {
+      font-size: 1.1rem;
+      margin: 0 0 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: .4rem .85rem;
+      border-radius: 20px;
+      font-size: .85rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .file-list { list-style: none; margin: 0; padding: 0; }
+    .file-item {
+      padding: .6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .file-item:last-child { border-bottom: none; }
+    .file-path {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: .82rem;
+      word-break: break-all;
+    }
+    .file-meta { font-size: .8rem; color: var(--muted); margin-top: .2rem; }
+    .tag {
+      display: inline-block;
+      font-size: .7rem;
+      font-weight: 600;
+      padding: .1rem .45rem;
+      border-radius: 4px;
+      margin-right: .35rem;
+      text-transform: uppercase;
+    }
+    .tag-added { background: #dafbe1; color: var(--added); }
+    .tag-removed { background: #ffebe9; color: var(--removed); }
+    .tag-modified { background: #fff8c5; color: var(--modified); }
+    .tag-renamed { background: #fbefff; color: var(--renamed); }
+    .tag-cat { background: #eaeef2; color: var(--muted); text-transform: none; }
+    details { margin-top: .35rem; }
+    details summary {
+      cursor: pointer;
+      font-size: .8rem;
+      color: var(--accent);
+      user-select: none;
+    }
+    details ul {
+      margin: .35rem 0 0;
+      padding-left: 1.25rem;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    .simple-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .simple-table th, .simple-table td {
+      padding: .5rem .6rem;
       text-align: left;
       border-bottom: 1px solid var(--border);
     }
-    th { background: var(--surface2); color: var(--muted); font-weight: 600; }
-    tr:hover td { background: rgba(88,166,255,.06); }
-    .badge {
-      display: inline-block;
-      padding: .15rem .5rem;
-      border-radius: 4px;
-      font-size: .75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .badge-added { background: rgba(63,185,80,.2); color: var(--added); }
-    .badge-removed { background: rgba(248,81,73,.2); color: var(--removed); }
-    .badge-modified { background: rgba(210,153,34,.2); color: var(--modified); }
-    .badge-renamed { background: rgba(163,113,247,.2); color: var(--renamed); }
-    .badge-aosp { background: rgba(88,166,255,.2); color: var(--accent); }
-    .badge-aaos { background: rgba(163,113,247,.2); color: var(--renamed); }
-    .badge-vendor { background: rgba(248,81,73,.15); color: #ff7b72; }
-    .badge-androidx { background: rgba(63,185,80,.15); color: var(--added); }
-    .badge-project { background: rgba(210,153,34,.15); color: var(--modified); }
-    .badge-source_main, .badge-java, .badge-kotlin { opacity: .9; }
-    .filter-bar {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
+    .simple-table th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+    .search {
+      width: 100%;
+      padding: .55rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
       margin-bottom: 1rem;
     }
-    .filter-bar input, .filter-bar select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: .4rem .6rem;
-      border-radius: 4px;
-      font-size: .875rem;
+  .search:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+    .empty { color: var(--muted); font-style: italic; font-size: .9rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .branch-label { font-weight: 600; margin-bottom: .5rem; font-size: .9rem; }
+    .branch-a { color: var(--removed); }
+    .branch-b { color: var(--added); }
+    .warn-box {
+      background: #fff8c5;
+      border: 1px solid #d4a72c;
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      font-size: .85rem;
+      margin-bottom: 1.25rem;
     }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
-    .collapsible { cursor: pointer; user-select: none; }
-    .collapsible::before { content: "▸ "; }
-    .collapsible.open::before { content: "▾ "; }
-    .detail { display: none; padding: .5rem 0 .5rem 1rem; }
-    .detail.open { display: block; }
-    ul.compact { margin: .25rem 0; padding-left: 1.25rem; }
-    ul.compact li { margin: .15rem 0; }
-    .empty { color: var(--muted); font-style: italic; }
-    footer {
-      text-align: center;
-      color: var(--muted);
-      padding: 2rem;
-      font-size: .8rem;
-      border-top: 1px solid var(--border);
-    }
+    .warn-box ul { margin: .5rem 0 0; padding-left: 1.25rem; }
+    footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 2rem; }
+    .compare-row { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+    .compare-row:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>AAOS Branch Diff Report</h1>
-    <div class="meta">
-      <strong>{{ repo_path }}</strong> ·
-      <span class="mono">{{ branch_a }}</span> ({{ commit_a }}) →
-      <span class="mono">{{ branch_b }}</span> ({{ commit_b }}) ·
-      merge-base <span class="mono">{{ merge_base }}</span> ·
-      generated {{ generated_at }}
+  <div class="wrap">
+    <header>
+      <h1>Branch Diff Report</h1>
+      <p class="subtitle">
+        <code>{{ branch_a }}</code> → <code>{{ branch_b }}</code>
+        &nbsp;·&nbsp; {{ repo_path }}
+        &nbsp;·&nbsp; {{ generated_at }}
+      </p>
+    </header>
+
+    <div class="hero">
+      <p>
+        Comparing <strong>{{ branch_a }}</strong> (baseline) to <strong>{{ branch_b }}</strong>.
+        Below is what changed, was added, or removed between the two branches.
+      </p>
+      <div class="stats">
+        <div class="stat">
+          <span class="n">{{ summary.files.total_changed }}</span>
+          <span class="l">Files changed</span>
+        </div>
+        <div class="stat added">
+          <span class="n">+{{ summary.files.added }}</span>
+          <span class="l">Added</span>
+        </div>
+        <div class="stat removed">
+          <span class="n">−{{ summary.files.removed }}</span>
+          <span class="l">Removed</span>
+        </div>
+        <div class="stat modified">
+          <span class="n">~{{ summary.files.modified }}</span>
+          <span class="l">Modified</span>
+        </div>
+        <div class="stat">
+          <span class="n">{{ summary.methods.only_in_a + summary.methods.only_in_b }}</span>
+          <span class="l">Method changes</span>
+        </div>
+        <div class="stat">
+          <span class="n">{{ summary.apis.only_in_a + summary.apis.only_in_b }}</span>
+          <span class="l">API changes</span>
+        </div>
+      </div>
     </div>
-  </header>
 
-  <nav>
-    <a href="#project">Project</a>
-    <a href="#files">Files</a>
-    <a href="#methods">Methods</a>
-    <a href="#apis">APIs</a>
-    <a href="#commits">Commits</a>
-    {% if warnings %}<a href="#warnings">Warnings ({{ warnings|length }})</a>{% endif %}
-  </nav>
-
-  <main>
-    <section id="project">
-      <h2>Project-level summary</h2>
-      <div class="cards">
-        <div class="card">
-          <div class="label">Files changed</div>
-          <div class="value">{{ summary.files.total_changed }}</div>
-        </div>
-        <div class="card">
-          <div class="label">Added</div>
-          <div class="value" style="color:var(--added)">{{ summary.files.added }}</div>
-        </div>
-        <div class="card">
-          <div class="label">Removed</div>
-          <div class="value" style="color:var(--removed)">{{ summary.files.removed }}</div>
-        </div>
-        <div class="card">
-          <div class="label">Modified</div>
-          <div class="value" style="color:var(--modified)">{{ summary.files.modified }}</div>
-        </div>
-        <div class="card">
-          <div class="label">Methods only in {{ branch_a }}</div>
-          <div class="value">{{ summary.methods.only_in_a }}</div>
-        </div>
-        <div class="card">
-          <div class="label">Methods only in {{ branch_b }}</div>
-          <div class="value">{{ summary.methods.only_in_b }}</div>
-        </div>
-        <div class="card">
-          <div class="label">APIs only in {{ branch_a }}</div>
-          <div class="value">{{ summary.apis.only_in_a }}</div>
-        </div>
-        <div class="card">
-          <div class="label">APIs only in {{ branch_b }}</div>
-          <div class="value">{{ summary.apis.only_in_b }}</div>
-        </div>
-      </div>
-
-      <h3>Branch comparison</h3>
-      <table>
+    {% if category_rows %}
+    <section>
+      <h2>Changes by type</h2>
+      <table class="simple-table">
         <thead>
-          <tr><th>Metric</th><th>{{ branch_a }}</th><th>{{ branch_b }}</th></tr>
+          <tr><th>Type</th><th>Added</th><th>Removed</th><th>Modified</th></tr>
         </thead>
         <tbody>
-          <tr><td>Total files</td><td>{{ summary.branch_a.total_files }}</td><td>{{ summary.branch_b.total_files }}</td></tr>
-          <tr><td>Classes</td><td>{{ summary.branch_a.class_count }}</td><td>{{ summary.branch_b.class_count }}</td></tr>
-          <tr><td>Methods</td><td>{{ summary.branch_a.method_count }}</td><td>{{ summary.branch_b.method_count }}</td></tr>
-          <tr><td>API references</td><td>{{ summary.branch_a.api_count }}</td><td>{{ summary.branch_b.api_count }}</td></tr>
-        </tbody>
-      </table>
-
-      <h3>Changes by category (source / test / gradle)</h3>
-      <table>
-        <thead>
-          <tr><th>Category</th><th>Added</th><th>Removed</th><th>Modified</th><th>Renamed</th></tr>
-        </thead>
-        <tbody>
-          {% for cat, counts in summary.by_category.items() %}
+          {% for row in category_rows %}
           <tr>
-            <td><span class="badge badge-{{ cat }}">{{ cat }}</span></td>
-            <td>{{ counts.get('added', 0) }}</td>
-            <td>{{ counts.get('removed', 0) }}</td>
-            <td>{{ counts.get('modified', 0) }}</td>
-            <td>{{ counts.get('renamed', 0) }}</td>
+            <td>{{ row.label }}</td>
+            <td>{% if row.added %}+{{ row.added }}{% else %}—{% endif %}</td>
+            <td>{% if row.removed %}−{{ row.removed }}{% else %}—{% endif %}</td>
+            <td>{% if row.modified %}~{{ row.modified }}{% else %}—{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
-
-      <h3>Changes by language</h3>
-      <table>
-        <thead>
-          <tr><th>Language</th><th>Added</th><th>Removed</th><th>Modified</th><th>Renamed</th></tr>
-        </thead>
-        <tbody>
-          {% for lang, counts in summary.by_language.items() %}
-          <tr>
-            <td>{{ lang }}</td>
-            <td>{{ counts.get('added', 0) }}</td>
-            <td>{{ counts.get('removed', 0) }}</td>
-            <td>{{ counts.get('modified', 0) }}</td>
-            <td>{{ counts.get('renamed', 0) }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-
-    <section id="files">
-      <h2>File-level diff</h2>
-      <div class="filter-bar">
-        <input type="text" id="fileFilter" placeholder="Filter paths..." oninput="filterTable('fileTable', this.value)">
-        <select id="fileStatusFilter" onchange="filterFileStatus()">
-          <option value="">All statuses</option>
-          <option value="added">Added</option>
-          <option value="removed">Removed</option>
-          <option value="modified">Modified</option>
-          <option value="renamed">Renamed</option>
-        </select>
-        <select id="fileCategoryFilter" onchange="filterFileStatus()">
-          <option value="">All categories</option>
-          <option value="source_main">Source (main)</option>
-          <option value="source_test">Source (test)</option>
-          <option value="gradle">Gradle</option>
-          <option value="resource">Resource</option>
-          <option value="manifest">Manifest</option>
-        </select>
-      </div>
-      <table id="fileTable">
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Category</th>
-            <th>Language</th>
-            <th>Path</th>
-            <th>Classes ±</th>
-            <th>Methods ±</th>
-            <th>APIs ±</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for f in file_diffs %}
-          <tr data-status="{{ f.status }}" data-category="{{ f.category }}">
-            <td><span class="badge badge-{{ f.status }}">{{ f.status }}</span></td>
-            <td><span class="badge badge-{{ f.category }}">{{ f.category }}</span></td>
-            <td>{{ f.language }}</td>
-            <td class="mono">
-              {% if f.old_path %}<span style="color:var(--muted)">{{ f.old_path }} → </span>{% endif %}
-              {{ f.path }}
-            </td>
-            <td>
-              {% if f.classes_added %}+{{ f.classes_added|length }}{% endif %}
-              {% if f.classes_removed %}-{{ f.classes_removed|length }}{% endif %}
-            </td>
-            <td>
-              {% if f.methods_added %}+{{ f.methods_added|length }}{% endif %}
-              {% if f.methods_removed %}-{{ f.methods_removed|length }}{% endif %}
-              {% if f.methods_modified %}~{{ f.methods_modified|length }}{% endif %}
-            </td>
-            <td>
-              {% if f.apis_added %}+{{ f.apis_added|length }}{% endif %}
-              {% if f.apis_removed %}-{{ f.apis_removed|length }}{% endif %}
-            </td>
-          </tr>
-          <tr class="detail-row">
-            <td colspan="7">
-              <div class="collapsible" onclick="toggleDetail(this)">Details for {{ f.path }}</div>
-              <div class="detail">
-                {% if f.classes_added %}
-                <strong style="color:var(--added)">Classes added:</strong>
-                <ul class="compact mono">{% for c in f.classes_added %}<li>{{ c }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.classes_removed %}
-                <strong style="color:var(--removed)">Classes removed:</strong>
-                <ul class="compact mono">{% for c in f.classes_removed %}<li>{{ c }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.methods_added %}
-                <strong style="color:var(--added)">Methods added:</strong>
-                <ul class="compact mono">{% for m in f.methods_added %}<li>{{ m }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.methods_removed %}
-                <strong style="color:var(--removed)">Methods removed:</strong>
-                <ul class="compact mono">{% for m in f.methods_removed %}<li>{{ m }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.methods_modified %}
-                <strong style="color:var(--modified)">Methods modified:</strong>
-                <ul class="compact mono">{% for m in f.methods_modified %}<li>{{ m }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.apis_added %}
-                <strong style="color:var(--added)">APIs added:</strong>
-                <ul class="compact mono">{% for a in f.apis_added %}<li>{{ a }}</li>{% endfor %}</ul>
-                {% endif %}
-                {% if f.apis_removed %}
-                <strong style="color:var(--removed)">APIs removed:</strong>
-                <ul class="compact mono">{% for a in f.apis_removed %}<li>{{ a }}</li>{% endfor %}</ul>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-
-    <section id="methods">
-      <h2>Method-level diff</h2>
-      <div class="filter-bar">
-        <input type="text" id="methodFilter" placeholder="Filter methods..." oninput="filterTable('methodTable', this.value)">
-      </div>
-      <table id="methodTable">
-        <thead>
-          <tr><th>Status</th><th>Class</th><th>Method</th><th>File</th><th>Language</th><th>Test?</th></tr>
-        </thead>
-        <tbody>
-          {% for m in methods_only_in_a %}
-          <tr>
-            <td><span class="badge badge-removed">only in {{ branch_a }}</span></td>
-            <td class="mono">{{ m.class_name }}</td>
-            <td class="mono">{{ m.signature }}</td>
-            <td class="mono">{{ m.file_path }}</td>
-            <td>{{ m.language.value }}</td>
-            <td>{{ "yes" if m.is_test else "no" }}</td>
-          </tr>
-          {% endfor %}
-          {% for m in methods_only_in_b %}
-          <tr>
-            <td><span class="badge badge-added">only in {{ branch_b }}</span></td>
-            <td class="mono">{{ m.class_name }}</td>
-            <td class="mono">{{ m.signature }}</td>
-            <td class="mono">{{ m.file_path }}</td>
-            <td>{{ m.language.value }}</td>
-            <td>{{ "yes" if m.is_test else "no" }}</td>
-          </tr>
-          {% endfor %}
-          {% for key, state in methods_in_both if state == "modified" %}
-          <tr>
-            <td><span class="badge badge-modified">modified</span></td>
-            <td class="mono" colspan="5">{{ key }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-
-    <section id="apis">
-      <h2>API-level diff (AOSP / AAOS / vendor)</h2>
-      <h3>API changes by kind</h3>
-      <table>
-        <thead>
-          <tr><th>Kind</th><th>Removed from {{ branch_b }} (only in {{ branch_a }})</th><th>Added in {{ branch_b }}</th></tr>
-        </thead>
-        <tbody>
-          {% for kind, counts in summary.apis.by_kind.items() %}
-          <tr>
-            <td><span class="badge badge-{{ kind }}">{{ kind }}</span></td>
-            <td>{{ counts.get('removed_in_b', 0) }}</td>
-            <td>{{ counts.get('added_in_b', 0) }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <h3>APIs only in {{ branch_a }}</h3>
-      <table id="apiRemovedTable">
-        <thead>
-          <tr><th>API</th><th>Kind</th><th>Context</th><th>File</th></tr>
-        </thead>
-        <tbody>
-          {% for a in apis_only_in_a %}
-          <tr>
-            <td class="mono">{{ a.qualified_name }}</td>
-            <td><span class="badge badge-{{ a.kind.value }}">{{ a.kind.value }}</span></td>
-            <td>{{ a.usage_context }}</td>
-            <td class="mono">{{ a.file_path }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <h3>APIs only in {{ branch_b }}</h3>
-      <table id="apiAddedTable">
-        <thead>
-          <tr><th>API</th><th>Kind</th><th>Context</th><th>File</th></tr>
-        </thead>
-        <tbody>
-          {% for a in apis_only_in_b %}
-          <tr>
-            <td class="mono">{{ a.qualified_name }}</td>
-            <td><span class="badge badge-{{ a.kind.value }}">{{ a.kind.value }}</span></td>
-            <td>{{ a.usage_context }}</td>
-            <td class="mono">{{ a.file_path }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <h3>APIs in both branches ({{ apis_in_both|length }})</h3>
-      {% if apis_in_both %}
-      <ul class="compact mono">
-        {% for a in apis_in_both[:200] %}<li>{{ a }}</li>{% endfor %}
-        {% if apis_in_both|length > 200 %}<li class="empty">… and {{ apis_in_both|length - 200 }} more</li>{% endif %}
-      </ul>
-      {% else %}
-      <p class="empty">None</p>
-      {% endif %}
-    </section>
-
-    {% if warnings %}
-    <section id="warnings">
-      <h2>Warnings ({{ warnings|length }})</h2>
-      <p class="empty">Non-fatal issues encountered during analysis (skipped files, parse fallbacks, etc.)</p>
-      <ul class="compact mono">
-        {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
-      </ul>
     </section>
     {% endif %}
 
-    <section id="commits">
-      <h2>Git commit history</h2>
-      <h3>Commits in {{ branch_b }} not in {{ branch_a }} ({{ summary.commits_b_ahead|length }})</h3>
-      {% if summary.commits_b_ahead %}
-      <ul class="compact mono">{% for c in summary.commits_b_ahead %}<li>{{ c }}</li>{% endfor %}</ul>
-      {% else %}<p class="empty">None</p>{% endif %}
+    <section>
+      <h2>Files</h2>
+      <input class="search" type="text" placeholder="Search file paths…" oninput="filterFiles(this.value)">
+      <div class="tabs" id="fileTabs">
+        <button class="tab active" data-tab="added">Added ({{ files_by_status.added|length }})</button>
+        <button class="tab" data-tab="removed">Removed ({{ files_by_status.removed|length }})</button>
+        <button class="tab" data-tab="modified">Modified ({{ files_by_status.modified|length }})</button>
+        {% if files_by_status.renamed|length %}
+        <button class="tab" data-tab="renamed">Renamed ({{ files_by_status.renamed|length }})</button>
+        {% endif %}
+      </div>
 
-      <h3>Commits in {{ branch_a }} not in {{ branch_b }} ({{ summary.commits_a_ahead|length }})</h3>
-      {% if summary.commits_a_ahead %}
-      <ul class="compact mono">{% for c in summary.commits_a_ahead %}<li>{{ c }}</li>{% endfor %}</ul>
-      {% else %}<p class="empty">None</p>{% endif %}
+      {% for status, items in files_by_status.items() %}
+      <div class="tab-panel {% if status == 'added' %}active{% endif %}" id="panel-{{ status }}">
+        {% if items %}
+        <ul class="file-list">
+          {% for f in items %}
+          <li class="file-item" data-path="{{ f.path|lower }}">
+            <div class="file-path" title="{{ f.path }}">{{ f.path }}</div>
+            <div class="file-meta">
+              <span class="tag tag-cat">{{ f.category }}</span>
+              <span class="tag tag-cat">{{ f.language }}</span>
+              {% if f.old_path %}<span>was {{ f.old_path }}</span>{% endif %}
+            </div>
+            {% if f.has_detail %}
+            <details>
+              <summary>Show class / method / API changes</summary>
+              {% if f.classes_added %}<p><strong>Classes added</strong></p><ul>{% for c in f.classes_added %}<li>{{ c }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.classes_removed %}<p><strong>Classes removed</strong></p><ul>{% for c in f.classes_removed %}<li>{{ c }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.methods_added %}<p><strong>Methods added</strong></p><ul>{% for m in f.methods_added %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.methods_removed %}<p><strong>Methods removed</strong></p><ul>{% for m in f.methods_removed %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.methods_modified %}<p><strong>Methods modified</strong></p><ul>{% for m in f.methods_modified %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.apis_added %}<p><strong>APIs added</strong></p><ul>{% for a in f.apis_added %}<li>{{ a }}</li>{% endfor %}</ul>{% endif %}
+              {% if f.apis_removed %}<p><strong>APIs removed</strong></p><ul>{% for a in f.apis_removed %}<li>{{ a }}</li>{% endfor %}</ul>{% endif %}
+            </details>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty">No files in this category.</p>
+        {% endif %}
+      </div>
+      {% endfor %}
     </section>
-  </main>
 
-  <footer>Generated by aaos-branch-diff v{{ version }}</footer>
+    <section>
+      <h2>Methods</h2>
+      <div class="two-col">
+        <div>
+          <div class="branch-label branch-a">Only in {{ branch_a }} ({{ methods_a|length }})</div>
+          {% if methods_a %}
+          <table class="simple-table">
+            <thead><tr><th>Method</th><th>File</th></tr></thead>
+            <tbody>
+              {% for m in methods_a[:100] %}
+              <tr>
+                <td><span class="file-path">{{ m.class_name }}.{{ m.signature }}</span></td>
+                <td class="file-meta">{{ m.file }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% if methods_a|length > 100 %}<p class="empty">… and {{ methods_a|length - 100 }} more</p>{% endif %}
+          {% else %}<p class="empty">None</p>{% endif %}
+        </div>
+        <div>
+          <div class="branch-label branch-b">Only in {{ branch_b }} ({{ methods_b|length }})</div>
+          {% if methods_b %}
+          <table class="simple-table">
+            <thead><tr><th>Method</th><th>File</th></tr></thead>
+            <tbody>
+              {% for m in methods_b[:100] %}
+              <tr>
+                <td><span class="file-path">{{ m.class_name }}.{{ m.signature }}</span></td>
+                <td class="file-meta">{{ m.file }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% if methods_b|length > 100 %}<p class="empty">… and {{ methods_b|length - 100 }} more</p>{% endif %}
+          {% else %}<p class="empty">None</p>{% endif %}
+        </div>
+      </div>
+      {% if methods_modified %}
+      <p style="margin-top:1rem"><strong>Modified in both branches:</strong> {{ methods_modified|length }}</p>
+      <details>
+        <summary>Show modified methods</summary>
+        <ul>{% for m in methods_modified[:80] %}<li class="file-path">{{ m }}</li>{% endfor %}</ul>
+        {% if methods_modified|length > 80 %}<p class="empty">… and {{ methods_modified|length - 80 }} more</p>{% endif %}
+      </details>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>APIs (AOSP · AAOS · vendor)</h2>
+      {% if api_kinds %}
+      <table class="simple-table" style="margin-bottom:1.25rem">
+        <thead><tr><th>Kind</th><th>Removed from {{ branch_b }}</th><th>Added in {{ branch_b }}</th></tr></thead>
+        <tbody>
+          {% for k in api_kinds %}
+          <tr>
+            <td>{{ k.kind }}</td>
+            <td>{% if k.removed %}−{{ k.removed }}{% else %}—{% endif %}</td>
+            <td>{% if k.added %}+{{ k.added }}{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <div class="two-col">
+        <div>
+          <div class="branch-label branch-a">Only in {{ branch_a }} ({{ apis_removed|length }})</div>
+          {% if apis_removed %}
+          <table class="simple-table">
+            <thead><tr><th>API</th><th>Kind</th></tr></thead>
+            <tbody>
+              {% for a in apis_removed[:60] %}
+              <tr>
+                <td class="file-path">{{ a.name }}</td>
+                <td class="file-meta">{{ a.kind }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% if apis_removed|length > 60 %}<p class="empty">… and {{ apis_removed|length - 60 }} more</p>{% endif %}
+          {% else %}<p class="empty">None</p>{% endif %}
+        </div>
+        <div>
+          <div class="branch-label branch-b">Only in {{ branch_b }} ({{ apis_added|length }})</div>
+          {% if apis_added %}
+          <table class="simple-table">
+            <thead><tr><th>API</th><th>Kind</th></tr></thead>
+            <tbody>
+              {% for a in apis_added[:60] %}
+              <tr>
+                <td class="file-path">{{ a.name }}</td>
+                <td class="file-meta">{{ a.kind }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% if apis_added|length > 60 %}<p class="empty">… and {{ apis_added|length - 60 }} more</p>{% endif %}
+          {% else %}<p class="empty">None</p>{% endif %}
+        </div>
+      </div>
+      <p class="file-meta" style="margin-top:1rem">{{ apis_in_both_count }} APIs unchanged in both branches.</p>
+    </section>
+
+    {% if warnings %}
+    <div class="warn-box">
+      <strong>{{ warnings|length }} warnings</strong> during analysis (skipped or unparseable files).
+      <details>
+        <summary>Show warnings</summary>
+        <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+      </details>
+    </div>
+    {% endif %}
+
+    <section>
+      <h2>Branch sizes</h2>
+      <div class="compare-row"><span>Files</span><span>{{ summary.branch_a.total_files }} → {{ summary.branch_b.total_files }}</span></div>
+      <div class="compare-row"><span>Classes</span><span>{{ summary.branch_a.class_count }} → {{ summary.branch_b.class_count }}</span></div>
+      <div class="compare-row"><span>Methods</span><span>{{ summary.branch_a.method_count }} → {{ summary.branch_b.method_count }}</span></div>
+      <div class="compare-row"><span>API references</span><span>{{ summary.branch_a.api_count }} → {{ summary.branch_b.api_count }}</span></div>
+      <p class="file-meta" style="margin-top:.75rem">Merge base: <code>{{ merge_base }}</code></p>
+    </section>
+
+    <footer>aaos-branch-diff v{{ version }}</footer>
+  </div>
 
   <script>
-    function filterTable(tableId, query) {
-      const q = query.toLowerCase();
-      document.querySelectorAll('#' + tableId + ' tbody tr:not(.detail-row)').forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    document.querySelectorAll('#fileTabs .tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#fileTabs .tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
       });
-    }
-    function filterFileStatus() {
-      const status = document.getElementById('fileStatusFilter').value;
-      const category = document.getElementById('fileCategoryFilter').value;
-      document.querySelectorAll('#fileTable tbody tr:not(.detail-row)').forEach(row => {
-        const matchStatus = !status || row.dataset.status === status;
-        const matchCat = !category || row.dataset.category === category;
-        row.style.display = matchStatus && matchCat ? '' : 'none';
+    });
+    function filterFiles(q) {
+      const query = q.toLowerCase();
+      document.querySelectorAll('.file-item').forEach(item => {
+        item.style.display = item.dataset.path.includes(query) ? '' : 'none';
       });
-    }
-    function toggleDetail(el) {
-      el.classList.toggle('open');
-      el.nextElementSibling.classList.toggle('open');
     }
   </script>
 </body>
