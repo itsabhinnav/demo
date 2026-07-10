@@ -46,6 +46,16 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Analysis pipeline (v1.4)
+
+The tool runs in **three phases** for a robust comparison:
+
+1. **AST index — branch A** — tree-sitter parses every `.java` / `.kt` file on the baseline branch (full branch, not just changed files). Falls back to javalang (Java) or regex (Kotlin) if needed.
+2. **AST index — branch B** — same full parse on the target branch.
+3. **Git + semantic diff** — `git diff` for file add/remove/rename, then compares indexed classes, methods, and APIs between the two AST snapshots.
+
+The HTML report includes an **AST index** table showing parse coverage per branch.
+
 ## Usage
 
 Run from your AAOS project root (or pass `--repo`):
@@ -116,8 +126,8 @@ Warnings appear in the HTML report and with `--verbose`.
 
 ### Languages
 
-- **Java** — parsed with `javalang` (classes, interfaces, enums, methods, imports)
-- **Kotlin** — regex-based extraction (classes, objects, interfaces, `fun` methods, imports)
+- **Java** — tree-sitter AST (primary), javalang fallback
+- **Kotlin** — tree-sitter AST (primary), regex fallback
 - **Gradle** — dependency coordinates from `implementation` / `api` lines
 
 ### API classification
