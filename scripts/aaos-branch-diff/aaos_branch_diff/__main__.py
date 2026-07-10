@@ -131,20 +131,27 @@ Branch order:
         return 1
 
     print(f"Report written to {safe_display_path(out)}")
+    sf = report.summary.get("source_focus", {})
+    sf_files = sf.get("files", report.summary["files"])
+    sf_methods = sf.get("methods", report.summary["methods"])
+    sf_apis = sf.get("apis", report.summary["apis"])
     print(
-        f"  Files changed: {report.summary['files']['total_changed']} "
-        f"(+{report.summary['files']['added']} "
-        f"-{report.summary['files']['removed']} "
-        f"~{report.summary['files']['modified']})"
+        f"  Source files changed: {sf_files.get('total_changed', 0)} "
+        f"(+{sf_files.get('added', 0)} "
+        f"-{sf_files.get('removed', 0)} "
+        f"~{sf_files.get('modified', 0)})"
     )
     print(
-        f"  Methods: {report.summary['methods']['only_in_a']} only in {args.branch_a}, "
-        f"{report.summary['methods']['only_in_b']} only in {args.branch_b}"
+        f"  Source methods: {sf_methods.get('only_in_a', 0)} only in {args.branch_a}, "
+        f"{sf_methods.get('only_in_b', 0)} only in {args.branch_b}"
     )
     print(
-        f"  APIs: {report.summary['apis']['only_in_a']} only in {args.branch_a}, "
-        f"{report.summary['apis']['only_in_b']} only in {args.branch_b}"
+        f"  Source APIs: {sf_apis.get('only_in_a', 0)} only in {args.branch_a}, "
+        f"{sf_apis.get('only_in_b', 0)} only in {args.branch_b}"
     )
+    test_files = sf.get("test_files", {})
+    if test_files.get("total_changed", 0):
+        print(f"  Test files changed: {test_files['total_changed']} (see collapsed section in report)")
 
     warnings = report.summary.get("warnings", [])
     if warnings:

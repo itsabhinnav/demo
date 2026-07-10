@@ -9,6 +9,7 @@ from .models import (
     BranchSnapshot,
     ChangeStatus,
     DiffReport,
+    FileCategory,
     FileDiff,
     MethodInfo,
 )
@@ -114,10 +115,16 @@ def build_diff_report(
     methods_only_a = [methods_a[k] for k in sorted(keys_a - keys_b)]
     methods_only_b = [methods_b[k] for k in sorted(keys_b - keys_a)]
     methods_both = []
+    methods_modified_source: list[str] = []
+    methods_modified_test: list[str] = []
     for k in sorted(keys_a & keys_b):
         ma, mb = methods_a[k], methods_b[k]
         if ma.body_hash != mb.body_hash:
             methods_both.append((k, "modified"))
+            if ma.is_test:
+                methods_modified_test.append(k)
+            else:
+                methods_modified_source.append(k)
         else:
             methods_both.append((k, "unchanged"))
 
@@ -127,6 +134,41 @@ def build_diff_report(
     apis_only_b = [apis_b[k] for k in sorted(api_keys_b - api_keys_a)]
     apis_in_both = sorted(api_keys_a & api_keys_b)
 
+    def _is_test_api(api: ApiReference) -> bool:
+        return classify_file(api.file_path) == FileCategory.SOURCE_TEST
+
+    methods_only_a_source = [m for m in methods_only_a if not m.is_test]
+    methods_only_a_test = [m for m in methods_only_a if m.is_test]
+    methods_only_b_source = [m for m in methods_only_b if not m.is_test]
+    methods_only_b_test = [m for m in methods_only_b if m.is_test]
+    apis_only_a_source = [a for a in apis_only_a if not _is_test_api(a)]
+    apis_only_a_test = [a for a in apis_only_a if _is_test_api(a)]
+    apis_only_b_source = [a for a in apis_only_b if not _is_test_api(a)]
+    apis_only_b_test = [a for a in apis_only_b if _is_test_api(a)]
+
+    production_file_diffs = [f for f in file_diffs if f.category != FileCategory.SOURCE_TEST]
+    test_file_diffs = [f for f in file_diffs if f.category == FileCategory.SOURCE_TEST]
+
+    def _file_counts(diffs: list[FileDiff]) -> dict:
+        return {
+            "added": sum(1 for f in diffs if f.status == ChangeStatus.ADDED),
+            "removed": sum(1 for f in diffs if f.status == ChangeStatus.REMOVED),
+            "modified": sum(1 for f in diffs if f.status == ChangeStatus.MODIFIED),
+            "renamed": sum(1 for f in diffs if f.status == ChangeStatus.RENAMED),
+            "total_changed": len(diffs),
+        }
+
+    api_by_kind: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    api_by_kind_source: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for a in apis_only_a:
+        api_by_kind[a.kind.value]["removed_in_b"] += 1
+        if not _is_test_api(a):
+            api_by_kind_source[a.kind.value]["removed_in_b"] += 1
+    for a in apis_only_b:
+        api_by_kind[a.kind.value]["added_in_b"] += 1
+        if not _is_test_api(a):
+            api_by_kind_source[a.kind.value]["added_in_b"] += 1
+
     summary_a = summarize_branch(snapshot_a)
     summary_b = summarize_branch(snapshot_b)
 
@@ -135,12 +177,6 @@ def build_diff_report(
     for fd in file_diffs:
         by_category[fd.category.value][fd.status.value] += 1
         by_language[fd.language.value][fd.status.value] += 1
-
-    api_by_kind: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
-    for a in apis_only_a:
-        api_by_kind[a.kind.value]["removed_in_b"] += 1
-    for a in apis_only_b:
-        api_by_kind[a.kind.value]["added_in_b"] += 1
 
     report = DiffReport(
         repo_path=str(scanner.repo_path),
@@ -163,13 +199,40 @@ def build_diff_report(
                 "only_in_a": len(methods_only_a),
                 "only_in_b": len(methods_only_b),
                 "in_both": len(methods_both),
-                "modified": sum(1 for _, s in methods_both if s == "modified"),
+                "modified": len(methods_modified_source) + len(methods_modified_test),
             },
             "apis": {
                 "only_in_a": len(apis_only_a),
                 "only_in_b": len(apis_only_b),
                 "in_both": len(apis_in_both),
                 "by_kind": dict(api_by_kind),
+            },
+            "source_focus": {
+                "files": _file_counts(production_file_diffs),
+                "test_files": _file_counts(test_file_diffs),
+                "methods": {
+                    "only_in_a": len(methods_only_a_source),
+                    "only_in_b": len(methods_only_b_source),
+                    "modified": len(methods_modified_source),
+                    "test_only_in_a": len(methods_only_a_test),
+                    "test_only_in_b": len(methods_only_b_test),
+                    "test_modified": len(methods_modified_test),
+                },
+                "apis": {
+                    "only_in_a": len(apis_only_a_source),
+                    "only_in_b": len(apis_only_b_source),
+                    "test_only_in_a": len(apis_only_a_test),
+                    "test_only_in_b": len(apis_only_b_test),
+                    "by_kind": dict(api_by_kind_source),
+                },
+                "branch_sizes": {
+                    "source_files_a": summary_a.by_category.get("source_main", 0),
+                    "source_files_b": summary_b.by_category.get("source_main", 0),
+                    "test_files_a": summary_a.by_category.get("source_test", 0),
+                    "test_files_b": summary_b.by_category.get("source_test", 0),
+                    "source_methods_a": _count_source_methods(snapshot_a),
+                    "source_methods_b": _count_source_methods(snapshot_b),
+                },
             },
             "by_category": {k: dict(v) for k, v in by_category.items()},
             "by_language": {k: dict(v) for k, v in by_language.items()},
@@ -187,7 +250,19 @@ def build_diff_report(
         snapshot_a=snapshot_a,
         snapshot_b=snapshot_b,
     )
+    report.summary["methods_modified_source"] = methods_modified_source
+    report.summary["methods_modified_test"] = methods_modified_test
     return report
+
+
+def _count_source_methods(snapshot: BranchSnapshot) -> int:
+    total = 0
+    for f in snapshot.files.values():
+        if f.category != FileCategory.SOURCE_MAIN:
+            continue
+        for c in f.classes:
+            total += len(c.methods)
+    return total
 
 
 def _summary_dict(s) -> dict:

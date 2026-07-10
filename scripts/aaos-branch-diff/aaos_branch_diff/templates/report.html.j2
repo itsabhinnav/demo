@@ -134,6 +134,8 @@
       font-size: .78rem;
       color: var(--muted);
     }
+    ul.compact { margin: .25rem 0; padding-left: 1.25rem; font-size: .78rem; }
+    ul.compact.mono { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
     .simple-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
     .simple-table th, .simple-table td {
       padding: .5rem .6rem;
@@ -171,6 +173,23 @@
     footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 2rem; }
     .compare-row { display: flex; justify-content: space-between; padding: .35rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
     .compare-row:last-child { border-bottom: none; }
+    .section-note { font-size: .85rem; color: var(--muted); margin: -.5rem 0 1rem; }
+    .test-section {
+      border: 1px dashed var(--border);
+      background: #fafbfc;
+      border-radius: 12px;
+      padding: .75rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .test-section summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: .9rem;
+      user-select: none;
+    }
+    .test-section .inner { margin-top: 1rem; }
+    .test-section .file-item { opacity: .9; }
   </style>
 </head>
 <body>
@@ -187,31 +206,31 @@
     <div class="hero">
       <p>
         Comparing <strong>{{ branch_a }}</strong> (baseline) to <strong>{{ branch_b }}</strong>.
-        Below is what changed, was added, or removed between the two branches.
+        This report focuses on <strong>production source code</strong> — test changes are summarized separately at the bottom.
       </p>
       <div class="stats">
         <div class="stat">
-          <span class="n">{{ summary.files.total_changed }}</span>
-          <span class="l">Files changed</span>
+          <span class="n">{{ source_focus.files.total_changed }}</span>
+          <span class="l">Prod. files</span>
         </div>
         <div class="stat added">
-          <span class="n">+{{ summary.files.added }}</span>
+          <span class="n">+{{ source_focus.files.added }}</span>
           <span class="l">Added</span>
         </div>
         <div class="stat removed">
-          <span class="n">−{{ summary.files.removed }}</span>
+          <span class="n">−{{ source_focus.files.removed }}</span>
           <span class="l">Removed</span>
         </div>
         <div class="stat modified">
-          <span class="n">~{{ summary.files.modified }}</span>
+          <span class="n">~{{ source_focus.files.modified }}</span>
           <span class="l">Modified</span>
         </div>
         <div class="stat">
-          <span class="n">{{ summary.methods.only_in_a + summary.methods.only_in_b }}</span>
+          <span class="n">{{ source_focus.methods.only_in_a + source_focus.methods.only_in_b }}</span>
           <span class="l">Method changes</span>
         </div>
         <div class="stat">
-          <span class="n">{{ summary.apis.only_in_a + summary.apis.only_in_b }}</span>
+          <span class="n">{{ source_focus.apis.only_in_a + source_focus.apis.only_in_b }}</span>
           <span class="l">API changes</span>
         </div>
       </div>
@@ -239,23 +258,24 @@
     {% endif %}
 
     <section>
-      <h2>Files</h2>
-      <input class="search" type="text" placeholder="Search file paths…" oninput="filterFiles(this.value)">
-      <div class="tabs" id="fileTabs">
-        <button class="tab active" data-tab="added">Added ({{ files_by_status.added|length }})</button>
-        <button class="tab" data-tab="removed">Removed ({{ files_by_status.removed|length }})</button>
-        <button class="tab" data-tab="modified">Modified ({{ files_by_status.modified|length }})</button>
-        {% if files_by_status.renamed|length %}
-        <button class="tab" data-tab="renamed">Renamed ({{ files_by_status.renamed|length }})</button>
+      <h2>Source files</h2>
+      <p class="section-note">Main application code under <code>src/main/</code> plus Gradle and resources.</p>
+      <input class="search" type="text" placeholder="Search source file paths…" oninput="filterFiles(this.value, 'source')">
+      <div class="tabs" id="sourceFileTabs">
+        <button class="tab active" data-tab="added" data-group="source">Added ({{ source_files.added|length }})</button>
+        <button class="tab" data-tab="removed" data-group="source">Removed ({{ source_files.removed|length }})</button>
+        <button class="tab" data-tab="modified" data-group="source">Modified ({{ source_files.modified|length }})</button>
+        {% if source_files.renamed|length %}
+        <button class="tab" data-tab="renamed" data-group="source">Renamed ({{ source_files.renamed|length }})</button>
         {% endif %}
       </div>
 
-      {% for status, items in files_by_status.items() %}
-      <div class="tab-panel {% if status == 'added' %}active{% endif %}" id="panel-{{ status }}">
+      {% for status, items in source_files.items() %}
+      <div class="tab-panel source-panel {% if status == 'added' %}active{% endif %}" id="source-panel-{{ status }}">
         {% if items %}
         <ul class="file-list">
           {% for f in items %}
-          <li class="file-item" data-path="{{ f.path|lower }}">
+          <li class="file-item" data-path="{{ f.path|lower }}" data-group="source">
             <div class="file-path" title="{{ f.path }}">{{ f.path }}</div>
             <div class="file-meta">
               <span class="tag tag-cat">{{ f.category }}</span>
@@ -278,14 +298,14 @@
           {% endfor %}
         </ul>
         {% else %}
-        <p class="empty">No files in this category.</p>
+        <p class="empty">No source files in this category.</p>
         {% endif %}
       </div>
       {% endfor %}
     </section>
 
     <section>
-      <h2>Methods</h2>
+      <h2>Source methods</h2>
       <div class="two-col">
         <div>
           <div class="branch-label branch-a">Only in {{ branch_a }} ({{ methods_a|length }})</div>
@@ -333,7 +353,8 @@
     </section>
 
     <section>
-      <h2>APIs (AOSP · AAOS · vendor)</h2>
+      <h2>Source APIs</h2>
+      <p class="section-note">AOSP, AAOS, and vendor APIs used in production code.</p>
       {% if api_kinds %}
       <table class="simple-table" style="margin-bottom:1.25rem">
         <thead><tr><th>Kind</th><th>Removed from {{ branch_b }}</th><th>Added in {{ branch_b }}</th></tr></thead>
@@ -385,8 +406,60 @@
           {% else %}<p class="empty">None</p>{% endif %}
         </div>
       </div>
-      <p class="file-meta" style="margin-top:1rem">{{ apis_in_both_count }} APIs unchanged in both branches.</p>
+      <p class="file-meta" style="margin-top:1rem">{{ apis_in_both_count }} APIs unchanged in both branches (all code).</p>
     </section>
+
+    {% if has_test_data %}
+    <details class="test-section">
+      <summary>Test code changes ({{ test_file_counts.total_changed }} files · {{ test_method_counts.test_only_in_a + test_method_counts.test_only_in_b }} methods · {{ test_api_counts.test_only_in_a + test_api_counts.test_only_in_b }} APIs)</summary>
+      <div class="inner">
+        <p class="section-note">Changes under <code>src/test/</code>, <code>src/androidTest/</code>, and test classes. Lower priority — expand only if needed.</p>
+
+        <h2 style="border:none;padding:0;margin:1rem 0 .5rem;font-size:1rem;">Test files</h2>
+        <input class="search" type="text" placeholder="Search test file paths…" oninput="filterFiles(this.value, 'test')">
+        <div class="tabs" id="testFileTabs">
+          <button class="tab active" data-tab="added" data-group="test">Added ({{ test_files.added|length }})</button>
+          <button class="tab" data-tab="removed" data-group="test">Removed ({{ test_files.removed|length }})</button>
+          <button class="tab" data-tab="modified" data-group="test">Modified ({{ test_files.modified|length }})</button>
+        </div>
+        {% for status, items in test_files.items() %}
+        <div class="tab-panel test-panel {% if status == 'added' %}active{% endif %}" id="test-panel-{{ status }}">
+          {% if items %}
+          <ul class="file-list">
+            {% for f in items %}
+            <li class="file-item" data-path="{{ f.path|lower }}" data-group="test">
+              <div class="file-path">{{ f.path }}</div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}<p class="empty">None</p>{% endif %}
+        </div>
+        {% endfor %}
+
+        {% if methods_a_test or methods_b_test %}
+        <h2 style="border:none;padding:0;margin:1.25rem 0 .5rem;font-size:1rem;">Test methods</h2>
+        <div class="two-col">
+          <div>
+            <div class="branch-label branch-a">Only in {{ branch_a }} ({{ methods_a_test|length }})</div>
+            {% if methods_a_test %}<ul class="compact mono">{% for m in methods_a_test[:40] %}<li>{{ m.class_name }}.{{ m.signature }}</li>{% endfor %}</ul>{% else %}<p class="empty">None</p>{% endif %}
+          </div>
+          <div>
+            <div class="branch-label branch-b">Only in {{ branch_b }} ({{ methods_b_test|length }})</div>
+            {% if methods_b_test %}<ul class="compact mono">{% for m in methods_b_test[:40] %}<li>{{ m.class_name }}.{{ m.signature }}</li>{% endfor %}</ul>{% else %}<p class="empty">None</p>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if apis_removed_test or apis_added_test %}
+        <h2 style="border:none;padding:0;margin:1.25rem 0 .5rem;font-size:1rem;">Test APIs</h2>
+        <div class="two-col">
+          <div>{% if apis_removed_test %}<ul class="compact mono">{% for a in apis_removed_test[:30] %}<li>{{ a.name }}</li>{% endfor %}</ul>{% else %}<p class="empty">None removed</p>{% endif %}</div>
+          <div>{% if apis_added_test %}<ul class="compact mono">{% for a in apis_added_test[:30] %}<li>{{ a.name }}</li>{% endfor %}</ul>{% else %}<p class="empty">None added</p>{% endif %}</div>
+        </div>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
 
     {% if warnings %}
     <div class="warn-box">
@@ -400,28 +473,36 @@
 
     <section>
       <h2>Branch sizes</h2>
-      <div class="compare-row"><span>Files</span><span>{{ summary.branch_a.total_files }} → {{ summary.branch_b.total_files }}</span></div>
-      <div class="compare-row"><span>Classes</span><span>{{ summary.branch_a.class_count }} → {{ summary.branch_b.class_count }}</span></div>
-      <div class="compare-row"><span>Methods</span><span>{{ summary.branch_a.method_count }} → {{ summary.branch_b.method_count }}</span></div>
-      <div class="compare-row"><span>API references</span><span>{{ summary.branch_a.api_count }} → {{ summary.branch_b.api_count }}</span></div>
-      <p class="file-meta" style="margin-top:.75rem">Merge base: <code>{{ merge_base }}</code></p>
+      <div class="compare-row"><span>Production source files</span><span>{{ source_focus.branch_sizes.source_files_a }} → {{ source_focus.branch_sizes.source_files_b }}</span></div>
+      <div class="compare-row"><span>Production methods</span><span>{{ source_focus.branch_sizes.source_methods_a }} → {{ source_focus.branch_sizes.source_methods_b }}</span></div>
+      <div class="compare-row"><span>Test files</span><span>{{ source_focus.branch_sizes.test_files_a }} → {{ source_focus.branch_sizes.test_files_b }}</span></div>
+      <p class="file-meta" style="margin-top:.75rem">Merge base: <code>{{ merge_base }}</code> · Total files changed (all): {{ summary.files.total_changed }}</p>
     </section>
 
     <footer>aaos-branch-diff v{{ version }}</footer>
   </div>
 
   <script>
-    document.querySelectorAll('#fileTabs .tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('#fileTabs .tab').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    function setupTabs(containerId, panelPrefix) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const group = btn.dataset.group || 'source';
+          container.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.' + group + '-panel').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          const panel = document.getElementById(panelPrefix + '-' + btn.dataset.tab);
+          if (panel) panel.classList.add('active');
+        });
       });
-    });
-    function filterFiles(q) {
+    }
+    setupTabs('sourceFileTabs', 'source-panel');
+    setupTabs('testFileTabs', 'test-panel');
+
+    function filterFiles(q, group) {
       const query = q.toLowerCase();
-      document.querySelectorAll('.file-item').forEach(item => {
+      document.querySelectorAll('.file-item[data-group="' + group + '"]').forEach(item => {
         item.style.display = item.dataset.path.includes(query) ? '' : 'none';
       });
     }
