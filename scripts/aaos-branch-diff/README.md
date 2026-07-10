@@ -9,17 +9,40 @@ Python tool to compare two git branches of an **Android Automotive (AAOS)** proj
 
 Designed for repos where an Android 15 branch diverged long ago from Android 14 and the trees have drifted significantly.
 
+Works on **Linux, macOS, and Windows**.
+
 ## Requirements
 
 - Python 3.10+
+- [Git](https://git-scm.com/) on `PATH` (Windows: Git for Windows)
 - Git repository with both branches available locally
 
 ## Install
 
+### Linux / macOS
+
 ```bash
 cd scripts/aaos-branch-diff
 python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Windows (Command Prompt)
+
+```bat
+cd scripts\aaos-branch-diff
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Windows (PowerShell)
+
+```powershell
+cd scripts\aaos-branch-diff
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
@@ -31,13 +54,23 @@ Run from your AAOS project root (or pass `--repo`):
 # Baseline = Android 14 branch, target = Android 15 branch
 python -m aaos_branch_diff android-14 android-15
 
-# Custom repo path and output file
+# Windows path example
+python -m aaos_branch_diff android-14 android-15 --repo C:\work\aaos-app -o report.html
+
+# Linux / macOS
 python -m aaos_branch_diff android-14 android-15 \
   --repo /path/to/your/aaos-app \
   --output reports/a14-vs-a15.html
+```
 
-# Or use the launcher script
-./run_diff.py android-14 android-15 -o report.html
+### Windows launchers (auto-create venv)
+
+```bat
+run_diff.bat android-14 android-15 --repo C:\work\aaos-app -o report.html
+```
+
+```powershell
+.\run_diff.ps1 android-14 android-15 -Repo C:\work\aaos-app -Output report.html
 ```
 
 ### Arguments
@@ -50,8 +83,24 @@ python -m aaos_branch_diff android-14 android-15 \
 | `--output`, `-o` | HTML output path (default: `aaos-branch-diff-report.html`) |
 | `--include-unchanged` | Include unchanged files in file diff table |
 | `--json-summary` | Print JSON summary to stdout |
+| `--verbose`, `-v` | Progress and warnings on stderr |
+| `--max-file-size-mb` | Skip files larger than N MiB (default: 2) |
+| `--log-file` | Write diagnostics to a log file |
 
 **Branch order matters:** the report describes changes when moving from `branch_a` → `branch_b` (what was added/removed in B relative to A).
+
+## Robustness
+
+- **Windows paths** — backslashes normalized; long output paths supported
+- **CRLF / UTF-8** — line endings and encodings normalized before parsing
+- **Binary / large files** — skipped with warnings (not crashed)
+- **Parse failures** — per-file try/except; fallback regex parser for Java
+- **Git worktrees** — `.git` pointer files supported
+- **Unrelated histories** — merge-base failure handled gracefully
+- **Atomic report write** — temp file + rename (safe on Windows)
+- **Skipped paths** — `build/`, `.gradle/`, `generated/` excluded by default
+
+Warnings appear in the HTML report and with `--verbose`.
 
 ## What it analyzes
 
@@ -101,13 +150,22 @@ Open the generated HTML in a browser. Sections include:
 2. **File diff** — filterable table with expandable per-file class/method/API details
 3. **Method diff** — methods only in A, only in B, or modified
 4. **API diff** — AOSP vs AAOS vs vendor breakdown
-5. **Commits** — `git log` each way between branches
+5. **Warnings** — skipped files, parse issues (if any)
+6. **Commits** — `git log` each way between branches
+
+## Tests
+
+```bash
+cd scripts/aaos-branch-diff
+source .venv/bin/activate   # or .venv\Scripts\activate on Windows
+python -m unittest discover -s tests -v
+```
 
 ## Limitations
 
 - Kotlin parsing is heuristic (not a full compiler frontend); complex DSLs may miss edge cases.
 - Method “modified” detection uses a body snippet hash, not semantic diff.
-- Generated / protobuf sources are not specially excluded (add paths to skip in `git_scanner.py` if needed).
+- Generated / protobuf sources under `generated/` are skipped by default.
 - Run locally where both branches are fetched: `git fetch origin android-14 android-15`.
 
 ## Project layout
@@ -116,9 +174,14 @@ Open the generated HTML in a browser. Sections include:
 scripts/aaos-branch-diff/
 ├── requirements.txt
 ├── run_diff.py
+├── run_diff.bat          # Windows CMD launcher
+├── run_diff.ps1          # Windows PowerShell launcher
 ├── README.md
+├── tests/
+│   └── test_platform.py
 └── aaos_branch_diff/
     ├── __main__.py          # CLI
+    ├── platform_utils.py    # Windows / encoding helpers
     ├── git_scanner.py       # Git operations
     ├── diff_engine.py       # Cross-branch comparison
     ├── file_classifier.py   # source / test / gradle

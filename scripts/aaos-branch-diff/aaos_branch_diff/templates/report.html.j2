@@ -158,6 +158,7 @@
     <a href="#methods">Methods</a>
     <a href="#apis">APIs</a>
     <a href="#commits">Commits</a>
+    {% if warnings %}<a href="#warnings">Warnings ({{ warnings|length }})</a>{% endif %}
   </nav>
 
   <main>
@@ -446,6 +447,16 @@
       <p class="empty">None</p>
       {% endif %}
     </section>
+
+    {% if warnings %}
+    <section id="warnings">
+      <h2>Warnings ({{ warnings|length }})</h2>
+      <p class="empty">Non-fatal issues encountered during analysis (skipped files, parse fallbacks, etc.)</p>
+      <ul class="compact mono">
+        {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+      </ul>
+    </section>
+    {% endif %}
 
     <section id="commits">
       <h2>Git commit history</h2>

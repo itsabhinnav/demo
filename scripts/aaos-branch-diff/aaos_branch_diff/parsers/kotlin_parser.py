@@ -7,6 +7,7 @@ from typing import Optional
 from .java_parser import _classify_api, _body_hash
 from ..file_classifier import classify_file
 from ..models import ApiReference, ClassInfo, FileCategory, Language, MethodInfo
+from ..platform_utils import normalize_line_endings
 
 # Kotlin declaration patterns
 CLASS_PATTERN = re.compile(
@@ -33,6 +34,7 @@ def parse_kotlin(
     project_packages: Optional[set[str]] = None,
 ) -> tuple[list[ClassInfo], list[ApiReference]]:
     project_packages = project_packages or set()
+    content = normalize_line_endings(content)
     category = classify_file(file_path)
     is_test = category == FileCategory.SOURCE_TEST
     classes: list[ClassInfo] = []

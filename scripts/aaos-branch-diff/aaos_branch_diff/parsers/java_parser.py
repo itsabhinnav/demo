@@ -8,6 +8,7 @@ import javalang
 
 from ..file_classifier import classify_file
 from ..models import ApiKind, ApiReference, ClassInfo, FileCategory, Language, MethodInfo
+from ..platform_utils import normalize_line_endings
 
 
 def _body_hash(text: str) -> str:
@@ -40,7 +41,7 @@ def _classify_api(qualified: str, project_packages: set[str]) -> ApiKind:
     )
     if any(q.startswith(p) for p in vendor_prefixes):
         return ApiKind.VENDOR
-  # Short top-level packages often OEM-specific in automotive
+    # Short top-level packages often OEM-specific in automotive
     top = q.split(".")[0] if "." in q else q
     if top in {"vendor", "oem", "car", "ivi", "hmi"}:
         return ApiKind.VENDOR
@@ -64,6 +65,7 @@ def parse_java(
     project_packages: Optional[set[str]] = None,
 ) -> tuple[list[ClassInfo], list[ApiReference]]:
     project_packages = project_packages or set()
+    content = normalize_line_endings(content)
     category = classify_file(file_path)
     is_test = category == FileCategory.SOURCE_TEST
     classes: list[ClassInfo] = []

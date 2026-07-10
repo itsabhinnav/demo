@@ -28,17 +28,15 @@ def build_diff_report(
     branch_b: str,
     include_unchanged: bool = False,
 ) -> DiffReport:
-    """
-    Compare branch_a (baseline, e.g. Android 14) to branch_b (target, e.g. Android 15).
-    Report describes what changed when moving from A to B.
-    """
     commit_a = scanner.resolve_ref(branch_a)[:12]
     commit_b = scanner.resolve_ref(branch_b)[:12]
     merge_base = scanner.merge_base(branch_a, branch_b)[:12]
 
-    files_a = set(scanner.list_files(branch_a).keys())
-    files_b = set(scanner.list_files(branch_b).keys())
-    all_paths = files_a | files_b
+    files_a = scanner.list_files(branch_a)
+    files_b = scanner.list_files(branch_b)
+    paths_a = set(files_a.keys())
+    paths_b = set(files_b.keys())
+    all_paths = paths_a | paths_b
 
     name_status = scanner.diff_name_status(branch_a, branch_b)
     diff_stats = scanner.diff_stat(branch_a, branch_b)
@@ -56,29 +54,34 @@ def build_diff_report(
         else:
             status_map[path] = (ChangeStatus.MODIFIED, old_path)
 
-    # Paths only in one branch
-    for p in files_b - files_a:
+    for p in paths_b - paths_a:
         if p not in status_map:
             status_map[p] = (ChangeStatus.ADDED, None)
-    for p in files_a - files_b:
+    for p in paths_a - paths_b:
         if p not in status_map:
             status_map[p] = (ChangeStatus.REMOVED, None)
 
     relevant = {p for p, (st, _) in status_map.items() if st != ChangeStatus.UNCHANGED}
-    relevant |= {p for p in all_paths if p in status_map}
+    relevant |= set(status_map.keys())
 
-    snapshot_a = scanner.build_snapshot(branch_a, relevant | files_a)
-    snapshot_b = scanner.build_snapshot(branch_b, relevant | files_b)
+    def progress(done: int, total: int, path: str) -> None:
+        if scanner.verbose and done % 50 == 0:
+            print(f"  Snapshot progress {done}/{total}")
+
+    print(f"Building snapshot for {branch_a} …")
+    snapshot_a = scanner.build_snapshot(branch_a, relevant | paths_a, progress=progress if scanner.verbose else None)
+    print(f"Building snapshot for {branch_b} …")
+    snapshot_b = scanner.build_snapshot(branch_b, relevant | paths_b, progress=progress if scanner.verbose else None)
 
     file_diffs: list[FileDiff] = []
 
     for path in sorted(all_paths):
-        in_a = path in files_a
-        in_b = path in files_b
+        in_a = path in paths_a
+        in_b = path in paths_b
 
         if in_a and in_b:
-            sha_a = scanner.list_files(branch_a).get(path)
-            sha_b = scanner.list_files(branch_b).get(path)
+            sha_a = files_a.get(path)
+            sha_b = files_b.get(path)
             if sha_a == sha_b and not include_unchanged:
                 continue
             status = status_map.get(path, (ChangeStatus.UNCHANGED, None))[0]
@@ -172,6 +175,7 @@ def build_diff_report(
             "by_language": {k: dict(v) for k, v in by_language.items()},
             "commits_b_ahead": scanner.log_oneline(branch_a, branch_b),
             "commits_a_ahead": scanner.log_oneline(branch_b, branch_a),
+            "warnings": list(scanner.warnings),
         },
         file_diffs=file_diffs,
         methods_only_in_a=methods_only_a,
@@ -234,15 +238,15 @@ def _diff_file(path, status, category, language, old_path, snap_a, snap_b) -> Fi
 
     mod_methods = []
     for k in methods_a & methods_b:
-        if snap_a and snap_b:
-            ma = next(
-                m for c in snap_a.classes for m in c.methods if _method_key(m) == k
-            )
-            mb = next(
-                m for c in snap_b.classes for m in c.methods if _method_key(m) == k
-            )
+        if not (snap_a and snap_b):
+            continue
+        try:
+            ma = next(m for c in snap_a.classes for m in c.methods if _method_key(m) == k)
+            mb = next(m for c in snap_b.classes for m in c.methods if _method_key(m) == k)
             if ma.body_hash != mb.body_hash:
                 mod_methods.append(k)
+        except StopIteration:
+            continue
 
     return FileDiff(
         path=path,
