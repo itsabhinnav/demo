@@ -6,12 +6,42 @@ import unittest
 
 from aaos_branch_diff.file_classifier import classify_file, detect_language, normalize_path
 from aaos_branch_diff.models import FileCategory
+from aaos_branch_diff.parsers.java_parser import parse_java
 from aaos_branch_diff.platform_utils import (
     decode_git_blob,
     is_probably_binary,
     normalize_line_endings,
     safe_display_path,
 )
+
+
+class TestJavaParser(unittest.TestCase):
+    def test_class_extends_single_reference_type(self):
+        """Regression: iterating ReferenceType must not yield tuples without .name."""
+        src = """
+        package com.oem.app;
+        class Foo extends android.app.Activity implements Runnable {
+            public void onCreate() {}
+        }
+        """
+        classes, apis = parse_java(src, "app/src/main/java/com/oem/app/Foo.java")
+        self.assertEqual(len(classes), 1)
+        self.assertEqual(classes[0].name, "Foo")
+        self.assertEqual(len(classes[0].methods), 1)
+        extend_apis = [a for a in apis if a.usage_context == "extends"]
+        self.assertTrue(any("Activity" in a.qualified_name for a in extend_apis))
+
+    def test_generics_in_method_params(self):
+        src = """
+        package com.oem.app;
+        import java.util.List;
+        class Foo {
+            void bar(List<String> items, int x) {}
+        }
+        """
+        classes, _ = parse_java(src, "app/src/main/java/com/oem/app/Foo.java")
+        self.assertEqual(len(classes[0].methods), 1)
+        self.assertIn("List<String>", classes[0].methods[0].signature)
 
 
 class TestNormalizePath(unittest.TestCase):

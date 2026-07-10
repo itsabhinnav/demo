@@ -59,6 +59,62 @@ def _extract_project_packages(paths: list[str]) -> set[str]:
     return packages
 
 
+def _java_type_to_string(type_node) -> str:
+    """Render a javalang type node to a source-like string."""
+    if type_node is None:
+        return "?"
+    if isinstance(type_node, str):
+        return type_node
+    if isinstance(type_node, tuple):
+        # ReferenceType iteration yields (path, node) tuples
+        for part in type_node:
+            if not isinstance(part, tuple) and part is not None:
+                return _java_type_to_string(part)
+        return "?"
+
+    # Qualified types: android.app.Activity via sub_type chain
+    parts: list[str] = []
+    node = type_node
+    while node is not None and hasattr(node, "name"):
+        parts.append(node.name)
+        node = getattr(node, "sub_type", None)
+    if parts:
+        name = ".".join(reversed(parts))
+    else:
+        name = getattr(type_node, "name", None) or "?"
+
+    args = getattr(type_node, "arguments", None)
+    if args:
+        arg_strs = []
+        for arg in args:
+            inner = getattr(arg, "type", None)
+            if inner is not None:
+                arg_strs.append(_java_type_to_string(inner))
+            else:
+                arg_strs.append("?")
+        name = f"{name}<{', '.join(arg_strs)}>"
+
+    dims = getattr(type_node, "dimensions", None) or []
+    if dims:
+        name += "[]" * len(dims)
+    return name
+
+
+def _iter_type_refs(type_ref) -> list:
+    """Normalize extends/implements (single ref, list, or None) to ReferenceType nodes."""
+    if type_ref is None:
+        return []
+    if isinstance(type_ref, list):
+        return type_ref
+    if isinstance(type_ref, (javalang.tree.ReferenceType, javalang.tree.BasicType)):
+        return [type_ref]
+    return []
+
+
+def _type_ref_name(type_ref, pkg: str, import_map: dict[str, str]) -> str:
+    return _resolve_java_type(_java_type_to_string(type_ref), pkg, import_map)
+
+
 def parse_java(
     content: str,
     file_path: str,
@@ -68,14 +124,29 @@ def parse_java(
     content = normalize_line_endings(content)
     category = classify_file(file_path)
     is_test = category == FileCategory.SOURCE_TEST
-    classes: list[ClassInfo] = []
-    apis: list[ApiReference] = []
 
     try:
         tree = javalang.parse.parse(content)
-    except (javalang.parser.JavaSyntaxError, RecursionError, TypeError, ValueError):
+    except (javalang.parser.JavaSyntaxError, RecursionError, TypeError, ValueError, AttributeError):
         return _parse_java_fallback(content, file_path, is_test, project_packages)
 
+    try:
+        return _parse_java_tree(tree, content, file_path, is_test, project_packages)
+    except (AttributeError, TypeError, ValueError) as exc:
+        # javalang AST edge cases (e.g. tuple nodes) — fall back to regex parser
+        _ = exc
+        return _parse_java_fallback(content, file_path, is_test, project_packages)
+
+
+def _parse_java_tree(
+    tree,
+    content: str,
+    file_path: str,
+    is_test: bool,
+    project_packages: set[str],
+) -> tuple[list[ClassInfo], list[ApiReference]]:
+    classes: list[ClassInfo] = []
+    apis: list[ApiReference] = []
     pkg = tree.package.name if tree.package else ""
     import_map = {imp.path.split(".")[-1]: imp.path for imp in (tree.imports or [])}
 
@@ -94,11 +165,11 @@ def parse_java(
         cls = _java_type_to_class(type_decl, pkg, file_path, is_test, content, import_map)
         if cls:
             classes.append(cls)
-            for ext in getattr(type_decl, "extends", None) or []:
-                qn = _resolve_java_type(ext.name, pkg, import_map)
+            for ext in _iter_type_refs(getattr(type_decl, "extends", None)):
+                qn = _type_ref_name(ext, pkg, import_map)
                 apis.append(ApiReference(qn, _classify_api(qn, project_packages), file_path, 0, "extends"))
-            for impl in getattr(type_decl, "implements", None) or []:
-                qn = _resolve_java_type(impl.name, pkg, import_map)
+            for impl in _iter_type_refs(getattr(type_decl, "implements", None)):
+                qn = _type_ref_name(impl, pkg, import_map)
                 apis.append(ApiReference(qn, _classify_api(qn, project_packages), file_path, 0, "implements"))
 
     return classes, apis
@@ -131,7 +202,11 @@ def _java_type_to_class(
 
     for member in type_decl.body or []:
         if isinstance(member, javalang.tree.MethodDeclaration):
-            params = ", ".join(f"{p.type.name} {p.name}" for p in member.parameters)
+            param_parts = []
+            for p in member.parameters:
+                type_str = _java_type_to_string(p.type)
+                param_parts.append(f"{type_str} {p.name}")
+            params = ", ".join(param_parts)
             sig = f"{member.name}({params})"
             line_start = member.position.line if member.position else 0
             line_end = line_start
