@@ -1,26 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="theme-color" content="#ffffff">
   <title>{{ branch_a }} → {{ branch_b }} · Branch Diff</title>
   <style>
     :root {
-      --bg: #f6f8fa;
+      color-scheme: light;
+      --bg: #ffffff;
+      --bg-subtle: #f6f8fa;
       --card: #ffffff;
-      --text: #1f2328;
-      --muted: #656d76;
-      --border: #d0d7de;
+      --text: #24292f;
+      --muted: #57606a;
+      --border: #d8dee4;
       --accent: #0969da;
       --added: #1a7f37;
       --removed: #cf222e;
       --modified: #9a6700;
       --renamed: #8250df;
     }
+    html {
+      color-scheme: light;
+      background: var(--bg-subtle);
+    }
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
+      background: var(--bg-subtle);
       color: var(--text);
       margin: 0;
       line-height: 1.6;
@@ -52,7 +60,7 @@
     .stat {
       text-align: center;
       padding: .75rem;
-      background: var(--bg);
+      background: var(--bg-subtle);
       border-radius: 8px;
     }
     .stat .n { font-size: 1.5rem; font-weight: 700; display: block; }
@@ -76,7 +84,7 @@
     .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
     .tab {
       border: 1px solid var(--border);
-      background: var(--bg);
+      background: #fff;
       padding: .4rem .85rem;
       border-radius: 20px;
       font-size: .85rem;
@@ -132,7 +140,8 @@
       text-align: left;
       border-bottom: 1px solid var(--border);
     }
-    .simple-table th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+    .simple-table th { color: var(--muted); font-weight: 600; font-size: .8rem; background: var(--bg-subtle); }
+    .simple-table tr:hover td { background: #f6f8fa; }
     .search {
       width: 100%;
       padding: .55rem .75rem;
@@ -140,6 +149,8 @@
       border-radius: 8px;
       font-size: .9rem;
       margin-bottom: 1rem;
+      background: #fff;
+      color: var(--text);
     }
   .search:focus { outline: 2px solid var(--accent); outline-offset: 0; }
     .empty { color: var(--muted); font-style: italic; font-size: .9rem; }
