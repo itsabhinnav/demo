@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from .branch_index import index_branch, summarize_branch
 from .file_classifier import classify_file, detect_language
-from .git_scanner import GitScanner, summarize_branch
+from .git_scanner import GitScanner
 from .models import (
     ApiReference,
     BranchSnapshot,
@@ -33,6 +34,22 @@ def build_diff_report(
     commit_b = scanner.resolve_ref(branch_b)[:12]
     merge_base = scanner.merge_base(branch_a, branch_b)[:12]
 
+    def progress(done: int, total: int, path: str, phase: str) -> None:
+        if scanner.verbose and done % 50 == 0:
+            print(f"  [{phase}] {done}/{total}")
+
+    print(f"Phase 1/3: AST parse & index — {branch_a}")
+    index_a = index_branch(scanner, branch_a, progress=progress if scanner.verbose else None)
+    _print_index_stats(index_a)
+
+    print(f"Phase 1/3: AST parse & index — {branch_b}")
+    index_b = index_branch(scanner, branch_b, progress=progress if scanner.verbose else None)
+    _print_index_stats(index_b)
+
+    snapshot_a = index_a.snapshot
+    snapshot_b = index_b.snapshot
+
+    print("Phase 2/3: Git file-level diff …")
     files_a = scanner.list_files(branch_a)
     files_b = scanner.list_files(branch_b)
     paths_a = set(files_a.keys())
@@ -62,18 +79,7 @@ def build_diff_report(
         if p not in status_map:
             status_map[p] = (ChangeStatus.REMOVED, None)
 
-    relevant = {p for p, (st, _) in status_map.items() if st != ChangeStatus.UNCHANGED}
-    relevant |= set(status_map.keys())
-
-    def progress(done: int, total: int, path: str) -> None:
-        if scanner.verbose and done % 50 == 0:
-            print(f"  Snapshot progress {done}/{total}")
-
-    print(f"Building snapshot for {branch_a} …")
-    snapshot_a = scanner.build_snapshot(branch_a, relevant | paths_a, progress=progress if scanner.verbose else None)
-    print(f"Building snapshot for {branch_b} …")
-    snapshot_b = scanner.build_snapshot(branch_b, relevant | paths_b, progress=progress if scanner.verbose else None)
-
+    print("Phase 3/3: Semantic diff (classes, methods, APIs) …")
     file_diffs: list[FileDiff] = []
 
     for path in sorted(all_paths):
@@ -188,6 +194,10 @@ def build_diff_report(
         summary={
             "branch_a": _summary_dict(summary_a),
             "branch_b": _summary_dict(summary_b),
+            "ast_index": {
+                "branch_a": index_a.parse_stats.to_dict(),
+                "branch_b": index_b.parse_stats.to_dict(),
+            },
             "files": {
                 "added": sum(1 for f in file_diffs if f.status == ChangeStatus.ADDED),
                 "removed": sum(1 for f in file_diffs if f.status == ChangeStatus.REMOVED),
@@ -253,6 +263,14 @@ def build_diff_report(
     report.summary["methods_modified_source"] = methods_modified_source
     report.summary["methods_modified_test"] = methods_modified_test
     return report
+
+
+def _print_index_stats(index) -> None:
+    s = index.parse_stats
+    print(
+        f"  Indexed {s.source_files} source files "
+        f"({s.parsed_ast} AST, {s.parsed_fallback} fallback, {s.parse_failed} failed)"
+    )
 
 
 def _count_source_methods(snapshot: BranchSnapshot) -> int:

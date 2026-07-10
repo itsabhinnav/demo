@@ -236,6 +236,32 @@
       </div>
     </div>
 
+    {% if summary.ast_index %}
+    <section>
+      <h2>AST index (phase 1)</h2>
+      <p class="section-note">Both branches were fully parsed with tree-sitter AST before diffing.</p>
+      <table class="simple-table">
+        <thead>
+          <tr><th>Branch</th><th>Source files</th><th>AST parsed</th><th>Fallback</th><th>Failed</th><th>Java</th><th>Kotlin</th></tr>
+        </thead>
+        <tbody>
+          {% for label, key in [(branch_a, 'branch_a'), (branch_b, 'branch_b')] %}
+          {% set ast = summary.ast_index[key] %}
+          <tr>
+            <td><code>{{ label }}</code></td>
+            <td>{{ ast.source_files }}</td>
+            <td>{{ ast.parsed_ast }}</td>
+            <td>{{ ast.parsed_fallback }}</td>
+            <td>{{ ast.parse_failed }}</td>
+            <td>{{ ast.java_files }}</td>
+            <td>{{ ast.kotlin_files }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+
     {% if category_rows %}
     <section>
       <h2>Changes by type</h2>
