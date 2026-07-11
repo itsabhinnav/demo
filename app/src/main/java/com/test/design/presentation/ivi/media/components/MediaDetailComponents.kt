@@ -41,24 +41,25 @@ fun AnimatedTrackInfo(
     val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
     val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
     AnimatedContent(
-        targetState = track.id,
+        targetState = track,
         modifier = modifier,
         transitionSpec = {
             slideInVertically(animationSpec = spatialSpec) { it / 2 } + fadeIn(animationSpec = effectsSpec) togetherWith
                 slideOutVertically(animationSpec = spatialSpec) { -it / 2 } + fadeOut(animationSpec = effectsSpec)
         },
+        contentKey = { it.id },
         label = "track_info",
-    ) {
+    ) { animatedTrack ->
         Column(verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)) {
             Text(
-                text = track.title,
+                text = animatedTrack.title,
                 style = if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.displaySmall,
                 color = titleColor,
                 maxLines = if (compact) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = track.artist,
+                text = animatedTrack.artist,
                 style = if (compact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.headlineSmall,
                 color = subtitleColor,
                 maxLines = 1,
@@ -66,7 +67,7 @@ fun AnimatedTrackInfo(
             )
             if (!compact) {
                 Text(
-                    text = track.album,
+                    text = animatedTrack.album,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
