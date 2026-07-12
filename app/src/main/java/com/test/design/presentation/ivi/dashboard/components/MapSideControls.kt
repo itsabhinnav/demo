@@ -1,6 +1,7 @@
 package com.test.design.presentation.ivi.dashboard.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -11,8 +12,6 @@ import androidx.compose.material.icons.filled.EvStation
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.test.design.theme.CarDesignTokens
 
 /**
  * Vertical map control stack (compass / zoom / chargers / settings).
@@ -35,7 +35,7 @@ fun MapSideControls(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MapControlButton(Icons.Default.Explore, "Compass", onCompass)
@@ -55,20 +55,16 @@ private fun MapControlButton(
     Surface(
         onClick = onClick,
         shape = CircleShape,
-        color = Color(0xCC1C1C1E),
-        shadowElevation = 4.dp,
-        modifier = Modifier.size(40.dp),
+        color = Color(0xF01C1C1E),
+        shadowElevation = 8.dp,
+        modifier = Modifier.size(CarDesignTokens.MinTouchTarget),
     ) {
-        IconButton(
-            onClick = onClick,
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = Color.White.copy(alpha = 0.9f),
-            ),
-        ) {
+        Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                modifier = Modifier.size(20.dp),
+                tint = Color.White.copy(alpha = 0.92f),
+                modifier = Modifier.size(CarDesignTokens.SecondaryIcon),
             )
         }
     }
