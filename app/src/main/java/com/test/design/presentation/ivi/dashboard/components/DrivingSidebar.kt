@@ -20,31 +20,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.QueueMusic
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,17 +46,16 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
+import com.test.design.presentation.ivi.media.components.MediaTransportControlsBar
 import com.test.design.presentation.ivi.vehicle.VehicleUiState
 
-private val SidebarBg = Color(0xFF121214)
-private val CardBg = Color(0xFF1C1C1E)
+private val CardBg = Color(0xF01C1C1E)
 private val AccentGreen = Color(0xFF34C759)
 private val AccentRed = Color(0xFFE53935)
 private val AccentYellow = Color(0xFFF5C542)
 
 /**
- * Left rail: stats / media / 4×2 apps. Parent must give a fixed width
- * (not a fractional weight that can undershoot tile layout).
+ * Floating left rail over the map: stats / media / apps with clear gaps.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -91,10 +76,8 @@ fun SharedTransitionScope.DrivingSidebar(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .fillMaxWidth()
-            .background(SidebarBg)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         DrivingStatsCard(
             speedMph = speedMph,
@@ -144,14 +127,15 @@ private fun SharedTransitionScope.DrivingStatsCard(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = CardBg,
+        shadowElevation = 10.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 22.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -161,9 +145,9 @@ private fun SharedTransitionScope.DrivingStatsCard(
                 Text(
                     text = "$speedMph MPH",
                     color = Color.White,
-                    fontSize = 34.sp,
+                    fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
-                    lineHeight = 38.sp,
+                    lineHeight = 52.sp,
                 )
                 SpeedLimitBadge(limit = speedLimitMph)
             }
@@ -171,37 +155,37 @@ private fun SharedTransitionScope.DrivingStatsCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 LinearProgressIndicator(
                     progress = { batteryPercent / 100f },
                     modifier = Modifier
                         .weight(1f)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(6.dp)),
                     color = AccentGreen,
                     trackColor = Color.White.copy(alpha = 0.12f),
                 )
                 Text(
                     text = "$rangeMiles miles",
                     color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                 )
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(28.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 listOf("P", "R", "N", "D").forEach { g ->
                     val selected = g == gear
                     Text(
                         text = g,
-                        fontSize = 16.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 24.sp,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                         color = when {
                             selected && g == "D" -> AccentRed
                             selected -> AccentGreen
@@ -218,26 +202,26 @@ private fun SharedTransitionScope.DrivingStatsCard(
 private fun SpeedLimitBadge(limit: Int) {
     Box(
         modifier = Modifier
-            .size(44.dp)
-            .border(2.dp, Color.White.copy(alpha = 0.85f), CircleShape)
-            .padding(3.dp)
-            .border(1.5.dp, Color.White.copy(alpha = 0.5f), CircleShape),
+            .size(58.dp)
+            .border(2.5.dp, Color.White.copy(alpha = 0.85f), CircleShape)
+            .padding(4.dp)
+            .border(2.dp, Color.White.copy(alpha = 0.5f), CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "$limit",
                 color = Color.White,
-                fontSize = 13.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 13.sp,
+                lineHeight = 18.sp,
             )
             Text(
                 text = "MAX",
                 color = Color.White.copy(alpha = 0.7f),
-                fontSize = 7.sp,
+                fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                lineHeight = 8.sp,
+                lineHeight = 10.sp,
             )
         }
     }
@@ -252,8 +236,6 @@ private fun SharedTransitionScope.SidebarMediaCard(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
-    var volume by remember { mutableFloatStateOf(0.65f) }
-
     Surface(
         onClick = onExpand,
         modifier = widgetContainerTransform(
@@ -261,24 +243,25 @@ private fun SharedTransitionScope.SidebarMediaCard(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = CardBg,
+        shadowElevation = 10.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(20.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             Brush.linearGradient(
                                 listOf(Color(0xFF5B8DEF), Color(0xFF1A1A2E), Color(0xFFE53935)),
@@ -289,7 +272,7 @@ private fun SharedTransitionScope.SidebarMediaCard(
                     Text(
                         text = mediaState.currentTrack.album.take(2).uppercase(),
                         color = Color.White,
-                        fontSize = 13.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                     )
                 }
@@ -297,7 +280,7 @@ private fun SharedTransitionScope.SidebarMediaCard(
                     Text(
                         text = mediaState.currentTrack.title,
                         color = Color.White,
-                        fontSize = 15.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -305,7 +288,7 @@ private fun SharedTransitionScope.SidebarMediaCard(
                     Text(
                         text = mediaState.currentTrack.artist,
                         color = Color.White.copy(alpha = 0.55f),
-                        fontSize = 12.sp,
+                        fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -314,17 +297,17 @@ private fun SharedTransitionScope.SidebarMediaCard(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = "Favorite",
                     tint = AccentRed,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(28.dp),
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 LinearProgressIndicator(
                     progress = { mediaState.progress },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp)),
+                        .height(5.dp)
+                        .clip(RoundedCornerShape(3.dp)),
                     color = AccentYellow,
                     trackColor = Color.White.copy(alpha = 0.15f),
                 )
@@ -335,113 +318,29 @@ private fun SharedTransitionScope.SidebarMediaCard(
                     Text(
                         text = mediaState.elapsedLabel,
                         color = Color.White.copy(alpha = 0.5f),
-                        fontSize = 11.sp,
+                        fontSize = 14.sp,
                     )
                     Text(
                         text = mediaState.currentTrack.durationLabel,
                         color = Color.White.copy(alpha = 0.5f),
-                        fontSize = 11.sp,
+                        fontSize = 14.sp,
                     )
                 }
             }
 
-            Row(
+            MediaTransportControlsBar(
+                isPlaying = mediaState.isPlaying,
+                onToggleQueue = { onMediaEvent(MediaEvent.ToggleQueue) },
+                onPrevious = { onMediaEvent(MediaEvent.PreviousTrack) },
+                onTogglePlayback = { onMediaEvent(MediaEvent.TogglePlayback) },
+                onNext = { onMediaEvent(MediaEvent.NextTrack) },
+                showQueue = false,
                 modifier = widgetControlsSharedElement(
                     widget = DashboardWidget.Media,
                     animatedVisibilityScope = animatedVisibilityScope,
-                ).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.PreviousTrack) },
-                    modifier = Modifier.size(40.dp),
-                ) {
-                    Icon(
-                        Icons.Default.SkipPrevious,
-                        contentDescription = "Previous",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-                Surface(
-                    onClick = { onMediaEvent(MediaEvent.TogglePlayback) },
-                    shape = CircleShape,
-                    color = AccentRed,
-                    modifier = Modifier.size(44.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (mediaState.isPlaying) {
-                                Icons.Default.Pause
-                            } else {
-                                Icons.Default.PlayArrow
-                            },
-                            contentDescription = "Play/Pause",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp),
-                        )
-                    }
-                }
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.NextTrack) },
-                    modifier = Modifier.size(40.dp),
-                ) {
-                    Icon(
-                        Icons.Default.SkipNext,
-                        contentDescription = "Next",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.55f),
-                    modifier = Modifier.size(16.dp),
-                )
-                Slider(
-                    value = volume,
-                    onValueChange = { volume = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(20.dp),
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.White,
-                        activeTrackColor = Color.White.copy(alpha = 0.7f),
-                        inactiveTrackColor = Color.White.copy(alpha = 0.15f),
-                    ),
-                )
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.ToggleShuffle) },
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.Default.Shuffle,
-                        contentDescription = "Shuffle",
-                        tint = if (mediaState.isShuffleOn) AccentGreen else Color.White.copy(alpha = 0.55f),
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.ToggleQueue) },
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.Default.QueueMusic,
-                        contentDescription = "Queue",
-                        tint = Color.White.copy(alpha = 0.55f),
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
+                    modifier = Modifier.fillMaxWidth(),
+                ),
+            )
         }
     }
 }
@@ -471,20 +370,21 @@ private fun AppLauncherCard(
         LauncherApp("Watch", null, "N", Color(0xFFE50914), DashboardWidget.CustomizedMaterial),
     )
     val columns = 4
-    val gap = 8.dp
-    val pad = 10.dp
+    val gap = 14.dp
+    val pad = 18.dp
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         color = CardBg,
+        shadowElevation = 10.dp,
     ) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(pad),
         ) {
-            val tile = ((maxWidth - gap * (columns - 1)) / columns).coerceAtLeast(48.dp)
+            val tile = ((maxWidth - gap * (columns - 1)) / columns).coerceAtLeast(64.dp)
             Column(verticalArrangement = Arrangement.spacedBy(gap)) {
                 apps.chunked(columns).forEach { rowApps ->
                     Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
@@ -515,7 +415,7 @@ private fun AppTile(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(app.color.copy(alpha = 0.16f))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -523,7 +423,7 @@ private fun AppTile(
         Box(
             modifier = Modifier
                 .fillMaxSize(0.72f)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(app.color),
             contentAlignment = Alignment.Center,
         ) {
@@ -531,7 +431,7 @@ private fun AppTile(
                 Text(
                     text = app.monogram,
                     color = Color.White,
-                    fontSize = 15.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                 )
             } else if (app.icon != null) {
@@ -539,7 +439,7 @@ private fun AppTile(
                     imageVector = app.icon,
                     contentDescription = app.label,
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(28.dp),
                 )
             }
         }

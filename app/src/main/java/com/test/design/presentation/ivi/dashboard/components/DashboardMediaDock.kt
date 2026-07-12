@@ -17,8 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -39,7 +37,7 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
-import com.test.design.presentation.ivi.media.components.MorphingPlayPauseButton
+import com.test.design.presentation.ivi.media.components.MediaTransportControlsBar
 
 /**
  * Full-width Tesla-style media bar across the map bottom.
@@ -127,40 +125,22 @@ fun SharedTransitionScope.DashboardMediaDock(
             }
 
             Row(
-                modifier = widgetControlsSharedElement(
-                    widget = DashboardWidget.Media,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                ),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.PreviousTrack) },
-                    modifier = Modifier.size(44.dp),
-                ) {
-                    Icon(
-                        Icons.Default.SkipPrevious,
-                        contentDescription = "Previous",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-                MorphingPlayPauseButton(
+                MediaTransportControlsBar(
                     isPlaying = mediaState.isPlaying,
-                    onClick = { onMediaEvent(MediaEvent.TogglePlayback) },
+                    onToggleQueue = { onMediaEvent(MediaEvent.ToggleQueue) },
+                    onPrevious = { onMediaEvent(MediaEvent.PreviousTrack) },
+                    onTogglePlayback = { onMediaEvent(MediaEvent.TogglePlayback) },
+                    onNext = { onMediaEvent(MediaEvent.NextTrack) },
                     compact = true,
+                    showQueue = false,
+                    modifier = widgetControlsSharedElement(
+                        widget = DashboardWidget.Media,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ),
                 )
-                IconButton(
-                    onClick = { onMediaEvent(MediaEvent.NextTrack) },
-                    modifier = Modifier.size(44.dp),
-                ) {
-                    Icon(
-                        Icons.Default.SkipNext,
-                        contentDescription = "Next",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
                 IconButton(
                     onClick = onExpand,
                     modifier = Modifier.size(40.dp),

@@ -186,7 +186,6 @@ private fun SharedTransitionScope.MediaWidgetEmbedded(
             onPrevious = { onEvent(MediaEvent.PreviousTrack) },
             onTogglePlayback = { onEvent(MediaEvent.TogglePlayback) },
             onNext = { onEvent(MediaEvent.NextTrack) },
-            compact = true,
             showQueue = false,
             modifier = widgetControlsSharedElement(
                 widget = DashboardWidget.Media,
