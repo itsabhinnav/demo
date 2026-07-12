@@ -55,6 +55,20 @@ val ClimateCardActiveRadii = MorphingCornerRadii(
     bottomStart = 28.dp,
 )
 
+/** Thermal Morph central HVAC pebble cluster. */
+val ThermalHubRestRadii = MorphingCornerRadii(
+    topStart = 32.dp,
+    topEnd = 100.dp,
+    bottomEnd = 32.dp,
+    bottomStart = 100.dp,
+)
+val ThermalHubActiveRadii = MorphingCornerRadii(
+    topStart = 48.dp,
+    topEnd = 88.dp,
+    bottomEnd = 48.dp,
+    bottomStart = 88.dp,
+)
+
 val MediaAlbumCompactRadii = MorphingCornerRadii(
     topStart = 48.dp,
     topEnd = 24.dp,

@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.ClimateZone
 import com.test.design.theme.CarDesignTokens
@@ -56,12 +57,13 @@ fun ClimateZoneSelector(
 }
 
 @Composable
-private fun ClimateZoneCard(
+fun ClimateZoneCard(
     label: String,
     temperature: Int,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    centered: Boolean = false,
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Color>()
     val containerColor by animateColorAsState(
@@ -75,22 +77,33 @@ private fun ClimateZoneCard(
     )
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(28.dp))
             .background(containerColor)
             .carTouchTarget()
             .clickable(onClick = onClick)
             .padding(CarDesignTokens.TouchTargetSpacing),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = if (centered) {
+            Arrangement.Center
+        } else {
+            Arrangement.spacedBy(4.dp)
+        },
+        horizontalAlignment = if (centered) Alignment.CenterHorizontally else Alignment.Start,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = if (centered) TextAlign.Center else TextAlign.Start,
         )
         Text(
             text = "$temperature°",
-            style = MaterialTheme.typography.headlineMedium,
+            style = if (centered) {
+                MaterialTheme.typography.displaySmall
+            } else {
+                MaterialTheme.typography.headlineMedium
+            },
             color = MaterialTheme.colorScheme.onSurface,
+            textAlign = if (centered) TextAlign.Center else TextAlign.Start,
         )
     }
 }

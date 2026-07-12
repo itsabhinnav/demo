@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Air
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -29,26 +29,29 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
-import com.test.design.theme.CarBackgroundTokens
+import com.test.design.presentation.ivi.climate.components.ClimateComfortControlsCard
 import com.test.design.presentation.ivi.climate.components.ClimateFanSpeedCard
 import com.test.design.presentation.ivi.climate.components.ClimateTemperatureSection
-import com.test.design.presentation.ivi.climate.components.ClimateZoneSelector
-import com.test.design.presentation.ivi.climate.components.TemperatureAdjustButton
+import com.test.design.presentation.ivi.climate.components.CoolSnowflakeOverlay
 import com.test.design.presentation.ivi.climate.components.MorphingAirflowSegmentedButton
-import com.test.design.presentation.ivi.climate.components.SeatHeatIndicator
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
+import com.test.design.theme.AdaptiveLayout
+import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateCardActiveRadii
 import com.test.design.theme.ClimateCardRestRadii
+import com.test.design.theme.WindowLayoutInfo
+import com.test.design.theme.climateAmbientColor
 import com.test.design.theme.climateColorScheme
+import com.test.design.theme.carTouchTarget
 import com.test.design.theme.rememberClimateDialShape
 import com.test.design.theme.temperatureToFraction
-
+import androidx.compose.foundation.layout.fillMaxHeight
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.ClimateControlScreen(
@@ -59,17 +62,30 @@ fun SharedTransitionScope.ClimateControlScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
-    val temperatureFraction = temperatureToFraction(
-        celsius = activeTemperature,
-        min = uiState.minTemperature,
-        max = uiState.maxTemperature,
+    val driverFraction = temperatureToFraction(
+        uiState.temperatureCelsius,
+        uiState.minTemperature,
+        uiState.maxTemperature,
     )
-    val dynamicScheme = climateColorScheme(temperatureFraction)
+    val passengerFraction = temperatureToFraction(
+        uiState.passengerTemperatureCelsius,
+        uiState.minTemperature,
+        uiState.maxTemperature,
+    )
+    val blendFraction = (driverFraction + passengerFraction) / 2f
+    val driverCoolIntensity = ((0.42f - driverFraction) / 0.42f).coerceIn(0f, 1f)
+    val passengerCoolIntensity = ((0.42f - passengerFraction) / 0.42f).coerceIn(0f, 1f)
+    val dynamicScheme = climateColorScheme(blendFraction)
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
-    val animatedPrimary by animateColorAsState(
-        targetValue = dynamicScheme.primary,
+    val driverGlow by animateColorAsState(
+        climateAmbientColor(driverFraction),
         animationSpec = motionSpec,
-        label = "climate_tint",
+        label = "driver_glow",
+    )
+    val passengerGlow by animateColorAsState(
+        climateAmbientColor(passengerFraction),
+        animationSpec = motionSpec,
+        label = "passenger_glow",
     )
     val dialShape = rememberClimateDialShape(acEnabled = uiState.isAcEnabled)
 
@@ -91,141 +107,295 @@ fun SharedTransitionScope.ClimateControlScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                animatedPrimary.copy(alpha = CarBackgroundTokens.DetailTintAlpha),
-                                MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                        Brush.horizontalGradient(
+                            colorStops = arrayOf(
+                                0f to driverGlow.copy(alpha = CarBackgroundTokens.DetailTintAlpha),
+                                0.5f to MaterialTheme.colorScheme.surfaceContainerLow.copy(
                                     alpha = CarBackgroundTokens.DetailOverlayAlpha,
                                 ),
+                                1f to passengerGlow.copy(alpha = CarBackgroundTokens.DetailTintAlpha),
                             ),
                         ),
-                    )
-                    .padding(CarDesignTokens.ContentPadding),
-            ) {
-            Column(
+                    ),
+            )
+            // Per-zone snow — only the cool side gets flakes.
+            Row(modifier = Modifier.fillMaxSize()) {
+                CoolSnowflakeOverlay(
+                    coolIntensity = driverCoolIntensity,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    flakeCount = 18,
+                    sizeScale = 1.3f,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                )
+                CoolSnowflakeOverlay(
+                    coolIntensity = passengerCoolIntensity,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    flakeCount = 18,
+                    sizeScale = 1.3f,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                )
+            }
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                    .padding(CarDesignTokens.ContentPadding),
             ) {
-                WidgetScreenHeader(
-                    widget = DashboardWidget.Climate,
-                    onBack = onBack,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    trailingContent = {
-                        Switch(
-                            checked = uiState.isAcEnabled,
-                            onCheckedChange = { onEvent(ClimateEvent.ToggleAc) },
-                        )
-                    },
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-                ) {
+                AdaptiveLayout(modifier = Modifier.fillMaxSize()) { layout ->
                     Column(
-                        modifier = Modifier.weight(0.45f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
-                        ClimateTemperatureSection(
-                            temperature = activeTemperature,
-                            isAcEnabled = uiState.isAcEnabled,
+                        WidgetScreenHeader(
+                            widget = DashboardWidget.Climate,
+                            onBack = onBack,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            trailingContent = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    FilterChip(
+                                        selected = true,
+                                        onClick = { onEvent(ClimateEvent.ToggleTemperatureUnit) },
+                                        label = {
+                                            Text(
+                                                text = uiState.temperatureUnit.shortLabel,
+                                                style = MaterialTheme.typography.labelLarge,
+                                            )
+                                        },
+                                        modifier = Modifier.carTouchTarget(),
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.AcUnit,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
+                                    )
+                                    Text(
+                                        text = "A/C",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Switch(
+                                        checked = uiState.isAcEnabled,
+                                        onCheckedChange = { onEvent(ClimateEvent.ToggleAc) },
+                                    )
+                                }
+                            },
+                        )
+
+                        DualZoneTemperatureBand(
+                            layout = layout,
+                            uiState = uiState,
                             dialShape = dialShape,
-                            onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
-                            onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
-                            modifier = widgetContentSharedElement(
-                                widget = DashboardWidget.Climate,
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                modifier = Modifier.fillMaxWidth(),
-                            ),
+                            onEvent = onEvent,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                         )
-                        ClimateZoneSelector(
-                            driverTemp = uiState.temperatureCelsius,
-                            passengerTemp = uiState.passengerTemperatureCelsius,
-                            activeZone = uiState.activeZone,
-                            onZoneSelected = { onEvent(ClimateEvent.SelectZone(it)) },
-                        )
-                    }
 
-                    Column(
-                        modifier = Modifier.weight(0.55f),
-                        verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
-                    ) {
-                        ClimateFanSpeedCard(
-                            fanSpeed = uiState.fanSpeed,
-                            maxFanSpeed = uiState.maxFanSpeed,
-                            isAcEnabled = uiState.isAcEnabled,
-                            onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
-                            modifier = widgetControlsSharedElement(
-                                widget = DashboardWidget.Climate,
-                                animatedVisibilityScope = animatedVisibilityScope,
-                            ),
+                        ClimateAirBand(
+                            layout = layout,
+                            uiState = uiState,
+                            onEvent = onEvent,
+                            animatedVisibilityScope = animatedVisibilityScope,
                         )
-                        MorphingDetailSurfaceCard(
-                            morphExpanded = uiState.isAcEnabled,
-                            compactRadii = ClimateCardRestRadii,
-                            expandedRadii = ClimateCardActiveRadii,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Airflow", style = MaterialTheme.typography.titleMedium)
-                            MorphingAirflowSegmentedButton(
-                                selectedMode = uiState.airflowMode,
-                                onModeSelected = { onEvent(ClimateEvent.SelectAirflow(it)) },
-                                modifier = Modifier.padding(top = 12.dp),
-                            )
-                        }
-                        MorphingDetailSurfaceCard(
-                            morphExpanded = uiState.isAcEnabled,
-                            compactRadii = ClimateCardRestRadii,
-                            expandedRadii = ClimateCardActiveRadii,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column {
-                                    Text("Seat heat", style = MaterialTheme.typography.titleMedium)
-                                    SeatHeatIndicator(
-                                        level = uiState.seatHeatLevel,
-                                        maxLevel = uiState.maxSeatHeatLevel,
-                                        modifier = Modifier.padding(top = 8.dp),
-                                    )
-                                }
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    TemperatureAdjustButton(
-                                        icon = Icons.Default.Remove,
-                                        contentDescription = "Decrease seat heat",
-                                        onClick = { onEvent(ClimateEvent.DecreaseSeatHeat) },
-                                    )
-                                    TemperatureAdjustButton(
-                                        icon = Icons.Default.Add,
-                                        contentDescription = "Increase seat heat",
-                                        onClick = { onEvent(ClimateEvent.IncreaseSeatHeat) },
-                                    )
-                                }
-                            }
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
-                            FilterChip(
-                                selected = uiState.isSyncEnabled,
-                                onClick = { onEvent(ClimateEvent.ToggleSync) },
-                                label = { Text("Sync", style = MaterialTheme.typography.labelLarge) },
-                            )
-                            FilterChip(
-                                selected = uiState.isRecirculationOn,
-                                onClick = { onEvent(ClimateEvent.ToggleRecirculation) },
-                                label = { Text("Recirc", style = MaterialTheme.typography.labelLarge) },
-                            )
-                        }
+
+                        ClimateComfortControlsCard(
+                            seatHeatLevel = uiState.seatHeatLevel,
+                            maxSeatHeatLevel = uiState.maxSeatHeatLevel,
+                            steeringHeatLevel = uiState.steeringHeatLevel,
+                            maxSteeringHeatLevel = uiState.maxSteeringHeatLevel,
+                            seatVentLevel = uiState.seatVentLevel,
+                            maxSeatVentLevel = uiState.maxSeatVentLevel,
+                            isFrontDefrostOn = uiState.isFrontDefrostOn,
+                            isRearDefrostOn = uiState.isRearDefrostOn,
+                            isRecirculationOn = uiState.isRecirculationOn,
+                            isSyncEnabled = uiState.isSyncEnabled,
+                            isAcEnabled = uiState.isAcEnabled,
+                            onCycleSeatHeat = { onEvent(ClimateEvent.CycleSeatHeat) },
+                            onCycleSteeringHeat = { onEvent(ClimateEvent.CycleSteeringHeat) },
+                            onCycleSeatVent = { onEvent(ClimateEvent.CycleSeatVent) },
+                            onToggleFrontDefrost = { onEvent(ClimateEvent.ToggleFrontDefrost) },
+                            onToggleRearDefrost = { onEvent(ClimateEvent.ToggleRearDefrost) },
+                            onToggleRecirculation = { onEvent(ClimateEvent.ToggleRecirculation) },
+                            onToggleSync = { onEvent(ClimateEvent.ToggleSync) },
+                        )
                     }
                 }
-            }
             }
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.DualZoneTemperatureBand(
+    layout: WindowLayoutInfo,
+    uiState: ClimateUiState,
+    dialShape: androidx.compose.ui.graphics.Shape,
+    onEvent: (ClimateEvent) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    val driverDial = @Composable { dialModifier: Modifier ->
+        ClimateTemperatureSection(
+            temperature = uiState.temperatureCelsius,
+            isAcEnabled = uiState.isAcEnabled,
+            dialShape = dialShape,
+            onDecrease = {
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, -1))
+            },
+            onIncrease = {
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, +1))
+            },
+            onTemperatureSteps = { steps ->
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, steps))
+            },
+            minTemperature = uiState.minTemperature,
+            maxTemperature = uiState.maxTemperature,
+            zoneLabel = ClimateZone.Driver.label,
+            useZoneColorScheme = true,
+            temperatureUnit = uiState.temperatureUnit,
+            modifier = dialModifier,
+        )
+    }
+    val passengerDial = @Composable { dialModifier: Modifier ->
+        ClimateTemperatureSection(
+            temperature = uiState.passengerTemperatureCelsius,
+            isAcEnabled = uiState.isAcEnabled,
+            dialShape = dialShape,
+            onDecrease = {
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, -1))
+            },
+            onIncrease = {
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, +1))
+            },
+            onTemperatureSteps = { steps ->
+                onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, steps))
+            },
+            minTemperature = uiState.minTemperature,
+            maxTemperature = uiState.maxTemperature,
+            zoneLabel = ClimateZone.Passenger.label,
+            useZoneColorScheme = true,
+            temperatureUnit = uiState.temperatureUnit,
+            modifier = dialModifier,
+        )
+    }
+
+    if (layout.useSideBySide) {
+        Row(
+            modifier = modifier.fillMaxHeight(),
+            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            driverDial(
+                widgetContentSharedElement(
+                    widget = DashboardWidget.Climate,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                ),
+            )
+            passengerDial(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            )
+        }
+    } else {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+        ) {
+            driverDial(
+                widgetContentSharedElement(
+                    widget = DashboardWidget.Climate,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                ),
+            )
+            passengerDial(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.ClimateAirBand(
+    layout: WindowLayoutInfo,
+    uiState: ClimateUiState,
+    onEvent: (ClimateEvent) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) {
+    val fanCard = @Composable { fanModifier: Modifier ->
+        ClimateFanSpeedCard(
+            fanSpeed = uiState.fanSpeed,
+            maxFanSpeed = uiState.maxFanSpeed,
+            isAcEnabled = uiState.isAcEnabled,
+            onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.Climate,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = fanModifier,
+            ),
+        )
+    }
+    val airflowCard = @Composable { airflowModifier: Modifier ->
+        MorphingDetailSurfaceCard(
+            morphExpanded = uiState.isAcEnabled,
+            compactRadii = ClimateCardRestRadii,
+            expandedRadii = ClimateCardActiveRadii,
+            modifier = airflowModifier.fillMaxWidth(),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Air,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
+                )
+                Text("Airflow", style = MaterialTheme.typography.titleMedium)
+            }
+            MorphingAirflowSegmentedButton(
+                selectedMode = uiState.airflowMode,
+                onModeSelected = { onEvent(ClimateEvent.SelectAirflow(it)) },
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
+    }
+
+    if (layout.useSideBySide) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+            verticalAlignment = Alignment.Top,
+        ) {
+            fanCard(Modifier.weight(0.4f))
+            airflowCard(Modifier.weight(0.6f))
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+        ) {
+            fanCard(Modifier.fillMaxWidth())
+            airflowCard(Modifier.fillMaxWidth())
+        }
+    }
+}

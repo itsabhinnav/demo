@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.theme.CarDesignTokens
 
@@ -23,12 +24,13 @@ fun MediaAlbumArt(
     albumShape: Shape,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
+    compactSize: Dp = 56.dp,
 ) {
     Box(
         modifier = modifier
             .then(
                 if (compact) {
-                    Modifier.size(48.dp)
+                    Modifier.size(compactSize)
                 } else {
                     Modifier
                         .fillMaxHeight(0.9f)

@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Shuffle
@@ -31,12 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
-import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -49,13 +47,15 @@ import com.test.design.presentation.ivi.media.components.MediaSourceChips
 import com.test.design.presentation.ivi.media.components.MediaTransportControlsBar
 import com.test.design.presentation.ivi.media.components.PlaybackProgressSection
 import com.test.design.presentation.ivi.media.components.RepeatModeLabel
+import com.test.design.theme.AdaptiveLayout
+import com.test.design.theme.AdaptiveSplit
 import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
-import com.test.design.theme.MediaCardPlayingRadii
-import com.test.design.theme.MediaCardRestRadii
+import com.test.design.theme.WindowLayoutInfo
 import com.test.design.theme.rememberMediaAlbumShape
 
 private val QueuePanelWidth = 400.dp
+private val QueuePanelPortraitHeight = 280.dp
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -67,11 +67,6 @@ fun SharedTransitionScope.MediaPlayerScreen(
     modifier: Modifier = Modifier,
 ) {
     val spatialSpec = MaterialTheme.motionScheme.slowSpatialSpec<androidx.compose.ui.unit.Dp>()
-    val queueWidth by animateDpAsState(
-        targetValue = if (uiState.isQueueVisible) QueuePanelWidth else 0.dp,
-        animationSpec = spatialSpec,
-        label = "queue_panel_width",
-    )
     val albumShape = rememberMediaAlbumShape(playing = uiState.isPlaying)
 
     Box(
@@ -82,7 +77,7 @@ fun SharedTransitionScope.MediaPlayerScreen(
         ),
     ) {
         ScreenBackground()
-        Row(
+        AdaptiveLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
@@ -91,29 +86,74 @@ fun SharedTransitionScope.MediaPlayerScreen(
                     ),
                 )
                 .padding(CarDesignTokens.ContentPadding),
-            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-        ) {
-            MediaNowPlayingPanel(
-                uiState = uiState,
-                onEvent = onEvent,
-                onBack = onBack,
-                animatedVisibilityScope = animatedVisibilityScope,
-                albumShape = albumShape,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+        ) { layout ->
+            val queueWidth by animateDpAsState(
+                targetValue = when {
+                    !uiState.isQueueVisible -> 0.dp
+                    layout.useSideBySide -> QueuePanelWidth
+                    else -> 0.dp
+                },
+                animationSpec = spatialSpec,
+                label = "queue_panel_width",
             )
+            val showPortraitQueue = uiState.isQueueVisible && !layout.useSideBySide
 
-            if (queueWidth > 0.dp) {
-                MediaQueueSidePanel(
-                    queue = uiState.queue,
-                    currentTrackId = uiState.currentTrack.id,
-                    onSelectTrack = { onEvent(MediaEvent.SelectTrack(it)) },
-                    onClose = { onEvent(MediaEvent.ToggleQueue) },
+            if (layout.useSideBySide) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                ) {
+                    MediaNowPlayingPanel(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        onBack = onBack,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        albumShape = albumShape,
+                        layout = layout,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                    )
+                    if (queueWidth > 0.dp) {
+                        MediaQueueSidePanel(
+                            queue = uiState.queue,
+                            currentTrackId = uiState.currentTrack.id,
+                            onSelectTrack = { onEvent(MediaEvent.SelectTrack(it)) },
+                            onClose = { onEvent(MediaEvent.ToggleQueue) },
+                            modifier = Modifier
+                                .width(queueWidth)
+                                .fillMaxHeight(),
+                        )
+                    }
+                }
+            } else {
+                Column(
                     modifier = Modifier
-                        .width(queueWidth)
-                        .fillMaxHeight(),
-                )
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                ) {
+                    MediaNowPlayingPanel(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        onBack = onBack,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        albumShape = albumShape,
+                        layout = layout,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    if (showPortraitQueue) {
+                        MediaQueueSidePanel(
+                            queue = uiState.queue,
+                            currentTrackId = uiState.currentTrack.id,
+                            onSelectTrack = { onEvent(MediaEvent.SelectTrack(it)) },
+                            onClose = { onEvent(MediaEvent.ToggleQueue) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = QueuePanelPortraitHeight, max = QueuePanelPortraitHeight),
+                        )
+                    }
+                }
             }
         }
     }
@@ -127,6 +167,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     albumShape: Shape,
+    layout: WindowLayoutInfo,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -144,83 +185,93 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
             onSelected = { onEvent(MediaEvent.SelectSource(it)) },
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            MediaAlbumArt(
-                album = uiState.currentTrack.album,
-                albumShape = albumShape,
-                modifier = Modifier
-                    .weight(0.36f)
-                    .sharedElement(
+        AdaptiveSplit(
+            layout = layout,
+            primaryWeight = 0.36f,
+            secondaryWeight = 0.64f,
+            fillHeight = layout.useSideBySide,
+            modifier = if (layout.useSideBySide) {
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            } else {
+                Modifier.fillMaxWidth()
+            },
+            primary = { paneModifier ->
+                MediaAlbumArt(
+                    album = uiState.currentTrack.album,
+                    albumShape = albumShape,
+                    modifier = paneModifier.sharedElement(
                         rememberSharedContentState(key = "album_art"),
                         animatedVisibilityScope = animatedVisibilityScope,
                     ),
-            )
-
-            Column(
-                modifier = Modifier
-                    .weight(0.64f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                AnimatedTrackInfo(
-                    track = uiState.currentTrack,
-                    modifier = widgetContentSharedElement(
-                        widget = DashboardWidget.Media,
-                        animatedVisibilityScope = animatedVisibilityScope,
+                )
+            },
+            secondary = { paneModifier ->
+                Column(
+                    modifier = paneModifier.then(
+                        if (layout.useSideBySide) Modifier.fillMaxHeight() else Modifier,
                     ),
-                )
-                Spacer(modifier = Modifier.height(CarDesignTokens.SectionSpacing))
-                PlaybackProgressSection(
-                    progress = uiState.progress,
-                    elapsedLabel = uiState.elapsedLabel,
-                    durationLabel = uiState.currentTrack.durationLabel,
-                    progressShape = albumShape,
-                )
-                Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    FilterChip(
-                        selected = uiState.isShuffleOn,
-                        onClick = { onEvent(MediaEvent.ToggleShuffle) },
-                        label = { Text("Shuffle", style = MaterialTheme.typography.labelLarge) },
-                        leadingIcon = {
-                            Icon(Icons.Default.Shuffle, contentDescription = null, modifier = Modifier.size(20.dp))
-                        },
+                    AnimatedTrackInfo(
+                        track = uiState.currentTrack,
+                        modifier = widgetContentSharedElement(
+                            widget = DashboardWidget.Media,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                        ),
                     )
-                    FilterChip(
-                        selected = uiState.repeatMode != RepeatMode.Off,
-                        onClick = { onEvent(MediaEvent.CycleRepeat) },
-                        label = { Text(RepeatModeLabel(uiState.repeatMode), style = MaterialTheme.typography.labelLarge) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = if (uiState.repeatMode == RepeatMode.One) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                            )
-                        },
+                    Spacer(modifier = Modifier.height(CarDesignTokens.SectionSpacing))
+                    PlaybackProgressSection(
+                        progress = uiState.progress,
+                        elapsedLabel = uiState.elapsedLabel,
+                        durationLabel = uiState.currentTrack.durationLabel,
+                        progressShape = albumShape,
+                    )
+                    Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                    ) {
+                        FilterChip(
+                            selected = uiState.isShuffleOn,
+                            onClick = { onEvent(MediaEvent.ToggleShuffle) },
+                            label = { Text("Shuffle", style = MaterialTheme.typography.labelLarge) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Shuffle, contentDescription = null, modifier = Modifier.size(20.dp))
+                            },
+                        )
+                        FilterChip(
+                            selected = uiState.repeatMode != RepeatMode.Off,
+                            onClick = { onEvent(MediaEvent.CycleRepeat) },
+                            label = { Text(RepeatModeLabel(uiState.repeatMode), style = MaterialTheme.typography.labelLarge) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = if (uiState.repeatMode == RepeatMode.One) {
+                                        Icons.Default.RepeatOne
+                                    } else {
+                                        Icons.Default.Repeat
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            },
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
+                    MediaTransportControlsBar(
+                        isPlaying = uiState.isPlaying,
+                        onToggleQueue = { onEvent(MediaEvent.ToggleQueue) },
+                        onPrevious = { onEvent(MediaEvent.PreviousTrack) },
+                        onTogglePlayback = { onEvent(MediaEvent.TogglePlayback) },
+                        onNext = { onEvent(MediaEvent.NextTrack) },
+                        modifier = widgetControlsSharedElement(
+                            widget = DashboardWidget.Media,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier.fillMaxWidth(),
+                        ),
                     )
                 }
-                Spacer(modifier = Modifier.height(CarDesignTokens.TouchTargetSpacing))
-                MediaTransportControlsBar(
-                    isPlaying = uiState.isPlaying,
-                    onToggleQueue = { onEvent(MediaEvent.ToggleQueue) },
-                    onPrevious = { onEvent(MediaEvent.PreviousTrack) },
-                    onTogglePlayback = { onEvent(MediaEvent.TogglePlayback) },
-                    onNext = { onEvent(MediaEvent.NextTrack) },
-                    modifier = widgetControlsSharedElement(
-                        widget = DashboardWidget.Media,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier.fillMaxWidth(),
-                    ),
-                )
-            }
-        }
+            },
+        )
     }
 }

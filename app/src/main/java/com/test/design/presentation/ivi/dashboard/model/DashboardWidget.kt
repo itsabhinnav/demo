@@ -2,13 +2,12 @@ package com.test.design.presentation.ivi.dashboard.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class DashboardWidget(
@@ -43,28 +42,22 @@ enum class DashboardWidget(
         icon = Icons.Default.DirectionsCar,
         sharedElementKey = "widget_vehicle",
     ),
-    Energy(
-        title = "Energy",
-        subtitle = "Regeneration · Balanced",
-        icon = Icons.Default.ElectricBolt,
-        sharedElementKey = "widget_energy",
+    MaterialComponents(
+        title = "Material",
+        subtitle = "Buttons, chips, cards, sliders",
+        icon = Icons.Default.Widgets,
+        sharedElementKey = "widget_material",
     ),
-    Calls(
-        title = "Calls",
-        subtitle = "2 recent contacts",
-        icon = Icons.Default.Call,
-        sharedElementKey = "widget_calls",
+    CustomizedMaterial(
+        title = "Customized",
+        subtitle = "OEM brand on Material",
+        icon = Icons.Default.Palette,
+        sharedElementKey = "widget_customized",
     ),
-    Camera(
-        title = "Camera",
-        subtitle = "Rear view · Ready",
-        icon = Icons.Default.CameraAlt,
-        sharedElementKey = "widget_camera",
-    ),
-    Trips(
-        title = "Trips",
-        subtitle = "This week · 184 mi",
-        icon = Icons.Default.Timeline,
-        sharedElementKey = "widget_trips",
+    Settings(
+        title = "Settings",
+        subtitle = "Driving UX · Motion · Display",
+        icon = Icons.Default.Settings,
+        sharedElementKey = "widget_settings",
     ),
 }

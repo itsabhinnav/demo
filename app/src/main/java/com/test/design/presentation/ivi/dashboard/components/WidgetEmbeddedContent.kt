@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -120,8 +121,17 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
                 modifier = modifier,
             )
         }
-        else -> PlaceholderWidgetEmbedded(
-            widget = widget,
+        DashboardWidget.Settings -> SettingsWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
+        DashboardWidget.MaterialComponents -> MaterialWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
+        DashboardWidget.CustomizedMaterial -> CustomizedWidgetEmbedded(
             contentColor = contentColor,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
@@ -215,6 +225,7 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
                 onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
                 onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
                 compact = true,
+                temperatureUnit = state.temperatureUnit,
                 modifier = widgetContentSharedElement(
                     widget = DashboardWidget.Climate,
                     animatedVisibilityScope = animatedVisibilityScope,
@@ -316,44 +327,179 @@ private fun SharedTransitionScope.VehicleWidgetEmbedded(
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun SharedTransitionScope.PlaceholderWidgetEmbedded(
-    widget: DashboardWidget,
+private fun SharedTransitionScope.SettingsWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    val drivingState = com.test.design.core.LocalDrivingUxState.current
+    val onDrivingStateChange = com.test.design.core.driving.LocalDrivingUxUpdater.current
+    val motionScheme = com.test.design.core.motion.LocalEffectiveMotionScheme.current
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Driving · ${drivingState.name}",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.Settings,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.test.design.core.DrivingUxState.entries.take(3).forEach { state ->
+                androidx.compose.material3.FilterChip(
+                    selected = drivingState == state,
+                    onClick = { onDrivingStateChange(state) },
+                    label = {
+                        Text(state.name, style = MaterialTheme.typography.labelLarge)
+                    },
+                )
+            }
+        }
+        Surface(
+            shape = ExpressiveShapes.small,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.9f),
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.Settings,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        ) {
+            Text(
+                text = "Motion · ${motionScheme.label}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = contentColor,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.MaterialWidgetEmbedded(
     contentColor: Color,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = widget.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = contentColor.copy(alpha = 0.75f),
-            maxLines = 2,
+            text = "Buttons · Chips · Sliders · Cards",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
             modifier = widgetContentSharedElement(
-                widget = widget,
+                widget = DashboardWidget.MaterialComponents,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier.fillMaxWidth(),
             ),
         )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            androidx.compose.material3.AssistChip(
+                onClick = {},
+                label = { Text("Chip") },
+            )
+            androidx.compose.material3.FilterChip(
+                selected = true,
+                onClick = {},
+                label = { Text("Filter") },
+            )
+            androidx.compose.material3.SuggestionChip(
+                onClick = {},
+                label = { Text("Suggest") },
+            )
+        }
         Surface(
             shape = ExpressiveShapes.small,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
             modifier = widgetControlsSharedElement(
-                widget = widget,
+                widget = DashboardWidget.MaterialComponents,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(CarDesignTokens.MinTouchTarget),
             ),
         ) {
-            androidx.compose.foundation.layout.Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
                 Text(
-                    text = "Open ${widget.title}",
+                    text = "Open gallery",
                     style = MaterialTheme.typography.labelLarge,
-                    color = contentColor,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.CustomizedWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Horizon brand tokens",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.CustomizedMaterial,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            listOf(
+                MaterialTheme.colorScheme.primary,
+                MaterialTheme.colorScheme.secondary,
+                MaterialTheme.colorScheme.tertiary,
+                MaterialTheme.colorScheme.primaryContainer,
+            ).forEach { swatch ->
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    shape = ExpressiveShapes.extraSmall,
+                    color = swatch,
+                ) {}
+            }
+        }
+        Surface(
+            shape = ExpressiveShapes.small,
+            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.85f),
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.CustomizedMaterial,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(CarDesignTokens.MinTouchTarget),
+            ),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "Open brand system",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
             }
         }

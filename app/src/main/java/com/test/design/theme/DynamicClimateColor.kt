@@ -64,3 +64,17 @@ fun climateColorScheme(temperatureFraction: Float): ColorScheme {
 
 fun temperatureToFraction(celsius: Int, min: Int = 16, max: Int = 30): Float =
     ((celsius - min).toFloat() / (max - min).toFloat()).coerceIn(0f, 1f)
+
+/** Ambient glow / pill fill for a single zone temperature. */
+fun climateAmbientColor(temperatureFraction: Float): Color =
+    lerp(CoolPrimary, WarmPrimary, temperatureFraction.coerceIn(0f, 1f))
+
+fun climatePillContainer(temperatureFraction: Float): Color =
+    lerp(CoolContainer, WarmContainer, temperatureFraction.coerceIn(0f, 1f))
+
+fun climateOnPill(temperatureFraction: Float): Color =
+    lerp(Color(0xFFB3E5FC), Color(0xFFFFCCBC), temperatureFraction.coerceIn(0f, 1f))
+
+/** Font weight thickens as temperature rises (cool = light, warm = bold). */
+fun climateTemperatureFontWeight(temperatureFraction: Float): Int =
+    (280 + temperatureFraction.coerceIn(0f, 1f) * 520).toInt().coerceIn(280, 800)

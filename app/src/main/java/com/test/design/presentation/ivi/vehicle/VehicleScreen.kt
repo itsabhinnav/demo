@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
@@ -52,11 +53,13 @@ import com.test.design.presentation.ivi.vehicle.components.MorphingDriveModeSele
 import com.test.design.presentation.ivi.vehicle.components.VehicleDriveInsightsCard
 import com.test.design.presentation.ivi.vehicle.components.VehicleEnergyCockpit
 import com.test.design.presentation.ivi.vehicle.components.VehicleSystemsPanel
+import com.test.design.theme.AdaptiveLayout
 import com.test.design.theme.CarBackgroundTokens
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ExpressiveShapes
 import com.test.design.theme.VehicleCardActiveRadii
 import com.test.design.theme.VehicleCardRestRadii
+import com.test.design.theme.WindowLayoutInfo
 import com.test.design.theme.batteryToFraction
 import com.test.design.theme.glassSurfaceColor
 import com.test.design.theme.rememberVehicleGaugeShape
@@ -124,78 +127,157 @@ fun SharedTransitionScope.VehicleScreen(
                     )
                     .padding(CarDesignTokens.ContentPadding),
             ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-            ) {
-                WidgetScreenHeader(
-                    widget = DashboardWidget.Vehicle,
-                    onBack = onBack,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    trailingContent = {
-                        FilterChip(
-                            selected = uiState.isCharging,
-                            onClick = { onEvent(VehicleEvent.ToggleCharging) },
-                            label = {
-                                Text(
-                                    text = if (uiState.isCharging) "Charging" else "Charge",
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            },
-                        )
-                    },
-                )
-
-                DriveModeLayoutBanner(
-                    driveMode = uiState.driveMode,
-                    layoutLabel = layoutProfile.layoutLabel,
-                )
-
-                Row(
+            AdaptiveLayout(modifier = Modifier.fillMaxSize()) { layout ->
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                        .fillMaxSize()
+                        .then(
+                            if (!layout.useTriplePane) {
+                                Modifier.verticalScroll(rememberScrollState())
+                            } else {
+                                Modifier
+                            },
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
                 ) {
-                    VehicleEnergyCockpit(
-                        percent = uiState.batteryPercent,
-                        rangeMiles = uiState.rangeMiles,
-                        maxRangeMiles = MaxRangeMiles,
-                        isCharging = uiState.isCharging,
-                        chargeRateKw = uiState.chargeRateKw,
-                        gaugeShape = gaugeShape,
-                        onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
-                        contentModifier = widgetContentSharedElement(
-                            widget = DashboardWidget.Vehicle,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                        ),
-                        controlsModifier = widgetControlsSharedElement(
-                            widget = DashboardWidget.Vehicle,
-                            animatedVisibilityScope = animatedVisibilityScope,
-                        ),
-                        modifier = Modifier
-                            .weight(energyWeight)
-                            .fillMaxHeight(),
+                    WidgetScreenHeader(
+                        widget = DashboardWidget.Vehicle,
+                        onBack = onBack,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        trailingContent = {
+                            FilterChip(
+                                selected = uiState.isCharging,
+                                onClick = { onEvent(VehicleEvent.ToggleCharging) },
+                                label = {
+                                    Text(
+                                        text = if (uiState.isCharging) "Charging" else "Charge",
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                },
+                            )
+                        },
                     )
 
-                    CenterDriveColumn(
+                    DriveModeLayoutBanner(
+                        driveMode = uiState.driveMode,
+                        layoutLabel = layoutProfile.layoutLabel,
+                    )
+
+                    VehicleAdaptiveBody(
+                        layout = layout,
                         layoutProfile = layoutProfile,
                         uiState = uiState,
                         onEvent = onEvent,
-                        modifier = Modifier
-                            .weight(centerWeight)
-                            .fillMaxHeight(),
-                    )
-
-                    SideInsightsColumn(
-                        layoutProfile = layoutProfile,
-                        uiState = uiState,
-                        modifier = Modifier
-                            .weight(sideWeight)
-                            .fillMaxHeight(),
+                        energyWeight = energyWeight,
+                        centerWeight = centerWeight,
+                        sideWeight = sideWeight,
+                        gaugeShape = gaugeShape,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = if (layout.useTriplePane) {
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        } else {
+                            Modifier.fillMaxWidth()
+                        },
                     )
                 }
             }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.VehicleAdaptiveBody(
+    layout: WindowLayoutInfo,
+    layoutProfile: VehicleDriveModeLayout,
+    uiState: VehicleUiState,
+    onEvent: (VehicleEvent) -> Unit,
+    energyWeight: Float,
+    centerWeight: Float,
+    sideWeight: Float,
+    gaugeShape: androidx.compose.ui.graphics.Shape,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    val energy: @Composable (Modifier) -> Unit = { paneModifier ->
+        VehicleEnergyCockpit(
+            percent = uiState.batteryPercent,
+            rangeMiles = uiState.rangeMiles,
+            maxRangeMiles = MaxRangeMiles,
+            isCharging = uiState.isCharging,
+            chargeRateKw = uiState.chargeRateKw,
+            gaugeShape = gaugeShape,
+            onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
+            contentModifier = widgetContentSharedElement(
+                widget = DashboardWidget.Vehicle,
+                animatedVisibilityScope = animatedVisibilityScope,
+            ),
+            controlsModifier = widgetControlsSharedElement(
+                widget = DashboardWidget.Vehicle,
+                animatedVisibilityScope = animatedVisibilityScope,
+            ),
+            modifier = paneModifier,
+        )
+    }
+    val center: @Composable (Modifier) -> Unit = { paneModifier ->
+        CenterDriveColumn(
+            layoutProfile = layoutProfile,
+            uiState = uiState,
+            onEvent = onEvent,
+            modifier = paneModifier,
+        )
+    }
+    val side: @Composable (Modifier) -> Unit = { paneModifier ->
+        SideInsightsColumn(
+            layoutProfile = layoutProfile,
+            uiState = uiState,
+            modifier = paneModifier,
+        )
+    }
+
+    when {
+        layout.useTriplePane -> {
+            Row(
+                modifier = modifier,
+                horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+            ) {
+                energy(Modifier.weight(energyWeight).fillMaxHeight())
+                center(Modifier.weight(centerWeight).fillMaxHeight())
+                side(Modifier.weight(sideWeight).fillMaxHeight())
+            }
+        }
+        layout.useSideBySide -> {
+            Row(
+                modifier = modifier.height(480.dp),
+                horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+            ) {
+                energy(Modifier.weight(energyWeight).fillMaxHeight())
+                Column(
+                    modifier = Modifier
+                        .weight(centerWeight + sideWeight)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+                ) {
+                    center(Modifier.fillMaxWidth().weight(1f))
+                    side(Modifier.fillMaxWidth().weight(1f))
+                }
+            }
+        }
+        else -> {
+            Column(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
+            ) {
+                energy(Modifier.fillMaxWidth())
+                center(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(320.dp),
+                )
+                side(Modifier.fillMaxWidth())
             }
         }
     }
