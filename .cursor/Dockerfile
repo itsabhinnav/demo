@@ -21,7 +21,9 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
         "platform-tools" \
         "platforms;android-36" \
         "platforms;android-36.1" \
+        "platforms;android-37.0" \
         "build-tools;36.0.0" \
+        "build-tools;37.0.0" \
         "emulator" \
         "system-images;android-34;google_apis;x86_64" \
     && echo "no" | avdmanager create avd -n cloud_avd -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
