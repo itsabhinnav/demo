@@ -39,7 +39,7 @@ Replace `map_panel` with the panel ID from your Scalable UI panel XML if it diff
 | Action | Purpose |
 |--------|---------|
 | `android.intent.category.APP_MAPS` | AAOS map app registration |
-| `com.test.design.action.OPEN_MAP` | Direct launch |
+| `com.test.design.action.OPEN_MAP` | Direct launch — opens **Navigation** (same as Search maps) |
 | `android.intent.action.VIEW` + `geo:` | Display map at coordinates |
 | `androidx.car.app.action.NAVIGATE` + `geo:` | Navigation entry (shows demo route) |
 

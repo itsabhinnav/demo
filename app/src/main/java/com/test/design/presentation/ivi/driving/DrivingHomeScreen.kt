@@ -10,6 +10,7 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +55,12 @@ fun DrivingHomeScreen(
     val mediaState by mediaViewModel.state.collectAsStateWithLifecycle()
     val navigationState by navigationViewModel.state.collectAsStateWithLifecycle()
     val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(mapLaunchConfig.expandNavigation) {
+        if (mapLaunchConfig.expandNavigation) {
+            dashboardViewModel.onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Navigation))
+        }
+    }
 
     IviExpressiveTheme {
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }

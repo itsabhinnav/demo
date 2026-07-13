@@ -21,8 +21,8 @@ fun ScreenWithBackground(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        ScreenBackground()
+    Box(modifier = modifier) {
+        ScreenBackground(Modifier.fillMaxSize())
         content()
     }
 }

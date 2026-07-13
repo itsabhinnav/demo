@@ -18,6 +18,9 @@ const val EXTRA_ZOOM = "com.test.design.extra.ZOOM"
 /** When true, [MainActivity] opens the widget dashboard instead of driving home. */
 const val EXTRA_OPEN_DASHBOARD = "com.test.design.extra.OPEN_DASHBOARD"
 
+/** When true, [MapActivity] opens navigation (same as tapping Search maps). */
+const val EXTRA_EXPAND_NAVIGATION = "com.test.design.extra.EXPAND_NAVIGATION"
+
 /**
  * Launch configuration parsed from an incoming [Intent].
  *
@@ -28,6 +31,7 @@ data class MapLaunchConfig(
     val center: GeoPoint? = null,
     val zoom: Double = 14.5,
     val showRoute: Boolean = false,
+    val expandNavigation: Boolean = false,
 ) {
     companion object {
         fun default() = MapLaunchConfig()
@@ -45,6 +49,7 @@ object MapIntents {
         action = ACTION_OPEN_MAP
         putExtra(EXTRA_SHOW_ROUTE, showRoute)
         putExtra(EXTRA_ZOOM, zoom)
+        putExtra(EXTRA_EXPAND_NAVIGATION, true)
         center?.let { geo ->
             data = Uri.parse("geo:${geo.latitude},${geo.longitude}")
         }
@@ -70,11 +75,14 @@ object MapIntents {
             intent.action == "androidx.car.app.action.NAVIGATE"
         val zoom = intent.getDoubleExtra(EXTRA_ZOOM, 14.5)
         val center = parseGeoCenter(intent.data)
+        val expandNavigation = intent.getBooleanExtra(EXTRA_EXPAND_NAVIGATION, false) ||
+            intent.action == ACTION_OPEN_MAP
 
         return MapLaunchConfig(
             center = center,
             zoom = zoom,
             showRoute = showRoute,
+            expandNavigation = expandNavigation,
         )
     }
 

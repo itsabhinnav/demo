@@ -39,7 +39,7 @@ class MapActivity : ComponentActivity() {
         setContent {
             val config by mapViewModel.config.collectAsStateWithLifecycle()
 
-            DesignAppShell(applySafeDrawingInsets = false) {
+            DesignAppShell {
                 DrivingHomeScreen(
                     mapLaunchConfig = config,
                     onOpenWidgetDashboard = {
