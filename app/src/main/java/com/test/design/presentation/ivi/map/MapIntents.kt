@@ -1,0 +1,92 @@
+package com.test.design.presentation.ivi.map
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import org.osmdroid.util.GeoPoint
+
+/** Intent action to open the full-bleed map activity from in-app code or Scalable UI actions. */
+const val ACTION_OPEN_MAP = "com.test.design.action.OPEN_MAP"
+
+/** Optional boolean extra — when true, overlays the demo route on the map. */
+const val EXTRA_SHOW_ROUTE = "com.test.design.extra.SHOW_ROUTE"
+
+/** Optional double extra — initial map zoom level (defaults to 14.5). */
+const val EXTRA_ZOOM = "com.test.design.extra.ZOOM"
+
+/**
+ * Launch configuration parsed from an incoming [Intent].
+ *
+ * Register this activity in AAOS Scalable UI via `config_default_activities`:
+ * `map_panel;com.test.design/.presentation.ivi.map.MapActivity`
+ */
+data class MapLaunchConfig(
+    val center: GeoPoint? = null,
+    val zoom: Double = 14.5,
+    val showRoute: Boolean = false,
+    val showBack: Boolean = false,
+) {
+    companion object {
+        fun default() = MapLaunchConfig()
+    }
+}
+
+object MapIntents {
+
+    fun openMap(
+        context: Context,
+        showRoute: Boolean = false,
+        center: GeoPoint? = null,
+        zoom: Double = 14.5,
+    ): Intent = Intent(context, MapActivity::class.java).apply {
+        action = ACTION_OPEN_MAP
+        putExtra(EXTRA_SHOW_ROUTE, showRoute)
+        putExtra(EXTRA_ZOOM, zoom)
+        center?.let { geo ->
+            data = Uri.parse("geo:${geo.latitude},${geo.longitude}")
+        }
+    }
+
+    fun parseLaunchConfig(intent: Intent?): MapLaunchConfig {
+        if (intent == null) return MapLaunchConfig.default()
+
+        val showRoute = intent.getBooleanExtra(EXTRA_SHOW_ROUTE, false) ||
+            intent.action == "androidx.car.app.action.NAVIGATE"
+        val zoom = intent.getDoubleExtra(EXTRA_ZOOM, 14.5)
+        val center = parseGeoCenter(intent.data)
+        val showBack = intent.action == ACTION_OPEN_MAP
+
+        return MapLaunchConfig(
+            center = center,
+            zoom = zoom,
+            showRoute = showRoute,
+            showBack = showBack,
+        )
+    }
+
+    private fun parseGeoCenter(uri: Uri?): GeoPoint? {
+        if (uri == null || uri.scheme != "geo") return null
+
+        val schemeSpecific = uri.schemeSpecificPart ?: return null
+        val coordinatePart = schemeSpecific.substringBefore("?").substringBefore(";")
+        val parts = coordinatePart.split(",")
+        if (parts.size < 2) return null
+
+        val latitude = parts[0].trim().toDoubleOrNull() ?: return null
+        val longitude = parts[1].trim().toDoubleOrNull() ?: return null
+        if (latitude == 0.0 && longitude == 0.0) {
+            return parseQueryCenter(uri)
+        }
+        return GeoPoint(latitude, longitude)
+    }
+
+    private fun parseQueryCenter(uri: Uri): GeoPoint? {
+        val query = uri.getQueryParameter("q") ?: return null
+        val coordinatePart = query.substringBefore("(").trim()
+        val parts = coordinatePart.split(",")
+        if (parts.size < 2) return null
+        val latitude = parts[0].trim().toDoubleOrNull() ?: return null
+        val longitude = parts[1].trim().toDoubleOrNull() ?: return null
+        return GeoPoint(latitude, longitude)
+    }
+}

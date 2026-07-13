@@ -34,6 +34,41 @@
                 <category android:name="android.intent.category.APP_AUTOMOTIVE" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".presentation.ivi.map.MapActivity"
+            android:exported="true"
+            android:label="@string/map_activity_name"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:theme="@style/Theme.Design"
+            android:windowSoftInputMode="adjustResize">
+            <!-- AAOS Scalable UI map panel registration -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.APP_MAPS" />
+            </intent-filter>
+            <!-- Direct launch from Scalable UI actions or in-app code -->
+            <intent-filter>
+                <action android:name="com.test.design.action.OPEN_MAP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <!-- Display map at a geo location -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="geo" />
+            </intent-filter>
+            <!-- Turn-by-turn navigation entry -->
+            <intent-filter>
+                <action android:name="androidx.car.app.action.NAVIGATE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="geo" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
     </application>
 
 </manifest>
