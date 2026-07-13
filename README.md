@@ -16,9 +16,9 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 | Activity | Role |
 |----------|------|
 | `MainActivity` | App launcher — map-first driving home and widget dashboard |
-| `MapActivity` | Full-bleed map for AAOS Scalable UI map panels |
+| `MapActivity` | Maps launcher + AAOS Scalable UI map panel (separate task) |
 
-`MainActivity` shows the map with a sidebar and widget chrome. `MapActivity` hosts the same driving-home map UI (search bar, sidebar, HVAC, controls) for AAOS Scalable UI map panels, with a **Home** button to return to the main app screen.
+`MainActivity` shows the map with a sidebar and widget chrome. `MapActivity` runs in its own task (`com.test.design.map`) and appears as **Maps** in the app launcher alongside **Design**.
 
 ## MapActivity — Scalable UI map panel
 

@@ -1,5 +1,6 @@
 package com.test.design.presentation.ivi.map
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -47,6 +48,9 @@ object MapIntents {
         zoom: Double = 14.5,
     ): Intent = Intent(context, MapActivity::class.java).apply {
         action = ACTION_OPEN_MAP
+        if (context !is Activity) {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
         putExtra(EXTRA_SHOW_ROUTE, showRoute)
         putExtra(EXTRA_ZOOM, zoom)
         putExtra(EXTRA_EXPAND_NAVIGATION, true)
