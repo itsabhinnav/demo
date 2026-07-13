@@ -32,6 +32,10 @@ On Android Automotive OS 17+, Scalable UI can host apps in dedicated panels. Reg
 
 Replace `map_panel` with the panel ID from your Scalable UI panel XML if it differs.
 
+`MapActivity` draws the map full-bleed. Overlay cards apply `WindowInsets.safeDrawing` so they
+respect Scalable UI `SafeBounds` and system bars as the panel publishes inset updates. Cards
+also reflow for compact / medium / expanded panel sizes (padding, typography, secondary pane).
+
 ### Intent filters
 
 `MapActivity` accepts:
