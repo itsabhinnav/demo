@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.presentation.DesignAppShell
+import com.test.design.presentation.ivi.driving.DrivingHomeScreen
 
 /**
  * Dedicated map activity for AAOS Scalable UI map panels.
@@ -39,9 +40,14 @@ class MapActivity : ComponentActivity() {
             val config by mapViewModel.config.collectAsStateWithLifecycle()
 
             DesignAppShell(applySafeDrawingInsets = false) {
-                MapScreen(
-                    config = config,
-                    onBack = { finish() },
+                DrivingHomeScreen(
+                    mapLaunchConfig = config,
+                    onOpenWidgetDashboard = {
+                        startActivity(MapIntents.openMain(this, openDashboard = true))
+                    },
+                    onOpenMain = {
+                        startActivity(MapIntents.openMain(this))
+                    },
                     modifier = Modifier.fillMaxSize(),
                 )
             }

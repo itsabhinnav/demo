@@ -18,7 +18,7 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 | `MainActivity` | App launcher — map-first driving home and widget dashboard |
 | `MapActivity` | Full-bleed map for AAOS Scalable UI map panels |
 
-`MainActivity` shows the map with a sidebar and widget chrome. `MapActivity` shows only the map surface (no sidebar) so it fills a Scalable UI map panel.
+`MainActivity` shows the map with a sidebar and widget chrome. `MapActivity` hosts the same driving-home map UI (search bar, sidebar, HVAC, controls) for AAOS Scalable UI map panels, with a **Home** button to return to the main app screen.
 
 ## MapActivity — Scalable UI map panel
 
@@ -70,6 +70,20 @@ adb shell am start -a android.intent.action.VIEW \
 adb shell am start -a androidx.car.app.action.NAVIGATE \
   -d "geo:37.7749,-122.4194" \
   -n com.test.design/.presentation.ivi.map.MapActivity
+```
+
+### Return to main screen
+
+From `MapActivity`:
+
+- Tap the **Home** icon at the top of the right-side map controls
+- Press the system **Back** button when no widget is expanded
+
+Both open `MainActivity` (driving home). The app grid in the sidebar opens the full widget dashboard on `MainActivity`.
+
+```kotlin
+startActivity(MapIntents.openMain(context))
+startActivity(MapIntents.openMain(context, openDashboard = true))
 ```
 
 ### Scalable UI action (system intent)

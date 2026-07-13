@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.EvStation
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -32,12 +33,16 @@ fun MapSideControls(
     modifier: Modifier = Modifier,
     onCompass: () -> Unit = {},
     onChargers: () -> Unit = {},
+    onOpenHome: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        if (onOpenHome != null) {
+            MapControlButton(Icons.Default.Home, "Open main screen", onOpenHome)
+        }
         MapControlButton(Icons.Default.Explore, "Compass", onCompass)
         MapControlButton(Icons.Default.Add, "Zoom in", onZoomIn)
         MapControlButton(Icons.Default.Remove, "Zoom out", onZoomOut)

@@ -61,11 +61,13 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
 import com.test.design.presentation.ivi.navigation.NavigationUiState
+import com.test.design.presentation.ivi.navigation.components.DefaultMapCenter
 import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
 import com.test.design.presentation.ivi.vehicle.VehicleUiState
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.climateAmbientColor
 import com.test.design.theme.temperatureToFraction
+import org.osmdroid.util.GeoPoint
 
 /** Sidebar takes ~30% of the driving home (map keeps ~70%). */
 private const val SidebarWidthFraction = 0.30f
@@ -89,8 +91,12 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     onOpenWidgetDashboard: (() -> Unit)? = null,
+    mapCenter: GeoPoint? = null,
+    initialMapZoom: Double = 14.5,
+    showMapRoute: Boolean = false,
+    onOpenMain: (() -> Unit)? = null,
 ) {
-    var mapZoom by remember { mutableDoubleStateOf(14.5) }
+    var mapZoom by remember(initialMapZoom) { mutableDoubleStateOf(initialMapZoom) }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val sidebarWidth = maxWidth * SidebarWidthFraction
@@ -98,7 +104,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
 
         OsmMapBackground(
             modifier = Modifier.fillMaxSize(),
-            showRoute = false,
+            center = mapCenter ?: DefaultMapCenter,
+            showRoute = showMapRoute,
             interactive = true,
             zoom = mapZoom,
         )
@@ -136,6 +143,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             onZoomIn = { mapZoom = (mapZoom + 1.0).coerceAtMost(19.0) },
             onZoomOut = { mapZoom = (mapZoom - 1.0).coerceAtLeast(3.0) },
             onOpenSettings = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Settings)) },
+            onOpenHome = onOpenMain,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = OverlayInset),

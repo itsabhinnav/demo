@@ -3,6 +3,7 @@ package com.test.design.presentation.ivi.map
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.test.design.MainActivity
 import org.osmdroid.util.GeoPoint
 
 /** Intent action to open the full-bleed map activity from in-app code or Scalable UI actions. */
@@ -14,6 +15,9 @@ const val EXTRA_SHOW_ROUTE = "com.test.design.extra.SHOW_ROUTE"
 /** Optional double extra — initial map zoom level (defaults to 14.5). */
 const val EXTRA_ZOOM = "com.test.design.extra.ZOOM"
 
+/** When true, [MainActivity] opens the widget dashboard instead of driving home. */
+const val EXTRA_OPEN_DASHBOARD = "com.test.design.extra.OPEN_DASHBOARD"
+
 /**
  * Launch configuration parsed from an incoming [Intent].
  *
@@ -24,7 +28,6 @@ data class MapLaunchConfig(
     val center: GeoPoint? = null,
     val zoom: Double = 14.5,
     val showRoute: Boolean = false,
-    val showBack: Boolean = false,
 ) {
     companion object {
         fun default() = MapLaunchConfig()
@@ -47,6 +50,19 @@ object MapIntents {
         }
     }
 
+    /** Opens the main app screen (driving home or widget dashboard). */
+    fun openMain(
+        context: Context,
+        openDashboard: Boolean = false,
+    ): Intent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+            Intent.FLAG_ACTIVITY_SINGLE_TOP
+        if (openDashboard) {
+            putExtra(EXTRA_OPEN_DASHBOARD, true)
+        }
+    }
+
     fun parseLaunchConfig(intent: Intent?): MapLaunchConfig {
         if (intent == null) return MapLaunchConfig.default()
 
@@ -54,13 +70,11 @@ object MapIntents {
             intent.action == "androidx.car.app.action.NAVIGATE"
         val zoom = intent.getDoubleExtra(EXTRA_ZOOM, 14.5)
         val center = parseGeoCenter(intent.data)
-        val showBack = intent.action == ACTION_OPEN_MAP
 
         return MapLaunchConfig(
             center = center,
             zoom = zoom,
             showRoute = showRoute,
-            showBack = showBack,
         )
     }
 

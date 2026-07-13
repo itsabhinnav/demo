@@ -1,6 +1,7 @@
 package com.test.design.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,7 +13,18 @@ import com.test.design.presentation.ivi.driving.DrivingHomeScreen
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    openDashboardOnStart: Boolean = false,
+    onDashboardOpened: () -> Unit = {},
 ) {
+    LaunchedEffect(openDashboardOnStart) {
+        if (openDashboardOnStart) {
+            navController.navigate(AppDestination.Dashboard) {
+                launchSingleTop = true
+            }
+            onDashboardOpened()
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = AppDestination.DrivingHome,

@@ -21,6 +21,7 @@ import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.DashboardViewModel
 import com.test.design.presentation.ivi.dashboard.components.DrivingDashboardLayout
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.map.MapLaunchConfig
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
 import com.test.design.presentation.ivi.navigation.NavigationScreen
@@ -40,6 +41,8 @@ import com.test.design.presentation.settings.SettingsScreen
 fun DrivingHomeScreen(
     onOpenWidgetDashboard: () -> Unit,
     modifier: Modifier = Modifier,
+    mapLaunchConfig: MapLaunchConfig = MapLaunchConfig.default(),
+    onOpenMain: (() -> Unit)? = null,
     dashboardViewModel: DashboardViewModel = viewModel(),
     climateViewModel: ClimateViewModel = viewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
@@ -55,6 +58,10 @@ fun DrivingHomeScreen(
     IviExpressiveTheme {
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
         BackHandler(enabled = dashboardState.expandedWidget != null, onBack = collapseWidget)
+        BackHandler(
+            enabled = onOpenMain != null && dashboardState.expandedWidget == null,
+            onBack = { onOpenMain?.invoke() },
+        )
         PredictiveBackHandler(enabled = dashboardState.expandedWidget != null) { progress ->
             try {
                 progress.collect { }
@@ -85,6 +92,10 @@ fun DrivingHomeScreen(
                         onClimateEvent = climateViewModel::onEvent,
                         onOpenWidgetDashboard = onOpenWidgetDashboard,
                         animatedVisibilityScope = this@AnimatedContent,
+                        mapCenter = mapLaunchConfig.center,
+                        initialMapZoom = mapLaunchConfig.zoom,
+                        showMapRoute = mapLaunchConfig.showRoute,
+                        onOpenMain = onOpenMain,
                         modifier = Modifier.fillMaxSize(),
                     )
                     DashboardWidget.Climate -> ClimateControlScreen(
