@@ -18,7 +18,7 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 | `MainActivity` | App launcher — map-first driving home and widget dashboard |
 | `MapActivity` | Maps launcher + AAOS Scalable UI map panel (separate task) |
 
-`MainActivity` shows the map-first driving home with sidebar and widget chrome. `MapActivity` runs in its own task (`com.test.design.map`), appears as **Maps** in the app launcher, and always opens the **Navigation** screen (same as tapping Search maps).
+`MainActivity` shows the map-first driving home with sidebar and widget chrome. `MapActivity` runs in its own task (`com.test.design.map`), appears as **Maps** (distinct blue pin icon) in the app launcher, and always opens the **Navigation** screen directly — never the Design driving-home chrome.
 
 ## MapActivity — Scalable UI map panel
 
@@ -72,14 +72,12 @@ adb shell am start -a androidx.car.app.action.NAVIGATE \
   -n com.test.design/.presentation.ivi.map.MapActivity
 ```
 
-### Return to main screen
+### Return to Design / leave Maps
 
-From `MapActivity`:
+From `MapActivity` (Navigation screen):
 
-- Tap the **Home** icon at the top of the right-side map controls
-- Press the system **Back** button when no widget is expanded
-
-Both open `MainActivity` (driving home). The app grid in the sidebar opens the full widget dashboard on `MainActivity`.
+- System **Back** or the header back arrow finishes Maps and returns to the previous task (car launcher / prior app) — it does **not** open Design.
+- Tap the header **Home** icon to open **Design** (`MainActivity`) explicitly.
 
 ```kotlin
 startActivity(MapIntents.openMain(context))

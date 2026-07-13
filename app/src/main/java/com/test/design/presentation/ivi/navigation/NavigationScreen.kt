@@ -51,6 +51,8 @@ fun SharedTransitionScope.NavigationScreen(
     onBack: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
+    showRoute: Boolean = true,
+    trailingHeaderContent: @Composable () -> Unit = {},
 ) {
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
@@ -64,7 +66,7 @@ fun SharedTransitionScope.NavigationScreen(
         ScreenBackground(modifier = Modifier.fillMaxSize())
         OsmMapBackground(
             modifier = Modifier.fillMaxSize(),
-            showRoute = true,
+            showRoute = showRoute,
             interactive = true,
         )
 
@@ -103,11 +105,17 @@ fun SharedTransitionScope.NavigationScreen(
                         animatedVisibilityScope = animatedVisibilityScope,
                         modifier = Modifier.padding(horizontal = CarDesignTokens.TouchTargetSpacing),
                         trailingContent = {
-                            FilterChip(
-                                selected = uiState.showRouteDetails,
-                                onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
-                                label = { Text("Steps", style = MaterialTheme.typography.labelLarge) },
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                trailingHeaderContent()
+                                FilterChip(
+                                    selected = uiState.showRouteDetails,
+                                    onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
+                                    label = { Text("Steps", style = MaterialTheme.typography.labelLarge) },
+                                )
+                            }
                         },
                     )
                 }

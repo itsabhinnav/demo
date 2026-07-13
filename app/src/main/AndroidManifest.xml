@@ -39,19 +39,19 @@
             android:name=".presentation.ivi.map.MapActivity"
             android:exported="true"
             android:label="@string/map_activity_name"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
+            android:icon="@mipmap/ic_maps_launcher"
+            android:roundIcon="@mipmap/ic_maps_launcher"
             android:taskAffinity="com.test.design.map"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:theme="@style/Theme.Design"
             android:windowSoftInputMode="adjustResize">
-            <!-- Launcher + AAOS map role (separate task from MainActivity) -->
-            <intent-filter>
+            <!-- Launcher + AAOS map role (separate task from MainActivity).
+                 Do not share Design's icon — AAOS grids often collapse lookalikes. -->
+            <intent-filter android:priority="100">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.APP_AUTOMOTIVE" />
                 <category android:name="android.intent.category.APP_MAPS" />
             </intent-filter>
             <!-- Direct launch from Scalable UI actions or in-app code -->
