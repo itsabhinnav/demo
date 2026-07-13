@@ -80,7 +80,10 @@ object MapIntents {
         val zoom = intent.getDoubleExtra(EXTRA_ZOOM, 14.5)
         val center = parseGeoCenter(intent.data)
         val expandNavigation = intent.getBooleanExtra(EXTRA_EXPAND_NAVIGATION, false) ||
-            intent.action == ACTION_OPEN_MAP
+            intent.action == ACTION_OPEN_MAP ||
+            intent.action == Intent.ACTION_MAIN ||
+            intent.action == Intent.ACTION_VIEW ||
+            intent.action == "androidx.car.app.action.NAVIGATE"
 
         return MapLaunchConfig(
             center = center,
