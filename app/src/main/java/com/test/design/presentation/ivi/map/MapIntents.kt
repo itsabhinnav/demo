@@ -59,6 +59,19 @@ object MapIntents {
         }
     }
 
+    /**
+     * Retargets a map-role intent onto an explicit [MapActivity] component so launchers that
+     * incorrectly resolve the package's default activity still reach the map screen.
+     */
+    fun openMapFrom(intent: Intent, context: Context): Intent =
+        Intent(context, MapActivity::class.java).apply {
+            action = intent.action ?: ACTION_OPEN_MAP
+            data = intent.data
+            intent.extras?.let { putExtras(it) }
+            putExtra(EXTRA_EXPAND_NAVIGATION, true)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
     /** Opens the main app screen (driving home or widget dashboard). */
     fun openMain(
         context: Context,
@@ -69,6 +82,26 @@ object MapIntents {
             Intent.FLAG_ACTIVITY_SINGLE_TOP
         if (openDashboard) {
             putExtra(EXTRA_OPEN_DASHBOARD, true)
+        }
+    }
+
+    /**
+     * True when [intent] is a maps-role launch that [MainActivity] must forward to [MapActivity].
+     * Plain MAIN/LAUNCHER (Design icon) returns false.
+     */
+    fun shouldRedirectToMap(intent: Intent?): Boolean {
+        if (intent == null) return false
+        if (intent.component?.className?.endsWith(".MapActivity") == true) return false
+
+        val categories = intent.categories.orEmpty()
+        if (categories.contains(Intent.CATEGORY_APP_MAPS)) return true
+
+        return when (intent.action) {
+            ACTION_OPEN_MAP,
+            "androidx.car.app.action.NAVIGATE",
+            -> true
+            Intent.ACTION_VIEW -> intent.data?.scheme == "geo"
+            else -> false
         }
     }
 
@@ -83,7 +116,8 @@ object MapIntents {
             intent.action == ACTION_OPEN_MAP ||
             intent.action == Intent.ACTION_MAIN ||
             intent.action == Intent.ACTION_VIEW ||
-            intent.action == "androidx.car.app.action.NAVIGATE"
+            intent.action == "androidx.car.app.action.NAVIGATE" ||
+            intent.categories.orEmpty().contains(Intent.CATEGORY_APP_MAPS)
 
         return MapLaunchConfig(
             center = center,

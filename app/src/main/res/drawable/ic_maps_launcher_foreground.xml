@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Circular badge -->
+    <path
+        android:fillColor="#1A73E8"
+        android:pathData="M18,18h72v72h-72z" />
+    <!-- Map pin -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30c-9.4,0 -17,7.6 -17,17c0,12.8 17,31 17,31s17,-18.2 17,-31c0,-9.4 -7.6,-17 -17,-17zM54,55c-4.4,0 -8,-3.6 -8,-8s3.6,-8 8,-8s8,3.6 8,8s-3.6,8 -8,8z" />
+</vector>
