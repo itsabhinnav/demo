@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
+import com.test.design.presentation.ivi.map.MapIntents
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
 import com.test.design.presentation.ivi.media.components.MediaTransportControlsBar
@@ -351,6 +354,7 @@ private data class LauncherApp(
     val monogram: String? = null,
     val color: Color,
     val widget: DashboardWidget? = null,
+    val launchMap: Boolean = false,
 )
 
 @Composable
@@ -359,8 +363,9 @@ private fun AppLauncherCard(
     onOpenWidgetDashboard: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     val apps = listOf(
-        LauncherApp("Search", null, "G", Color(0xFF4285F4), DashboardWidget.Navigation),
+        LauncherApp("Maps", Icons.Default.Navigation, null, Color(0xFF1A73E8), launchMap = true),
         LauncherApp("Video", Icons.Default.SmartDisplay, null, Color(0xFFFF0000), DashboardWidget.Media),
         LauncherApp("Store", Icons.Default.Store, null, Color(0xFF34A853), DashboardWidget.MaterialComponents),
         LauncherApp("Camera", Icons.Default.CameraAlt, null, Color(0xFFE1306C), DashboardWidget.Vehicle),
@@ -393,6 +398,8 @@ private fun AppLauncherCard(
                                 app = app,
                                 onClick = {
                                     when {
+                                        app.launchMap ->
+                                            context.startActivity(MapIntents.openMap(context))
                                         app.widget != null -> onOpenApp(app.widget)
                                         onOpenWidgetDashboard != null -> onOpenWidgetDashboard()
                                     }

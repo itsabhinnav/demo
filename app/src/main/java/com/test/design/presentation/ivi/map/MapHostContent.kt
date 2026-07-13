@@ -1,5 +1,6 @@
 package com.test.design.presentation.ivi.map
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -25,9 +26,13 @@ import com.test.design.presentation.ivi.navigation.NavigationViewModel
 fun MapHostContent(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    @Suppress("UNUSED_PARAMETER") config: MapLaunchConfig = MapLaunchConfig.default(),
     navigationViewModel: NavigationViewModel = viewModel(),
 ) {
     val navigationState by navigationViewModel.state.collectAsStateWithLifecycle()
+
+    // System back must leave MapActivity, not fall through to an empty task.
+    BackHandler(onBack = onBack)
 
     IviExpressiveTheme {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
