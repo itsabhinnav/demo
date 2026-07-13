@@ -1,7 +1,6 @@
 package com.test.design.presentation.ivi.climate.components
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -49,8 +49,12 @@ fun MorphingAirflowSegmentedButton(
         modifier = modifier
             .fillMaxWidth()
             .height(CarDesignTokens.MinTouchTarget + 12.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            .skeuomorphicRecessedTrack(
+                shape = RoundedCornerShape(28.dp),
+                rim = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f),
+                well = MaterialTheme.colorScheme.surfaceContainerHigh,
+                depth = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
     ) {
         val segmentWidth = maxWidth / modes.size
         val indicatorOffset by animateDpAsState(
@@ -63,6 +67,8 @@ fun MorphingAirflowSegmentedButton(
             animationSpec = motionSpec,
             label = "airflow_indicator_width",
         )
+        val scheme = MaterialTheme.colorScheme
+        val pillShape = RoundedCornerShape(24.dp)
 
         Box(
             modifier = Modifier
@@ -70,8 +76,12 @@ fun MorphingAirflowSegmentedButton(
                 .width(indicatorWidth)
                 .fillMaxHeight()
                 .padding(4.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.primary),
+                .skeuomorphicRaisedPill(
+                    shape = pillShape,
+                    top = Color.White.copy(alpha = 0.35f).compositeOver(scheme.primary),
+                    mid = scheme.primary,
+                    bottom = scheme.primaryContainer,
+                ),
         )
 
         Row(

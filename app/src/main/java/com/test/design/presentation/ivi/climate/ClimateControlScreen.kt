@@ -358,6 +358,7 @@ private fun SharedTransitionScope.ClimateAirBand(
             morphExpanded = uiState.isAcEnabled,
             compactRadii = ClimateCardRestRadii,
             expandedRadii = ClimateCardActiveRadii,
+            emphasized = true,
             modifier = airflowModifier.fillMaxWidth(),
         ) {
             Row(

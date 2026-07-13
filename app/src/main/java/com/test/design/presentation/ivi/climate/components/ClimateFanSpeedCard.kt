@@ -32,6 +32,7 @@ fun ClimateFanSpeedCard(
         morphExpanded = isAcEnabled,
         compactRadii = ClimateCardRestRadii,
         expandedRadii = ClimateCardActiveRadii,
+        emphasized = true,
         modifier = modifier.fillMaxWidth(),
     ) {
         if (!compact) {

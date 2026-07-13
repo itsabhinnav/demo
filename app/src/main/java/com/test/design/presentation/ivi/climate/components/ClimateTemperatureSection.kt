@@ -1,7 +1,7 @@
 package com.test.design.presentation.ivi.climate.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,19 +13,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.TemperatureUnit
@@ -151,11 +153,22 @@ private fun ClimateTemperatureDialContent(
                 size = buttonSize,
                 iconSize = iconSize,
             )
+            val scheme = MaterialTheme.colorScheme
             Box(
                 modifier = contentModifier
                     .size(dialSize)
-                    .clip(dialShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
+                    .skeuomorphicDialShell(
+                        shape = dialShape,
+                        bezelLight = Color.White.copy(alpha = 0.55f),
+                        bezelMid = scheme.outline,
+                        bezelDark = scheme.surfaceContainerLowest,
+                        faceHighlight = scheme.primaryContainer.copy(alpha = 0.95f),
+                        face = scheme.primaryContainer.copy(alpha = 0.82f),
+                        faceShadow = scheme.surfaceContainerLowest.copy(alpha = 0.9f),
+                        tickColor = scheme.onPrimaryContainer,
+                        elevation = if (compact) 6.dp else 18.dp,
+                        showTicks = !compact,
+                    )
                     .temperatureVerticalDrag(
                         enabled = !compact,
                         onTemperatureSteps = stepHandler,
@@ -165,7 +178,7 @@ private fun ClimateTemperatureDialContent(
                 if (!compact) {
                     CoolSnowflakeOverlay(
                         coolIntensity = coolIntensity,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = scheme.onPrimaryContainer,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -173,14 +186,14 @@ private fun ClimateTemperatureDialContent(
                     AnimatedTemperatureCounter(
                         temperature = displayTemperature,
                         compact = compact,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = scheme.onPrimaryContainer,
                         unitSymbol = temperatureUnit.symbol,
                     )
                     if (!compact) {
                         Text(
                             text = if (isAcEnabled) "A/C On" else "A/C Off",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = scheme.onPrimaryContainer,
                         )
                     }
                 }
@@ -204,20 +217,30 @@ fun TemperatureAdjustButton(
     size: Dp = CarDesignTokens.MinTouchTarget,
     iconSize: Dp = CarDesignTokens.PrimaryIcon,
 ) {
-    FilledIconButton(
-        onClick = onClick,
+    val scheme = MaterialTheme.colorScheme
+    Box(
         modifier = Modifier
             .size(size)
-            .clip(CircleShape)
-            .carTouchTarget(),
-        colors = IconButtonDefaults.filledIconButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
+            .skeuomorphicRaisedControl(
+                shape = CircleShape,
+                top = Color.White.copy(alpha = 0.28f).compositeOver(scheme.secondaryContainer),
+                mid = scheme.secondaryContainer,
+                bottom = scheme.surfaceContainerLowest,
+                rim = Color.White,
+                elevation = 8.dp,
+            )
+            .carTouchTarget()
+            .semantics {
+                role = Role.Button
+                this.contentDescription = contentDescription
+            }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = contentDescription,
+            contentDescription = null,
+            tint = scheme.onSecondaryContainer,
             modifier = Modifier.size(iconSize),
         )
     }

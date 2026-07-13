@@ -1,6 +1,6 @@
 # Climate Screen — Motion
 
-Climate demonstrates directional counters, shape morphing, segmented controls, and dynamic color tints.
+Climate demonstrates directional counters, shape morphing, segmented controls, dynamic color tints, and skeuomorphic HVAC hardware cues.
 
 [← Back to master guide](../../motion.md) · [Dashboard hub](./dashboard.md)
 
@@ -25,6 +25,16 @@ Climate demonstrates directional counters, shape morphing, segmented controls, a
 **Motion:** Dial corners animate between compact circle-like radii and expanded asymmetric radii.
 
 **Token:** `defaultSpatialSpec()`
+
+---
+
+## Skeuomorphic dial shell
+
+**Trigger:** Always on for zone temperature dials.
+
+**Look:** Raised metallic bezel, recessed radial face, tick marks, and specular rim highlight — reads as a physical HVAC thermostat knob.
+
+**Source:** `ClimateSkeuomorphism.kt` (`skeuomorphicDialShell`)
 
 ---
 
@@ -54,7 +64,7 @@ Climate demonstrates directional counters, shape morphing, segmented controls, a
 
 **Trigger:** Tap a bar or change fan level.
 
-**Motion:** Active bars grow in opacity/height fraction; inactive bars stay dimmed.
+**Motion:** Active bars grow in opacity/height fraction; inactive bars stay dimmed. Bars use raised gloss and depth so they read as physical vent sliders.
 
 **Token:** `slowSpatialSpec()`
 
@@ -76,7 +86,7 @@ Climate demonstrates directional counters, shape morphing, segmented controls, a
 
 **Trigger:** Select Face / Feet / Defrost.
 
-**Motion:** Primary pill indicator slides horizontally to the selected segment.
+**Motion:** Primary pill indicator slides horizontally to the selected segment. Track is recessed; pill is a raised hardware switch.
 
 **Token:** `slowSpatialSpec()`
 
@@ -99,5 +109,5 @@ Climate demonstrates directional counters, shape morphing, segmented controls, a
 | Area | Files |
 |------|-------|
 | Screen | `app/.../climate/ClimateControlScreen.kt` |
-| Components | `app/.../climate/components/AnimatedTemperatureCounter.kt`, `MorphingAirflowSegmentedButton.kt`, `ClimateZoneSelector.kt`, `ClimateTemperatureSection.kt` |
+| Components | `app/.../climate/components/AnimatedTemperatureCounter.kt`, `MorphingAirflowSegmentedButton.kt`, `ClimateZoneSelector.kt`, `ClimateTemperatureSection.kt`, `ClimateSkeuomorphism.kt` |
 | Shapes | `app/.../theme/MorphingRoundedShape.kt` |
