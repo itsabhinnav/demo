@@ -16,6 +16,8 @@ import com.test.design.presentation.DesignAppShell
  * Dedicated map activity for AAOS Scalable UI map panels and the Maps launcher icon.
  *
  * Always opens [NavigationScreen] (same as tapping "Search maps" on the driving home).
+ * Draws the map edge-to-edge; overlay cards respect Scalable UI SafeBounds / system
+ * insets via [WindowInsets.safeDrawing][androidx.compose.foundation.layout.WindowInsets].
  *
  * Launch via:
  * - App launcher (MAIN / LAUNCHER)
@@ -37,7 +39,9 @@ class MapActivity : ComponentActivity() {
         mapViewModel.applyIntent(intent)
 
         setContent {
-            DesignAppShell {
+            // Full-bleed map: Scalable UI SafeBounds / system bars arrive as WindowInsets.
+            // Overlay cards in NavigationScreen apply safeDrawing padding; the map does not.
+            DesignAppShell(applySafeDrawingInsets = false) {
                 MapHostContent(
                     onBack = {
                         startActivity(MapIntents.openMain(this))
