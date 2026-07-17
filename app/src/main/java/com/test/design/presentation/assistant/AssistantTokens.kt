@@ -22,7 +22,7 @@ internal object AssistantTokens {
     val OnSurfaceMuted = Color(0xFF80868B)
 
     val Accent = Color(0xFF8AB4F8)
-    val Scrim = Color.Black.copy(alpha = 0.22f)
+    val Scrim = Color.Transparent
 
     const val EnterMs = 400
     const val ExitMs = 280

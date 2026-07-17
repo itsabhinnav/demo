@@ -1,6 +1,7 @@
 package com.test.design.presentation.assistant
 
 import android.graphics.Color as AndroidColor
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -11,15 +12,17 @@ import androidx.compose.ui.Modifier
 import com.test.design.presentation.DesignAppShell
 
 /**
- * Transparent virtual-assistant host — Scalable UI–style side panel over the map.
+ * Transparent virtual-assistant host — only the side panel is drawn.
  *
- * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT]. Content behind the
- * activity stays visible through the translucent window.
+ * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT]. Content behind
+ * the activity stays fully visible (no scrim / dim).
  */
 class VirtualAssistantActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+        window.setDimAmount(0f)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),

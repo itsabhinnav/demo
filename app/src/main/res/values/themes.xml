@@ -15,11 +15,13 @@
         <item name="android:forceDarkAllowed">false</item>
     </style>
 
-    <!-- Scalable UI TaskPanel hosts — transparent so Dewd panel chrome shows through. -->
+    <!-- Scalable UI TaskPanel hosts — transparent so content behind shows through. -->
     <style name="Theme.Design.Panel" parent="Theme.Design">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowShowWallpaper">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 </resources>
