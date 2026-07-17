@@ -54,14 +54,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.climate.components.ClimateHvacIcons
 import com.test.design.presentation.ivi.climate.formatTemperature
-import com.test.design.presentation.ivi.cluster.ClusterGlanceStrip
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -82,12 +80,6 @@ private val OverlayInset = 16.dp
 /** Left-edge strip used to swipe widgets back in when the map is full-bleed. */
 private val WidgetsRevealEdgeWidth = 72.dp
 private val MapSearchShape = RoundedCornerShape(44.dp)
-/**
- * Vertical space for [ClusterGlanceStrip] (P / LIM / battery) so the map search bar
- * sits fully below it instead of overlapping and painting over it.
- */
-private val ClusterGlanceStripClearance = 72.dp
-private val ClusterToMapChromeGap = 12.dp
 
 /**
  * Start inset for map chrome so search / HVAC clear the widget rail as it reveals.
@@ -101,7 +93,7 @@ internal fun mapChromeContentStart(
 
 /**
  * Full-bleed map with sidebar, search, and HVAC bar.
- * Map chrome (search / HVAC / cluster) respects [WindowInsets.safeDrawing] and the
+ * Map chrome (search / HVAC) respects [WindowInsets.safeDrawing] and the
  * widget-rail inset so controls shift with Scalable UI SafeBounds and rail reveal.
  * Swipe the widget rail left to hide it (map expands); swipe right from the
  * left edge to bring widgets back.
@@ -152,28 +144,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             val mapContentStart = mapChromeContentStart(sidebarWidth, reveal)
             val chromeTop = FloatingChromeTopSpace + OverlayInset
             val chromeBottom = FloatingChromeBottomSpace + OverlayInset
-            // Search / sidebar sit below the cluster strip so P·LIM·battery never covers Search maps.
-            val mapChromeTop = chromeTop + ClusterGlanceStripClearance + ClusterToMapChromeGap
             val widgetsVisible = reveal > 0.02f
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(
-                        start = mapContentStart,
-                        end = OverlayInset,
-                        top = chromeTop,
-                    )
-                    .zIndex(2f),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                ClusterGlanceStrip(
-                    cluster = cluster,
-                    batteryPercent = vehicleState.batteryPercent,
-                    rangeMiles = vehicleState.rangeMiles,
-                )
-            }
 
             // Left-rail hit target: edge strip when hidden, full sidebar chrome when shown.
             // Width tracks [reveal] so an in-progress swipe is never interrupted.
@@ -186,7 +157,6 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                     .align(Alignment.CenterStart)
                     .fillMaxHeight()
                     .width(gestureZoneWidth)
-                    .zIndex(1f)
                     .semantics {
                         contentDescription = if (widgetsVisible) {
                             "Swipe left to hide widgets"
@@ -216,7 +186,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                         .padding(
                             start = OverlayInset,
                             end = OverlayInset,
-                            top = mapChromeTop,
+                            top = chromeTop,
                             bottom = chromeBottom,
                         )
                         .width(panelWidth)
@@ -235,11 +205,10 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .fillMaxWidth()
-                    .zIndex(1f)
                     .padding(
                         start = mapContentStart,
                         end = OverlayInset,
-                        top = mapChromeTop,
+                        top = chromeTop,
                     ),
             )
 
@@ -252,7 +221,6 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .zIndex(1f)
                     .padding(
                         start = mapContentStart,
                         end = OverlayInset,

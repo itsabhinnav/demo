@@ -97,7 +97,7 @@ Use the [`motion.md`](../motion.md) presentation script.
 |------|----------------|
 | Scripted Adaptive Space scene transitions | Adaptive Space → **Play demo** (map → media → split → parking → collapse) |
 | Driver vs passenger dual-zone | Apps dashboard → **Dual Zone** widget |
-| Cluster glance + HUN panel | Driving home cluster strip; top-bar **Notifications** → Heads-up panel |
+| Cluster glance + HUN panel | Driving sidebar speed/gear/limit; top-bar **Notifications** → Heads-up panel |
 
 Those three map directly to **Android 17 Scalable UI + MUMD + Display Safety** talking points.
 
