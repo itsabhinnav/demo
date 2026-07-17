@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -17,14 +18,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import com.test.design.presentation.DesignAppShell
 import kotlinx.coroutines.flow.collectLatest
 
 /**
- * Transparent NOMI host — black orb only, no panel / no text.
+ * Transparent NOMI overlay on whatever is already on screen (same task as main).
  *
- * Listens for “Hey assistant”; on match the orb peeks / bounces / falls in
- * with a random entrance. Tap summons when speech isn’t available.
+ * Launch over existing content:
+ * ```
+ * adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
+ *   -n com.test.design/.presentation.assistant.VirtualAssistantActivity
+ * ```
+ *
+ * Say “Hey assistant” (or tap) for a random peek / bounce / fall entrance.
  */
 class VirtualAssistantActivity : ComponentActivity() {
 
@@ -38,12 +45,7 @@ class VirtualAssistantActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
-        window.setDimAmount(0f)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-        )
+        setupTransparentOverlayWindow()
 
         micGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
@@ -71,6 +73,23 @@ class VirtualAssistantActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    private fun setupTransparentOverlayWindow() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = AndroidColor.TRANSPARENT
+        window.navigationBarColor = AndroidColor.TRANSPARENT
+        window.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+        window.setDimAmount(0f)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+        )
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
+        )
     }
 
     companion object {
