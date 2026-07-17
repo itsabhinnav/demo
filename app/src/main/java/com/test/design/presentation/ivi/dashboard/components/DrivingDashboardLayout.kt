@@ -42,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -71,10 +73,14 @@ import org.osmdroid.util.GeoPoint
 /** Sidebar takes ~30% of the driving home (map keeps ~70%). */
 private const val SidebarWidthFraction = 0.30f
 private val OverlayInset = 16.dp
+/** Left-edge strip used to swipe widgets back in when the map is full-bleed. */
+private val WidgetsRevealEdgeWidth = 72.dp
 private val MapSearchShape = RoundedCornerShape(44.dp)
 
 /**
  * Full-bleed map with sidebar, search, map controls, and HVAC bar.
+ * Swipe the widget rail left to hide it (map expands); swipe right from the
+ * left edge to bring widgets back.
  * Floating system bars are hosted permanently by [com.test.design.presentation.DesignAppShell].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -97,12 +103,17 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     onOpenMain: (() -> Unit)? = null,
 ) {
     var mapZoom by remember(initialMapZoom) { mutableDoubleStateOf(initialMapZoom) }
+    val widgetsReveal = rememberWidgetsReveal(initial = 1f)
+    val density = LocalDensity.current
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val sidebarWidth = maxWidth * SidebarWidthFraction
-        val mapContentStart = sidebarWidth + OverlayInset
+        val sidebarWidthPx = with(density) { sidebarWidth.toPx() }
+        val reveal = widgetsReveal.value
+        val mapContentStart = OverlayInset + sidebarWidth * reveal
         val chromeTop = FloatingChromeTopSpace + OverlayInset
         val chromeBottom = FloatingChromeBottomSpace + OverlayInset
+        val widgetsVisible = reveal > 0.02f
 
         OsmMapBackground(
             modifier = Modifier.fillMaxSize(),
@@ -112,26 +123,55 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             zoom = mapZoom,
         )
 
-        DrivingSidebar(
-            vehicleState = vehicleState,
-            mediaState = mediaState,
-            onVehicleClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Vehicle)) },
-            onMediaEvent = onMediaEvent,
-            onExpandMedia = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Media)) },
-            onOpenApp = { onEvent(DashboardEvent.WidgetTapped(it)) },
-            onOpenWidgetDashboard = onOpenWidgetDashboard,
-            animatedVisibilityScope = animatedVisibilityScope,
+        // Left-rail hit target: edge strip when hidden, full sidebar chrome when shown.
+        // Width tracks [reveal] so an in-progress swipe is never interrupted.
+        val fullZoneWidth = sidebarWidth + OverlayInset
+        val gestureZoneWidth = WidgetsRevealEdgeWidth +
+            (fullZoneWidth - WidgetsRevealEdgeWidth) * reveal
+        val panelWidth = sidebarWidth - OverlayInset
+        Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(
-                    start = OverlayInset,
-                    end = OverlayInset,
-                    top = chromeTop,
-                    bottom = chromeBottom,
-                )
-                .width(sidebarWidth - OverlayInset)
-                .fillMaxHeight(),
-        )
+                .fillMaxHeight()
+                .width(gestureZoneWidth)
+                .semantics {
+                    contentDescription = if (widgetsVisible) {
+                        "Swipe left to hide widgets"
+                    } else {
+                        "Swipe right to show widgets"
+                    }
+                }
+                .widgetsRevealDrag(
+                    reveal = widgetsReveal,
+                    panelWidthPx = sidebarWidthPx,
+                ),
+        ) {
+            DrivingSidebar(
+                vehicleState = vehicleState,
+                mediaState = mediaState,
+                onVehicleClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Vehicle)) },
+                onMediaEvent = onMediaEvent,
+                onExpandMedia = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Media)) },
+                onOpenApp = { onEvent(DashboardEvent.WidgetTapped(it)) },
+                onOpenWidgetDashboard = onOpenWidgetDashboard,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(
+                        start = OverlayInset,
+                        end = OverlayInset,
+                        top = chromeTop,
+                        bottom = chromeBottom,
+                    )
+                    .width(panelWidth)
+                    .fillMaxHeight()
+                    .graphicsLayer {
+                        // Slide fully off-screen as reveal → 0; map chrome expands in sync.
+                        translationX = -sidebarWidthPx * (1f - reveal)
+                        alpha = reveal.coerceIn(0f, 1f)
+                    },
+            )
+        }
 
         MapSearchBar(
             onClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Navigation)) },
