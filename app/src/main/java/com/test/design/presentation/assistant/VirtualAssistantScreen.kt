@@ -47,8 +47,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Scalable UI–style entry: light scrim + assistant panel sliding in from the right.
- * Dialogues play inline in the panel (no bottom voice plate / waveform).
+ * Production overlay: soft scrim + polished trailing panel.
+ * Mood chips stay available for demo, tucked below the panel edge.
  */
 @Composable
 fun VirtualAssistantOverlay(
@@ -56,6 +56,7 @@ fun VirtualAssistantOverlay(
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
     fromEnd: Boolean = true,
+    showDemoMoodChips: Boolean = true,
 ) {
     var mood by rememberSaveable { mutableStateOf(initialMood) }
     var panelVisible by remember { mutableStateOf(false) }
@@ -73,7 +74,7 @@ fun VirtualAssistantOverlay(
 
     LaunchedEffect(closing, panelVisible) {
         if (closing && !panelVisible) {
-            kotlinx.coroutines.delay(320)
+            kotlinx.coroutines.delay(AssistantTokens.ExitMs.toLong() + 40)
             onDismiss()
         }
     }
@@ -86,13 +87,13 @@ fun VirtualAssistantOverlay(
     ) {
         AnimatedVisibility(
             visible = panelVisible,
-            enter = fadeIn(tween(220)),
-            exit = fadeOut(tween(200)),
+            enter = fadeIn(tween(AssistantTokens.EnterMs - 100)),
+            exit = fadeOut(tween(AssistantTokens.ExitMs)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.28f))
+                    .background(AssistantTokens.Scrim)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -105,27 +106,31 @@ fun VirtualAssistantOverlay(
             modifier = Modifier
                 .align(if (fromEnd) Alignment.CenterEnd else Alignment.CenterStart)
                 .fillMaxHeight()
-                .padding(vertical = 8.dp, horizontal = 8.dp),
+                .padding(
+                    top = AssistantTokens.PanelInset,
+                    bottom = AssistantTokens.PanelInset,
+                    start = if (fromEnd) 0.dp else AssistantTokens.PanelInset,
+                    end = if (fromEnd) AssistantTokens.PanelInset else 0.dp,
+                ),
+            horizontalAlignment = if (fromEnd) Alignment.End else Alignment.Start,
         ) {
-            MoodToggleRow(
-                selected = mood,
-                onSelect = { mood = it },
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .horizontalScroll(rememberScrollState()),
-                compact = true,
-            )
-
             AnimatedVisibility(
                 visible = panelVisible,
+                modifier = Modifier.weight(1f, fill = false),
                 enter = slideInHorizontally(
-                    animationSpec = tween(380, easing = FastOutSlowInEasing),
+                    animationSpec = tween(
+                        AssistantTokens.EnterMs,
+                        easing = FastOutSlowInEasing,
+                    ),
                     initialOffsetX = { full -> if (fromEnd) full else -full },
-                ) + fadeIn(tween(280)),
+                ) + fadeIn(tween(AssistantTokens.EnterMs - 80)),
                 exit = slideOutHorizontally(
-                    animationSpec = tween(300),
+                    animationSpec = tween(
+                        AssistantTokens.ExitMs,
+                        easing = FastOutSlowInEasing,
+                    ),
                     targetOffsetX = { full -> if (fromEnd) full else -full },
-                ) + fadeOut(tween(220)),
+                ) + fadeOut(tween(AssistantTokens.ExitMs - 40)),
             ) {
                 AssistantSidePanel(
                     mood = mood,
@@ -133,12 +138,23 @@ fun VirtualAssistantOverlay(
                     onDismiss = { dismiss() },
                     autoPlay = true,
                     modifier = Modifier
-                        .fillMaxHeight()
+                        .fillMaxHeight(0.98f)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = {},
                         ),
+                )
+            }
+
+            if (showDemoMoodChips) {
+                MoodToggleRow(
+                    selected = mood,
+                    onSelect = { mood = it },
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    compact = true,
                 )
             }
         }
@@ -205,7 +221,7 @@ fun MoodToggleRow(
                     {
                         Box(
                             modifier = Modifier
-                                .size(10.dp)
+                                .size(8.dp)
                                 .clip(CircleShape)
                                 .background(mood.glowColor),
                         )
@@ -214,15 +230,19 @@ fun MoodToggleRow(
                     null
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    containerColor = if (compact) Color(0xCC1A2233) else Color.Transparent,
+                    containerColor = if (compact) {
+                        Color(0x99141820)
+                    } else {
+                        Color.Transparent
+                    },
                     labelColor = if (compact) {
-                        Color.White.copy(alpha = 0.85f)
+                        AssistantTokens.OnSurfaceVariant
                     } else {
                         MaterialTheme.colorScheme.onSurface
                     },
-                    selectedContainerColor = mood.glowColor.copy(alpha = 0.28f),
+                    selectedContainerColor = mood.glowColor.copy(alpha = 0.18f),
                     selectedLabelColor = if (compact) {
-                        Color.White
+                        AssistantTokens.OnSurface
                     } else {
                         MaterialTheme.colorScheme.onBackground
                     },
@@ -235,15 +255,15 @@ fun MoodToggleRow(
     if (compact) {
         Row(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
             content = { chips() },
         )
     } else {
         androidx.compose.foundation.layout.FlowRow(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             content = { chips() },
         )
     }
@@ -257,30 +277,29 @@ fun AssistantWidgetPreview(
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        color = Color(0xFF0A0C12),
+        color = AssistantTokens.SurfaceBottom,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             AssistantFace(
                 mood = mood,
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(64.dp),
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Tap · side panel slides in",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White.copy(alpha = 0.7f),
+                    text = "Assistant",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = AssistantTokens.OnSurface,
                 )
-                AssistantPresence(
-                    mood = mood,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(36.dp),
+                Text(
+                    text = "Opens as a side panel",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AssistantTokens.OnSurfaceMuted,
                 )
             }
         }

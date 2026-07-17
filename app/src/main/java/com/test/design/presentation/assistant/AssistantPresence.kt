@@ -27,36 +27,34 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Gemini-like ambient presence — soft layered orbs instead of a voice waveform.
- * Same visual language for every mood; energy / color morph.
+ * Quiet ambient presence — soft Google-like nebula, not a waveform.
  */
 internal data class PresencePose(
-    val energy: Float = 0.4f,
-    val spread: Float = 0.55f,
-    val sparkle: Float = 0.25f,
+    val energy: Float = 0.35f,
+    val spread: Float = 0.5f,
+    val sparkle: Float = 0.12f,
 )
 
 internal fun AssistantMood.toPresencePose(): PresencePose = when (this) {
-    AssistantMood.Listening -> PresencePose(energy = 0.9f, spread = 0.75f, sparkle = 0.55f)
-    AssistantMood.Speaking -> PresencePose(energy = 0.85f, spread = 0.7f, sparkle = 0.45f)
-    AssistantMood.Thinking -> PresencePose(energy = 0.55f, spread = 0.5f, sparkle = 0.7f)
-    AssistantMood.Searching -> PresencePose(energy = 0.8f, spread = 0.65f, sparkle = 0.85f)
-    AssistantMood.Happy -> PresencePose(energy = 0.7f, spread = 0.7f, sparkle = 0.9f)
-    AssistantMood.Sad -> PresencePose(energy = 0.3f, spread = 0.4f, sparkle = 0.15f)
-    AssistantMood.Reading -> PresencePose(energy = 0.45f, spread = 0.5f, sparkle = 0.35f)
-    AssistantMood.Idle -> PresencePose(energy = 0.35f, spread = 0.48f, sparkle = 0.2f)
+    AssistantMood.Listening -> PresencePose(energy = 0.7f, spread = 0.62f, sparkle = 0.25f)
+    AssistantMood.Speaking -> PresencePose(energy = 0.65f, spread = 0.58f, sparkle = 0.18f)
+    AssistantMood.Thinking -> PresencePose(energy = 0.45f, spread = 0.48f, sparkle = 0.4f)
+    AssistantMood.Searching -> PresencePose(energy = 0.6f, spread = 0.55f, sparkle = 0.45f)
+    AssistantMood.Happy -> PresencePose(energy = 0.55f, spread = 0.6f, sparkle = 0.35f)
+    AssistantMood.Sad -> PresencePose(energy = 0.25f, spread = 0.4f, sparkle = 0.08f)
+    AssistantMood.Reading -> PresencePose(energy = 0.4f, spread = 0.48f, sparkle = 0.15f)
+    AssistantMood.Idle -> PresencePose(energy = 0.32f, spread = 0.46f, sparkle = 0.1f)
 }
 
 private val PresenceSpring = spring<Float>(
-    dampingRatio = Spring.DampingRatioNoBouncy,
+    dampingRatio = 0.9f,
     stiffness = Spring.StiffnessMediumLow,
 )
 
 private val OrbPalette = listOf(
     Color(0xFF8AB4F8),
     Color(0xFFC58AF9),
-    Color(0xFF78D9B8),
-    Color(0xFFF6A5C0),
+    Color(0xFF81C995),
 )
 
 @Composable
@@ -70,7 +68,7 @@ fun AssistantPresence(
     val sparkle = remember { Animatable(target.sparkle) }
     val tint by animateColorAsState(
         targetValue = mood.glowColor,
-        animationSpec = tween(520, easing = FastOutSlowInEasing),
+        animationSpec = tween(600, easing = FastOutSlowInEasing),
         label = "presence_tint",
     )
 
@@ -85,16 +83,16 @@ fun AssistantPresence(
         initialValue = 0f,
         targetValue = (2f * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(4200, easing = LinearEasing),
+            animation = tween(5600, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "phase",
     )
     val breath by infinite.animateFloat(
-        initialValue = 0.92f,
-        targetValue = 1.08f,
+        initialValue = 0.96f,
+        targetValue = 1.04f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2400, easing = FastOutSlowInEasing),
+            animation = tween(3200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse,
         ),
         label = "breath",
@@ -123,34 +121,32 @@ private fun DrawScope.drawAmbientPresence(
     if (size.minDimension <= 0f) return
     val cx = size.width * 0.5f
     val cy = size.height * 0.5f
-    val base = size.minDimension * 0.42f * spread * breath
+    val base = size.minDimension * 0.4f * spread * breath
 
-    // Soft wash
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                tint.copy(alpha = 0.22f * energy),
-                Color.Transparent,
-            ),
-            center = Offset(cx, cy),
-            radius = base * 1.6f,
-        ),
-        radius = base * 1.6f,
-        center = Offset(cx, cy),
-    )
-
-    // Layered drifting orbs (Gemini-like nebula)
-    OrbPalette.forEachIndexed { i, color ->
-        val ang = phase * (0.55f + i * 0.12f) + i * 1.4f
-        val orbit = base * (0.35f + i * 0.08f)
-        val ox = cx + cos(ang) * orbit * 0.55f
-        val oy = cy + sin(ang * 0.9f) * orbit * 0.4f
-        val r = base * (0.55f - i * 0.07f) * (0.75f + 0.25f * energy)
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    color.copy(alpha = 0.35f * energy),
-                    color.copy(alpha = 0.08f * energy),
+                    tint.copy(alpha = 0.10f * energy),
+                    Color.Transparent,
+                ),
+                center = Offset(cx, cy),
+                radius = base * 1.55f,
+            ),
+            radius = base * 1.55f,
+            center = Offset(cx, cy),
+        )
+
+    OrbPalette.forEachIndexed { i, color ->
+        val ang = phase * (0.35f + i * 0.07f) + i * 1.5f
+        val orbit = base * (0.26f + i * 0.05f)
+        val ox = cx + cos(ang) * orbit * 0.45f
+        val oy = cy + sin(ang * 0.85f) * orbit * 0.32f
+        val r = base * (0.48f - i * 0.07f) * (0.82f + 0.18f * energy)
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    color.copy(alpha = 0.16f * energy),
+                    color.copy(alpha = 0.04f * energy),
                     Color.Transparent,
                 ),
                 center = Offset(ox, oy),
@@ -161,33 +157,30 @@ private fun DrawScope.drawAmbientPresence(
         )
     }
 
-    // Core glow
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.28f * energy),
-                tint.copy(alpha = 0.18f * energy),
+                Color.White.copy(alpha = 0.10f * energy),
+                tint.copy(alpha = 0.07f * energy),
                 Color.Transparent,
             ),
             center = Offset(cx, cy),
-            radius = base * 0.55f,
+            radius = base * 0.45f,
         ),
-        radius = base * 0.55f,
+        radius = base * 0.45f,
         center = Offset(cx, cy),
     )
 
-    // Soft sparkles for thinking / searching / happy
-    if (sparkle > 0.05f) {
-        val count = 8
-        for (i in 0 until count) {
-            val a = phase * 1.3f + i * (2f * PI.toFloat() / count)
-            val dist = base * (0.7f + 0.25f * sin(phase + i).toFloat())
+    if (sparkle > 0.12f) {
+        for (i in 0 until 4) {
+            val a = phase * 0.9f + i * (2f * PI.toFloat() / 4f)
+            val dist = base * (0.58f + 0.16f * sin(phase + i).toFloat())
             val px = cx + cos(a) * dist
-            val py = cy + sin(a * 1.1f) * dist * 0.75f
-            val twinkle = 0.35f + 0.65f * ((sin(phase * 2f + i) + 1f) * 0.5f).toFloat()
+            val py = cy + sin(a * 1.05f) * dist * 0.65f
+            val twinkle = 0.35f + 0.65f * ((sin(phase * 1.4f + i) + 1f) * 0.5f).toFloat()
             drawCircle(
-                color = Color.White.copy(alpha = 0.55f * sparkle * twinkle),
-                radius = 2.2f * twinkle,
+                color = Color.White.copy(alpha = 0.22f * sparkle * twinkle),
+                radius = 1.4f * twinkle,
                 center = Offset(px, py),
             )
         }
