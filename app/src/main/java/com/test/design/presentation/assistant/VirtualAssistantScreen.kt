@@ -7,7 +7,6 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -166,139 +165,181 @@ private fun NomiOrbStage(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val density = LocalDensity.current
-        val orbDp = 168.dp
+        val orbDp = 220.dp
         val orbPx = with(density) { orbDp.toPx() }
         val w = constraints.maxWidth.toFloat().coerceAtLeast(1f)
         val h = constraints.maxHeight.toFloat().coerceAtLeast(1f)
 
         val offsetX = remember { Animatable(0f) }
         val offsetY = remember { Animatable(0f) }
-        val scale = remember { Animatable(0.6f) }
+        val scaleX = remember { Animatable(0.6f) }
+        val scaleY = remember { Animatable(0.6f) }
         val alpha = remember { Animatable(0f) }
+        val rot = remember { Animatable(0f) }
+        var auraOn by remember { mutableStateOf(false) }
 
         LaunchedEffect(session, entrance, w, h, orbPx) {
             val restX = (w - orbPx) * 0.5f
-            val restY = (h - orbPx) * 0.42f
-            val springSpec = spring<Float>(
-                dampingRatio = 0.62f,
+            val restY = (h - orbPx) * 0.38f
+            val springy = spring<Float>(
+                dampingRatio = 0.55f,
                 stiffness = Spring.StiffnessMediumLow,
             )
-            val soft = tween<Float>(520, easing = FastOutSlowInEasing)
+            val soft = tween<Float>(480, easing = FastOutSlowInEasing)
+            auraOn = false
+
+            suspend fun settle() {
+                scaleX.animateTo(1f, springy)
+                scaleY.animateTo(1f, springy)
+                rot.animateTo(0f, soft)
+                auraOn = true
+            }
 
             when (entrance) {
                 OrbEntrance.PeekBottom -> {
                     offsetX.snapTo(restX)
-                    offsetY.snapTo(h - orbPx * 0.28f)
-                    scale.snapTo(0.92f)
+                    offsetY.snapTo(h - orbPx * 0.22f)
+                    scaleX.snapTo(1.08f)
+                    scaleY.snapTo(0.82f)
+                    rot.snapTo(0f)
                     alpha.snapTo(1f)
-                    delay(280)
-                    offsetY.animateTo(h - orbPx * 0.72f, soft)
-                    delay(500)
-                    offsetY.animateTo(restY, springSpec)
-                    scale.animateTo(1f, soft)
+                    delay(180)
+                    offsetY.animateTo(h - orbPx * 0.68f, soft)
+                    scaleX.animateTo(0.94f, soft)
+                    scaleY.animateTo(1.06f, soft)
+                    delay(380)
+                    offsetY.animateTo(restY, springy)
+                    settle()
                 }
                 OrbEntrance.PeekLeft -> {
-                    offsetX.snapTo(-orbPx * 0.55f)
+                    offsetX.snapTo(-orbPx * 0.62f)
                     offsetY.snapTo(restY)
-                    scale.snapTo(0.92f)
+                    scaleX.snapTo(0.78f)
+                    scaleY.snapTo(1.1f)
+                    rot.snapTo(-12f)
                     alpha.snapTo(1f)
-                    delay(220)
-                    offsetX.animateTo(orbPx * 0.08f, soft)
-                    delay(450)
-                    offsetX.animateTo(restX, springSpec)
-                    scale.animateTo(1f, soft)
+                    delay(160)
+                    offsetX.animateTo(orbPx * 0.04f, soft)
+                    delay(320)
+                    offsetX.animateTo(restX, springy)
+                    settle()
                 }
                 OrbEntrance.PeekRight -> {
-                    offsetX.snapTo(w - orbPx * 0.45f)
+                    offsetX.snapTo(w - orbPx * 0.38f)
                     offsetY.snapTo(restY)
-                    scale.snapTo(0.92f)
+                    scaleX.snapTo(0.78f)
+                    scaleY.snapTo(1.1f)
+                    rot.snapTo(12f)
                     alpha.snapTo(1f)
-                    delay(220)
-                    offsetX.animateTo(w - orbPx * 1.05f, soft)
-                    delay(450)
-                    offsetX.animateTo(restX, springSpec)
-                    scale.animateTo(1f, soft)
+                    delay(160)
+                    offsetX.animateTo(w - orbPx * 1.02f, soft)
+                    delay(320)
+                    offsetX.animateTo(restX, springy)
+                    settle()
                 }
                 OrbEntrance.PeekTop -> {
                     offsetX.snapTo(restX)
-                    offsetY.snapTo(-orbPx * 0.55f)
-                    scale.snapTo(0.92f)
+                    offsetY.snapTo(-orbPx * 0.62f)
+                    scaleX.snapTo(1.06f)
+                    scaleY.snapTo(0.84f)
+                    rot.snapTo(0f)
                     alpha.snapTo(1f)
-                    delay(220)
-                    offsetY.animateTo(orbPx * 0.05f, soft)
-                    delay(450)
-                    offsetY.animateTo(restY, springSpec)
-                    scale.animateTo(1f, soft)
+                    delay(160)
+                    offsetY.animateTo(orbPx * 0.02f, soft)
+                    delay(320)
+                    offsetY.animateTo(restY, springy)
+                    settle()
                 }
                 OrbEntrance.Fall -> {
-                    offsetX.snapTo(restX + Random.nextFloat() * 80f - 40f)
-                    offsetY.snapTo(-orbPx * 1.2f)
-                    scale.snapTo(0.85f)
+                    offsetX.snapTo(restX + Random.nextFloat() * 100f - 50f)
+                    offsetY.snapTo(-orbPx * 1.4f)
+                    scaleX.snapTo(0.88f)
+                    scaleY.snapTo(1.12f)
+                    rot.snapTo(Random.nextFloat() * 24f - 12f)
                     alpha.snapTo(1f)
-                    offsetY.animateTo(restY + 36f, tween(480, easing = FastOutSlowInEasing))
-                    offsetY.animateTo(restY - 18f, springSpec)
-                    offsetY.animateTo(restY, springSpec)
-                    scale.animateTo(1f, soft)
+                    offsetY.animateTo(restY + 48f, tween(520, easing = FastOutSlowInEasing))
+                    scaleX.snapTo(1.18f)
+                    scaleY.snapTo(0.78f)
+                    offsetY.animateTo(restY - 22f, springy)
+                    offsetY.animateTo(restY, springy)
                     offsetX.animateTo(restX, soft)
+                    settle()
                 }
                 OrbEntrance.Bounce -> {
                     offsetX.snapTo(restX)
-                    offsetY.snapTo(h)
-                    scale.snapTo(0.7f)
+                    offsetY.snapTo(h + orbPx * 0.2f)
+                    scaleX.snapTo(0.75f)
+                    scaleY.snapTo(0.75f)
+                    rot.snapTo(0f)
                     alpha.snapTo(1f)
-                    offsetY.animateTo(restY - 40f, tween(420))
-                    offsetY.animateTo(restY + 24f, springSpec)
-                    offsetY.animateTo(restY - 10f, springSpec)
-                    offsetY.animateTo(restY, springSpec)
-                    scale.animateTo(1.05f, soft)
-                    scale.animateTo(1f, soft)
-                    // playful side hop
-                    offsetX.animateTo(restX + 48f, soft)
-                    offsetX.animateTo(restX - 28f, soft)
-                    offsetX.animateTo(restX, springSpec)
+                    offsetY.animateTo(restY - 56f, tween(400))
+                    scaleX.animateTo(0.9f, soft)
+                    scaleY.animateTo(1.12f, soft)
+                    offsetY.animateTo(restY + 28f, springy)
+                    scaleX.snapTo(1.16f)
+                    scaleY.snapTo(0.8f)
+                    offsetY.animateTo(restY - 12f, springy)
+                    offsetY.animateTo(restY, springy)
+                    offsetX.animateTo(restX + 56f, soft)
+                    offsetX.animateTo(restX - 32f, soft)
+                    offsetX.animateTo(restX, springy)
+                    settle()
                 }
                 OrbEntrance.Pop -> {
                     offsetX.snapTo(restX)
                     offsetY.snapTo(restY)
-                    scale.snapTo(0.2f)
+                    scaleX.snapTo(0.12f)
+                    scaleY.snapTo(0.12f)
+                    rot.snapTo(-8f)
                     alpha.snapTo(0f)
-                    alpha.animateTo(1f, tween(160))
-                    scale.animateTo(1.12f, springSpec)
-                    scale.animateTo(1f, soft)
+                    alpha.animateTo(1f, tween(140))
+                    scaleX.animateTo(1.22f, springy)
+                    scaleY.animateTo(1.22f, springy)
+                    rot.animateTo(6f, soft)
+                    settle()
                 }
             }
 
-            // Idle wander while on screen
+            // Alive idle: gentle drift + occasional hop
             while (isActive) {
-                val nx = restX + Random.nextFloat() * 56f - 28f
-                val ny = restY + Random.nextFloat() * 40f - 20f
-                offsetX.animateTo(nx, tween(1400, easing = FastOutSlowInEasing))
-                offsetY.animateTo(ny, tween(1400, easing = FastOutSlowInEasing))
-                delay(Random.nextLong(200, 600))
+                val nx = restX + Random.nextFloat() * 72f - 36f
+                val ny = restY + Random.nextFloat() * 48f - 24f
+                offsetX.animateTo(nx, tween(1600, easing = FastOutSlowInEasing))
+                offsetY.animateTo(ny, tween(1600, easing = FastOutSlowInEasing))
+                if (Random.nextFloat() < 0.28f) {
+                    scaleY.animateTo(0.9f, tween(90))
+                    scaleX.animateTo(1.08f, tween(90))
+                    offsetY.animateTo(ny - 28f, springy)
+                    scaleX.animateTo(1f, springy)
+                    scaleY.animateTo(1f, springy)
+                    offsetY.animateTo(ny, springy)
+                }
+                delay(Random.nextLong(180, 520))
             }
         }
-
-        val glow by animateFloatAsState(
-            targetValue = if (mood == AssistantMood.Listening) 1f else 0.75f,
-            animationSpec = tween(400),
-            label = "glow",
-        )
 
         Box(
             modifier = Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
                 .size(orbDp)
                 .graphicsLayer {
-                    scaleX = scale.value
-                    scaleY = scale.value
+                    this.scaleX = scaleX.value
+                    this.scaleY = scaleY.value
                     this.alpha = alpha.value
-                    // tiny extra presence when listening
-                    shadowElevation = 8f + 10f * glow
+                    rotationZ = rot.value
+                    shadowElevation = 18f
                 },
         ) {
+            NomiArrivalAura(
+                mood = mood,
+                active = auraOn,
+                modifier = Modifier.fillMaxSize(),
+            )
             AssistantFace(
                 mood = mood,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
             )
         }
     }
