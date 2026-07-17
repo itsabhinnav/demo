@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive Space — full-bleed map under floating widgets + overlays.
-  Map stays visible/live while secondary panels animate above (Map-Under-Apps).
+  Adaptive Space map slot — closed by default (no OSM).
+  Host is an empty solid backdrop only; Design MapActivity is not used.
+  Sidebar (widget_panel) is the primary Design surface on home.
 -->
 <TaskPanel
     id="map_panel"
     controller="@xml/map_panel_controller"
     role="@array/role_map_components"
-    defaultVariant="@id/opened"
+    defaultVariant="@id/closed"
     defaultLayer="@integer/map_panel_layer"
     displayId="0">
 
@@ -50,7 +51,7 @@
     <Transitions>
         <Transition
             onEvent="_System_OnHomeEvent"
-            toVariant="@id/opened"
+            toVariant="@id/closed"
             duration="@integer/home_restore_transition_ms"
             interpolator="@android:anim/decelerate_interpolator" />
         <Transition

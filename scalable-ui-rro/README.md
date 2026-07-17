@@ -9,8 +9,8 @@ zero-stutter split resize.
 │  status  (floating SystemBar, Z 200)                     │
 ├──────┬───────────────────────────────────────────┬───────┤
 │      │                                           │ media │
-│ rail │     map_panel (full-bleed, L2)            │ /park │
-│ L20  │     Maps placeholder (green) under apps   │ L40–50│
+│ rail │     map_panel closed (no OSM)             │ /park │
+│ L20  │     empty backdrop only if opened         │ L40–50│
 │      │                                           │       │
 ├──────┴───────────────────────────────────────────┴───────┤
 │  nav  (floating SystemBar, Z 210)                        │
@@ -19,7 +19,7 @@ zero-stutter split resize.
 
 | Panel | Type | Layer | Content |
 |-------|------|-------|---------|
-| `map_panel` | TaskPanel | 2 | Full-bleed stock Maps placeholder (green) |
+| `map_panel` | TaskPanel | 2 | Closed by default; empty backdrop (no OSM) |
 | `depth_scrim` | DecorPanel | 10 | Z-depth dim between map and overlays |
 | `widget_panel` | TaskPanel | 20 | Floating left rail (`DrivingRailActivity`) |
 | `media_overlay` | TaskPanel | 40 | Slide-in media controller |
@@ -30,9 +30,10 @@ zero-stutter split resize.
 
 ## Adaptive Space behaviors
 
-### Map-Under-Apps
-`map_panel` is the primary background. Secondary panels animate above it; the
-map task stays `UNTRIMMABLE` and is not restarted when overlays open.
+### Sidebar-first home
+`widget_panel` (DrivingRail) is the Design home surface. `map_panel` stays
+closed by default and never hosts Design `MapActivity` / OSM — only an empty
+solid backdrop if opened.
 
 ### Dynamic panel transitions
 OEM events (wire to `CarSystemBarButton` `selectedEvent` / `unselectedEvent`):
