@@ -40,10 +40,11 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 ## Must-do for Adaptive Space panels
 
 5. **Map host**  
-   Controllers default to stock AAOS green `MapsPlaceholderActivity`
-   (`com.android.car.mapsplaceholder`) full-bleed under the floating rail.
-   Do **not** use Design `MapActivity`, `MapsPlaceholderAct`, or any app-side
-   solid backdrop — those look different from the real placeholder.
+   Controllers default to stock AAOS `MapsPlaceholderActivity`
+   (`com.android.car.mapsplaceholder`, `car_green_500` + error text).
+   Intent must use `APP_MAPS` (not `LAUNCHER`). Prefer
+   `BaseTaskPanelController` + `PersistentActivity` so the panel does not
+   stay black when `MapsPanelController` fails to bind.
 
 6. **Transparent TaskPanel windows**  
    Widget rail + overlays use `Theme.Design.Panel` (app-side). SystemUI must

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Full-bleed green stock AAOS Maps placeholder (not Design OSM MapActivity). -->
+    <!-- Full-bleed stock AAOS Maps placeholder (car_green_500). Filter is APP_MAPS, not LAUNCHER. -->
     <string name="default_map_activity" translatable="false">com.android.car.mapsplaceholder/.MapsPlaceholderActivity</string>
-    <string name="default_map_intent" translatable="false">intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;component=com.android.car.mapsplaceholder/.MapsPlaceholderActivity;end</string>
+    <string name="default_map_intent" translatable="false">intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MAPS;component=com.android.car.mapsplaceholder/.MapsPlaceholderActivity;end</string>
 
     <string name="maps_placeholder_activity" translatable="false">com.android.car.mapsplaceholder/.MapsPlaceholderActivity</string>
 
