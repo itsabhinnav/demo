@@ -12,14 +12,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.annotation.DrawableRes
@@ -34,9 +37,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +51,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -88,7 +90,19 @@ private val ClusterGlanceStripClearance = 72.dp
 private val ClusterToMapChromeGap = 12.dp
 
 /**
- * Full-bleed map with sidebar, search, map controls, and HVAC bar.
+ * Start inset for map chrome so search / HVAC clear the widget rail as it reveals.
+ * [sidebarWidth] is the reserved rail width; [reveal] is 0 (hidden) … 1 (shown).
+ */
+internal fun mapChromeContentStart(
+    sidebarWidth: Dp,
+    reveal: Float,
+    overlayInset: Dp = OverlayInset,
+): Dp = overlayInset + sidebarWidth * reveal.coerceIn(0f, 1f)
+
+/**
+ * Full-bleed map with sidebar, search, and HVAC bar.
+ * Map chrome (search / HVAC / cluster) respects [WindowInsets.safeDrawing] and the
+ * widget-rail inset so controls shift with Scalable UI SafeBounds and rail reveal.
  * Swipe the widget rail left to hide it (map expands); swipe right from the
  * left edge to bring widgets back.
  * Floating system bars are hosted permanently by [com.test.design.presentation.DesignAppShell].
@@ -110,136 +124,142 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     mapCenter: GeoPoint? = null,
     initialMapZoom: Double = 14.5,
     showMapRoute: Boolean = false,
-    onOpenMain: (() -> Unit)? = null,
+    @Suppress("UNUSED_PARAMETER") onOpenMain: (() -> Unit)? = null,
 ) {
-    var mapZoom by remember(initialMapZoom) { mutableDoubleStateOf(initialMapZoom) }
     val widgetsReveal = rememberWidgetsReveal(initial = 1f)
     val density = LocalDensity.current
     val drivingUx = LocalDrivingUxState.current
     val cluster = remember(drivingUx) { ClusterUiState.fromDrivingUx(drivingUx) }
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val sidebarWidth = maxWidth * SidebarWidthFraction
-        val sidebarWidthPx = with(density) { sidebarWidth.toPx() }
-        val reveal = widgetsReveal.value
-        val mapContentStart = OverlayInset + sidebarWidth * reveal
-        val chromeTop = FloatingChromeTopSpace + OverlayInset
-        val chromeBottom = FloatingChromeBottomSpace + OverlayInset
-        // Search / sidebar sit below the cluster strip so P·LIM·battery never covers Search maps.
-        val mapChromeTop = chromeTop + ClusterGlanceStripClearance + ClusterToMapChromeGap
-        val widgetsVisible = reveal > 0.02f
-
+    Box(modifier = modifier.fillMaxSize()) {
+        // Map stays full-bleed; SafeBounds / system bars pad overlays only.
         OsmMapBackground(
             modifier = Modifier.fillMaxSize(),
             center = mapCenter ?: DefaultMapCenter,
             showRoute = showMapRoute,
             interactive = true,
-            zoom = mapZoom,
+            zoom = initialMapZoom,
         )
 
-        ClusterGlanceStrip(
-            cluster = cluster,
-            batteryPercent = vehicleState.batteryPercent,
-            rangeMiles = vehicleState.rangeMiles,
+        BoxWithConstraints(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .zIndex(2f)
-                .padding(top = chromeTop),
-        )
-
-        // Left-rail hit target: edge strip when hidden, full sidebar chrome when shown.
-        // Width tracks [reveal] so an in-progress swipe is never interrupted.
-        val fullZoneWidth = sidebarWidth + OverlayInset
-        val gestureZoneWidth = WidgetsRevealEdgeWidth +
-            (fullZoneWidth - WidgetsRevealEdgeWidth) * reveal
-        val panelWidth = sidebarWidth - OverlayInset
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxHeight()
-                .width(gestureZoneWidth)
-                .zIndex(1f)
-                .semantics {
-                    contentDescription = if (widgetsVisible) {
-                        "Swipe left to hide widgets"
-                    } else {
-                        "Swipe right to show widgets"
-                    }
-                }
-                .widgetsRevealDrag(
-                    reveal = widgetsReveal,
-                    panelWidthPx = sidebarWidthPx,
-                ),
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
-            DrivingSidebar(
-                vehicleState = vehicleState,
-                mediaState = mediaState,
-                onVehicleClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Vehicle)) },
-                onMediaEvent = onMediaEvent,
-                onExpandMedia = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Media)) },
-                onOpenApp = { onEvent(DashboardEvent.WidgetTapped(it)) },
-                onOpenWidgetDashboard = onOpenWidgetDashboard,
-                animatedVisibilityScope = animatedVisibilityScope,
-                speedMph = cluster.speedMph,
-                gear = cluster.gear,
-                speedLimitMph = cluster.speedLimitMph,
+            val sidebarWidth = maxWidth * SidebarWidthFraction
+            val sidebarWidthPx = with(density) { sidebarWidth.toPx() }
+            val reveal = widgetsReveal.value
+            val mapContentStart = mapChromeContentStart(sidebarWidth, reveal)
+            val chromeTop = FloatingChromeTopSpace + OverlayInset
+            val chromeBottom = FloatingChromeBottomSpace + OverlayInset
+            // Search / sidebar sit below the cluster strip so P·LIM·battery never covers Search maps.
+            val mapChromeTop = chromeTop + ClusterGlanceStripClearance + ClusterToMapChromeGap
+            val widgetsVisible = reveal > 0.02f
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(
+                        start = mapContentStart,
+                        end = OverlayInset,
+                        top = chromeTop,
+                    )
+                    .zIndex(2f),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                ClusterGlanceStrip(
+                    cluster = cluster,
+                    batteryPercent = vehicleState.batteryPercent,
+                    rangeMiles = vehicleState.rangeMiles,
+                )
+            }
+
+            // Left-rail hit target: edge strip when hidden, full sidebar chrome when shown.
+            // Width tracks [reveal] so an in-progress swipe is never interrupted.
+            val fullZoneWidth = sidebarWidth + OverlayInset
+            val gestureZoneWidth = WidgetsRevealEdgeWidth +
+                (fullZoneWidth - WidgetsRevealEdgeWidth) * reveal
+            val panelWidth = sidebarWidth - OverlayInset
+            Box(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
+                    .fillMaxHeight()
+                    .width(gestureZoneWidth)
+                    .zIndex(1f)
+                    .semantics {
+                        contentDescription = if (widgetsVisible) {
+                            "Swipe left to hide widgets"
+                        } else {
+                            "Swipe right to show widgets"
+                        }
+                    }
+                    .widgetsRevealDrag(
+                        reveal = widgetsReveal,
+                        panelWidthPx = sidebarWidthPx,
+                    ),
+            ) {
+                DrivingSidebar(
+                    vehicleState = vehicleState,
+                    mediaState = mediaState,
+                    onVehicleClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Vehicle)) },
+                    onMediaEvent = onMediaEvent,
+                    onExpandMedia = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Media)) },
+                    onOpenApp = { onEvent(DashboardEvent.WidgetTapped(it)) },
+                    onOpenWidgetDashboard = onOpenWidgetDashboard,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    speedMph = cluster.speedMph,
+                    gear = cluster.gear,
+                    speedLimitMph = cluster.speedLimitMph,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(
+                            start = OverlayInset,
+                            end = OverlayInset,
+                            top = mapChromeTop,
+                            bottom = chromeBottom,
+                        )
+                        .width(panelWidth)
+                        .fillMaxHeight()
+                        .graphicsLayer {
+                            // Slide fully off-screen as reveal → 0; map chrome expands in sync.
+                            translationX = -sidebarWidthPx * (1f - reveal)
+                            alpha = reveal.coerceIn(0f, 1f)
+                        },
+                )
+            }
+
+            MapSearchBar(
+                onClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Navigation)) },
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .zIndex(1f)
                     .padding(
-                        start = OverlayInset,
+                        start = mapContentStart,
                         end = OverlayInset,
                         top = mapChromeTop,
+                    ),
+            )
+
+            MapHvacBar(
+                climateState = climateState,
+                climateTemperature = climateTemperature,
+                onClimateEvent = onClimateEvent,
+                onExpandClimate = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Climate)) },
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .zIndex(1f)
+                    .padding(
+                        start = mapContentStart,
+                        end = OverlayInset,
                         bottom = chromeBottom,
-                    )
-                    .width(panelWidth)
-                    .fillMaxHeight()
-                    .graphicsLayer {
-                        // Slide fully off-screen as reveal → 0; map chrome expands in sync.
-                        translationX = -sidebarWidthPx * (1f - reveal)
-                        alpha = reveal.coerceIn(0f, 1f)
-                    },
+                    ),
             )
         }
-
-        MapSearchBar(
-            onClick = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Navigation)) },
-            animatedVisibilityScope = animatedVisibilityScope,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .zIndex(1f)
-                .fillMaxWidth()
-                .padding(
-                    start = mapContentStart,
-                    end = OverlayInset + 64.dp,
-                    top = mapChromeTop,
-                ),
-        )
-
-        MapSideControls(
-            onZoomIn = { mapZoom = (mapZoom + 1.0).coerceAtMost(19.0) },
-            onZoomOut = { mapZoom = (mapZoom - 1.0).coerceAtLeast(3.0) },
-            onOpenSettings = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Settings)) },
-            onOpenHome = onOpenMain,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = OverlayInset),
-        )
-
-        MapHvacBar(
-            climateState = climateState,
-            climateTemperature = climateTemperature,
-            onClimateEvent = onClimateEvent,
-            onExpandClimate = { onEvent(DashboardEvent.WidgetTapped(DashboardWidget.Climate)) },
-            animatedVisibilityScope = animatedVisibilityScope,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .padding(
-                    start = mapContentStart,
-                    end = OverlayInset,
-                    bottom = chromeBottom,
-                ),
-        )
     }
 }
 
