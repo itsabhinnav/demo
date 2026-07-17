@@ -49,6 +49,7 @@ import com.test.design.presentation.ivi.navigation.NavigationScreen
 import com.test.design.presentation.ivi.navigation.NavigationViewModel
 import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
+import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.material.CustomizedMaterialComponentsScreen
 import com.test.design.presentation.material.MaterialComponentsScreen
 import com.test.design.presentation.settings.SettingsScreen
@@ -161,6 +162,10 @@ fun IviDemoScreen(
                     DashboardWidget.Vehicle -> VehicleScreen(
                         uiState = vehicleState,
                         onEvent = vehicleViewModel::onEvent,
+                        onBack = collapseWidget,
+                        animatedVisibilityScope = this@AnimatedContent,
+                    )
+                    DashboardWidget.VirtualAssistant -> VirtualAssistantScreen(
                         onBack = collapseWidget,
                         animatedVisibilityScope = this@AnimatedContent,
                     )

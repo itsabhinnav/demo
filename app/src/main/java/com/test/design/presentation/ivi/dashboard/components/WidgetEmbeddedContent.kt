@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.assistant.AssistantMood
+import com.test.design.presentation.assistant.AssistantWidgetPreview
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.climate.components.ClimateFanSpeedCard
@@ -133,6 +135,11 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
                 modifier = modifier,
             )
         }
+        DashboardWidget.VirtualAssistant -> AssistantWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
         DashboardWidget.Settings -> SettingsWidgetEmbedded(
             contentColor = contentColor,
             animatedVisibilityScope = animatedVisibilityScope,
@@ -613,5 +620,37 @@ private fun SharedTransitionScope.DualZoneWidgetEmbedded(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.AssistantWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Personality · Idle",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.VirtualAssistant,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        AssistantWidgetPreview(
+            mood = AssistantMood.Idle,
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.VirtualAssistant,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
     }
 }

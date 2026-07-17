@@ -77,6 +77,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primaryContainer
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.surfaceContainerHigh
+        DashboardWidget.VirtualAssistant -> MaterialTheme.colorScheme.primaryContainer
         DashboardWidget.Settings -> MaterialTheme.colorScheme.surfaceContainerHighest
         DashboardWidget.MaterialComponents -> MaterialTheme.colorScheme.secondaryContainer
         DashboardWidget.CustomizedMaterial -> MaterialTheme.colorScheme.tertiaryContainer
@@ -88,6 +89,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiary
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primary
         DashboardWidget.Vehicle -> MaterialTheme.colorScheme.primary
+        DashboardWidget.VirtualAssistant -> MaterialTheme.colorScheme.tertiary
         DashboardWidget.Settings -> MaterialTheme.colorScheme.outline
         DashboardWidget.MaterialComponents -> MaterialTheme.colorScheme.secondary
         DashboardWidget.CustomizedMaterial -> MaterialTheme.colorScheme.tertiary
@@ -98,6 +100,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
         DashboardWidget.Media -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.onTertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.onPrimaryContainer
+        DashboardWidget.VirtualAssistant -> MaterialTheme.colorScheme.onPrimaryContainer
         else -> MaterialTheme.colorScheme.onSurface
     }
     val cardShape: Shape = when (widget) {
