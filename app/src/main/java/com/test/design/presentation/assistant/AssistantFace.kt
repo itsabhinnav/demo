@@ -1,6 +1,5 @@
 package com.test.design.presentation.assistant
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -20,16 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.rotate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -38,88 +36,67 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Continuous facial pose — every mood is the same character with different
- * parameter targets. Eyes stay soft ovals; mouth stays one curve that can open.
+ * Continuous eye pose for the squircle character — same eyes, morphing openness.
  */
 internal data class FacePose(
     val eyeOpen: Float = 1f,
-    val eyeSmile: Float = 0f,
-    val eyeDroop: Float = 0f,
-    val eyeScale: Float = 1f,
-    val pupilAlpha: Float = 0.2f,
-    val mouthCurve: Float = 0.18f,
-    val mouthOpen: Float = 0f,
-    val mouthWidth: Float = 0.35f,
-    val glowIntensity: Float = 0.35f,
+    val eyeWidth: Float = 1f,
+    val eyeHeight: Float = 1f,
+    val eyeGap: Float = 1f,
+    val tilt: Float = 6f,
+    val borderGlow: Float = 0.85f,
     val lookX: Float = 0f,
     val lookY: Float = 0f,
 )
 
 internal fun AssistantMood.toFacePose(): FacePose = when (this) {
-    AssistantMood.Idle -> FacePose(
-        eyeOpen = 1f,
-        mouthCurve = 0.18f,
-        mouthWidth = 0.35f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.12f,
-    )
+    AssistantMood.Idle -> FacePose(eyeOpen = 1f, tilt = 5f, borderGlow = 0.7f)
     AssistantMood.Listening -> FacePose(
-        eyeOpen = 1.08f,
-        eyeScale = 1.06f,
-        mouthCurve = 0.08f,
-        mouthOpen = 0.22f,
-        mouthWidth = 0.32f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.45f,
+        eyeOpen = 1.12f,
+        eyeWidth = 1.08f,
+        eyeHeight = 1.05f,
+        tilt = 4f,
+        borderGlow = 1f,
     )
     AssistantMood.Speaking -> FacePose(
         eyeOpen = 0.95f,
-        mouthCurve = 0.12f,
-        mouthOpen = 0.7f,
-        mouthWidth = 0.42f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.2f,
+        eyeHeight = 0.92f,
+        tilt = 7f,
+        borderGlow = 0.9f,
     )
     AssistantMood.Thinking -> FacePose(
-        eyeOpen = 0.88f,
-        mouthCurve = 0.02f,
-        mouthWidth = 0.18f,
-        glowIntensity = glowIntensity,
-        lookX = 0.32f,
-        lookY = -0.42f,
-        pupilAlpha = 0.4f,
+        eyeOpen = 0.82f,
+        eyeHeight = 0.78f,
+        lookX = 0.2f,
+        lookY = -0.25f,
+        tilt = 8f,
+        borderGlow = 0.8f,
     )
     AssistantMood.Happy -> FacePose(
-        eyeOpen = 0.72f,
-        eyeSmile = 0.85f,
-        mouthCurve = 0.48f,
-        mouthWidth = 0.52f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.08f,
+        eyeOpen = 0.55f,
+        eyeWidth = 1.12f,
+        eyeHeight = 0.55f,
+        tilt = 3f,
+        borderGlow = 0.95f,
     )
     AssistantMood.Sad -> FacePose(
-        eyeOpen = 0.78f,
-        eyeDroop = 0.7f,
-        mouthCurve = -0.28f,
-        mouthWidth = 0.34f,
-        glowIntensity = glowIntensity,
-        lookY = 0.28f,
-        pupilAlpha = 0.15f,
+        eyeOpen = 0.7f,
+        eyeHeight = 0.65f,
+        lookY = 0.2f,
+        tilt = 10f,
+        borderGlow = 0.55f,
     )
     AssistantMood.Reading -> FacePose(
-        eyeOpen = 0.92f,
-        mouthCurve = 0.04f,
-        mouthWidth = 0.28f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.5f,
+        eyeOpen = 0.9f,
+        lookX = 0.35f,
+        tilt = 5f,
+        borderGlow = 0.75f,
     )
     AssistantMood.Searching -> FacePose(
-        eyeOpen = 1.02f,
-        eyeScale = 1.04f,
-        mouthCurve = 0.06f,
-        mouthWidth = 0.3f,
-        glowIntensity = glowIntensity,
-        pupilAlpha = 0.48f,
+        eyeOpen = 1.05f,
+        eyeWidth = 1.05f,
+        tilt = 6f,
+        borderGlow = 0.95f,
     )
 }
 
@@ -128,99 +105,98 @@ private val PoseSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
+private val ShellFill = Color(0xFF0A0C10)
+private val ShellBorder = Color(0xFFF2F5FF)
+private val EyeWhite = Color(0xFFF7F9FF)
+private val AccentWarm = Color(0xFFE85A6B)
+private val AccentCool = Color(0xFFB8D4FF)
+
 /**
- * Minimal virtual-assistant face — one continuous character; moods morph pose.
+ * Squircle character shell with animated rectangular scanline eyes.
  */
 @Composable
 fun AssistantFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
-    faceColor: Color = Color.White,
+    faceColor: Color = EyeWhite,
 ) {
     val target = mood.toFacePose()
-
     val eyeOpen = remember { Animatable(target.eyeOpen) }
-    val eyeSmile = remember { Animatable(target.eyeSmile) }
-    val eyeDroop = remember { Animatable(target.eyeDroop) }
-    val eyeScale = remember { Animatable(target.eyeScale) }
-    val pupilAlpha = remember { Animatable(target.pupilAlpha) }
-    val mouthCurve = remember { Animatable(target.mouthCurve) }
-    val mouthOpen = remember { Animatable(target.mouthOpen) }
-    val mouthWidth = remember { Animatable(target.mouthWidth) }
-    val glowIntensity = remember { Animatable(target.glowIntensity) }
+    val eyeWidth = remember { Animatable(target.eyeWidth) }
+    val eyeHeight = remember { Animatable(target.eyeHeight) }
+    val eyeGap = remember { Animatable(target.eyeGap) }
+    val tilt = remember { Animatable(target.tilt) }
+    val borderGlow = remember { Animatable(target.borderGlow) }
     val lookX = remember { Animatable(target.lookX) }
     val lookY = remember { Animatable(target.lookY) }
     val blink = remember { Animatable(1f) }
 
-    val glowColor by animateColorAsState(
-        targetValue = mood.glowColor,
-        animationSpec = tween(520, easing = FastOutSlowInEasing),
-        label = "glow_color",
-    )
-
     LaunchedEffect(mood) {
         launch { eyeOpen.animateTo(target.eyeOpen, PoseSpring) }
-        launch { eyeSmile.animateTo(target.eyeSmile, PoseSpring) }
-        launch { eyeDroop.animateTo(target.eyeDroop, PoseSpring) }
-        launch { eyeScale.animateTo(target.eyeScale, PoseSpring) }
-        launch { pupilAlpha.animateTo(target.pupilAlpha, PoseSpring) }
-        launch { mouthCurve.animateTo(target.mouthCurve, PoseSpring) }
-        launch { mouthOpen.animateTo(target.mouthOpen, PoseSpring) }
-        launch { mouthWidth.animateTo(target.mouthWidth, PoseSpring) }
-        launch { glowIntensity.animateTo(target.glowIntensity, PoseSpring) }
-        // Gaze returns home unless reading/searching own the axis.
+        launch { eyeWidth.animateTo(target.eyeWidth, PoseSpring) }
+        launch { eyeHeight.animateTo(target.eyeHeight, PoseSpring) }
+        launch { eyeGap.animateTo(target.eyeGap, PoseSpring) }
+        launch { tilt.animateTo(target.tilt, PoseSpring) }
+        launch { borderGlow.animateTo(target.borderGlow, PoseSpring) }
         if (mood != AssistantMood.Reading && mood != AssistantMood.Searching) {
             launch { lookX.animateTo(target.lookX, PoseSpring) }
         }
         launch { lookY.animateTo(target.lookY, PoseSpring) }
     }
 
-    val infinite = rememberInfiniteTransition(label = "assistant_face")
+    val infinite = rememberInfiniteTransition(label = "squircle_face")
+    val life by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = (2f * PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "life",
+    )
+    val scan by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "scan",
+    )
     val pulse by infinite.animateFloat(
         initialValue = 0.92f,
         targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
-            animation = tween(moodPulseMs(mood), easing = FastOutSlowInEasing),
+            animation = tween(1600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse,
         ),
-        label = "glow_pulse",
-    )
-    val lifePhase by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "life_phase",
-    )
-    val speakPhase by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(320, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "speak_phase",
+        label = "border_pulse",
     )
 
     LaunchedEffect(mood) {
         while (isActive) {
-            val openMs = when (mood) {
-                AssistantMood.Listening -> Random.nextLong(2200, 3800)
-                AssistantMood.Thinking -> Random.nextLong(2800, 4500)
-                AssistantMood.Reading -> Random.nextLong(1800, 2800)
+            val wait = when (mood) {
+                AssistantMood.Listening -> Random.nextLong(1800, 3200)
                 AssistantMood.Searching -> Random.nextLong(900, 1600)
-                AssistantMood.Happy -> Random.nextLong(2500, 4000)
-                AssistantMood.Sad -> Random.nextLong(3200, 5200)
-                else -> Random.nextLong(2400, 4200)
+                AssistantMood.Happy -> Random.nextLong(2200, 3800)
+                AssistantMood.Sad -> Random.nextLong(2800, 4800)
+                else -> Random.nextLong(2000, 4000)
             }
-            delay(openMs)
-            // Soft blink — never fully collapse happy crescents into a hard cut.
-            val close = (0.12f + eyeSmile.value * 0.35f).coerceIn(0.1f, 0.55f)
-            blink.animateTo(close, tween(80))
-            delay(36)
-            blink.animateTo(1f, tween(130, easing = FastOutSlowInEasing))
+            delay(wait)
+            val closeTo = when (mood) {
+                AssistantMood.Happy -> 0.35f
+                else -> 0.08f
+            }
+            blink.animateTo(closeTo, tween(70))
+            delay(40)
+            blink.animateTo(1f, tween(120, easing = FastOutSlowInEasing))
+            // Occasional double-blink for life
+            if (Random.nextFloat() < 0.28f) {
+                delay(90)
+                blink.animateTo(closeTo, tween(60))
+                delay(30)
+                blink.animateTo(1f, tween(100))
+            }
         }
     }
 
@@ -228,240 +204,191 @@ fun AssistantFace(
         if (mood != AssistantMood.Reading && mood != AssistantMood.Searching) return@LaunchedEffect
         while (isActive) {
             if (mood == AssistantMood.Reading) {
-                lookX.animateTo(0.5f, tween(900, easing = FastOutSlowInEasing))
-                delay(160)
-                lookX.animateTo(-0.5f, tween(90, easing = FastOutSlowInEasing))
-                delay(100)
+                lookX.animateTo(0.45f, tween(850, easing = FastOutSlowInEasing))
+                delay(140)
+                lookX.animateTo(-0.4f, tween(80))
+                delay(90)
             } else {
-                lookX.animateTo(0.55f, tween(200, easing = FastOutSlowInEasing))
-                lookX.animateTo(-0.5f, tween(240, easing = FastOutSlowInEasing))
-                lookX.animateTo(0.15f, tween(180, easing = FastOutSlowInEasing))
-                delay(80)
+                lookX.animateTo(0.5f, tween(180))
+                lookX.animateTo(-0.45f, tween(220))
+                lookX.animateTo(0.1f, tween(160))
+                delay(70)
             }
         }
     }
 
-    Canvas(modifier = modifier.aspectRatio(1.15f)) {
-        val w = size.width
-        val h = size.height
-        val cx = w * 0.5f
-        val eyeY = h * 0.42f
-        val eyeGap = w * 0.22f
-        val baseEyeW = w * 0.11f
-        val baseEyeH = h * 0.13f
+    Canvas(modifier = modifier.aspectRatio(1f)) {
+        val side = minOf(size.width, size.height)
+        val cx = size.width * 0.5f
+        val cy = size.height * 0.5f
+        val shell = side * 0.78f
+        val corner = shell * 0.28f
+        val border = shell * 0.055f
 
-        val gazeX = lookX.value + when (mood) {
-            AssistantMood.Thinking -> 0.06f * sin(lifePhase)
-            else -> 0f
+        val liveTilt = tilt.value + 1.2f * sin(life * 0.5f).toFloat()
+        rotate(liveTilt, pivot = Offset(cx, cy)) {
+            val left = cx - shell * 0.5f
+            val top = cy - shell * 0.5f
+            val shellRect = RoundRect(
+                left = left,
+                top = top,
+                right = left + shell,
+                bottom = top + shell,
+                radiusX = corner,
+                radiusY = corner,
+            )
+            val shellPath = Path().apply { addRoundRect(shellRect) }
+
+            // Outer glow (cool + warm chromatic rim)
+            val glowR = shell * 0.62f * pulse * borderGlow.value
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        AccentCool.copy(alpha = 0.18f * borderGlow.value),
+                        AccentWarm.copy(alpha = 0.12f * borderGlow.value),
+                        Color.Transparent,
+                    ),
+                    center = Offset(cx, cy),
+                    radius = glowR,
+                ),
+                radius = glowR,
+                center = Offset(cx, cy),
+            )
+
+            // Shell fill
+            drawPath(shellPath, ShellFill)
+
+            // Thick luminous border
+            drawRoundRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        ShellBorder,
+                        AccentCool,
+                        ShellBorder,
+                        AccentWarm.copy(alpha = 0.85f),
+                        ShellBorder,
+                    ),
+                    start = Offset(left, top + shell),
+                    end = Offset(left + shell, top),
+                ),
+                topLeft = Offset(left, top),
+                size = Size(shell, shell),
+                cornerRadius = CornerRadius(corner, corner),
+                style = Stroke(width = border * (0.95f + 0.08f * borderGlow.value * pulse)),
+            )
+
+            // Inner warm specular on upper-right wall
+            clipPath(shellPath) {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            AccentWarm.copy(alpha = 0.22f),
+                            Color.Transparent,
+                        ),
+                        center = Offset(cx + shell * 0.22f, cy - shell * 0.18f),
+                        radius = shell * 0.35f,
+                    ),
+                    radius = shell * 0.35f,
+                    center = Offset(cx + shell * 0.22f, cy - shell * 0.18f),
+                )
+            }
+
+            // Eyes
+            val open = (eyeOpen.value * blink.value).coerceIn(0.06f, 1.25f)
+            val eW = shell * 0.13f * eyeWidth.value
+            val eH = shell * 0.18f * eyeHeight.value * open
+            val gap = shell * 0.13f * eyeGap.value
+            val eyeY = cy + lookY.value * shell * 0.08f
+            val gaze = lookX.value * shell * 0.04f +
+                if (mood == AssistantMood.Thinking) 0.02f * shell * sin(life) else 0f
+
+            val leftEye = Offset(cx - gap - eW * 0.5f + gaze, eyeY)
+            val rightEye = Offset(cx + gap + eW * 0.5f + gaze, eyeY)
+
+            // Soft eye glow
+            drawCircle(
+                color = faceColor.copy(alpha = 0.2f * open),
+                radius = eW * 1.4f,
+                center = leftEye,
+            )
+            drawCircle(
+                color = faceColor.copy(alpha = 0.2f * open),
+                radius = eW * 1.4f,
+                center = rightEye,
+            )
+
+            drawScanlineEye(
+                center = leftEye,
+                width = eW,
+                height = eH,
+                color = faceColor,
+                scanPhase = scan,
+            )
+            drawScanlineEye(
+                center = rightEye,
+                width = eW,
+                height = eH,
+                color = faceColor,
+                scanPhase = scan + 0.15f,
+            )
         }
-        val gazeY = lookY.value + when (mood) {
-            AssistantMood.Thinking -> 0.05f * sin(lifePhase * 0.7f)
-            else -> 0f
-        }
-
-        val breathScale = when (mood) {
-            AssistantMood.Listening -> 1f + 0.04f * sin(lifePhase)
-            AssistantMood.Speaking -> 1f + 0.02f * sin(speakPhase)
-            AssistantMood.Searching -> 1f + 0.035f * sin(lifePhase * 1.4f)
-            else -> 1f + 0.012f * sin(lifePhase * 0.5f)
-        }
-        val scale = eyeScale.value * breathScale
-        val eyeW = baseEyeW * scale
-        val eyeH = baseEyeH * scale
-
-        val leftEye = Offset(cx - eyeGap, eyeY)
-        val rightEye = Offset(cx + eyeGap, eyeY)
-        val glowR = eyeW * (2.35f + pulse * glowIntensity.value)
-        val glowAlpha = (glowIntensity.value * 0.55f * pulse).coerceIn(0f, 0.9f)
-
-        drawEyeGlow(leftEye, glowR, glowColor, glowAlpha)
-        drawEyeGlow(rightEye, glowR, glowColor, glowAlpha)
-
-        val openAmount = (eyeOpen.value * blink.value).coerceIn(0.08f, 1.2f)
-        val liveMouthOpen = if (mood == AssistantMood.Speaking) {
-            mouthOpen.value * (0.45f + 0.55f * ((sin(speakPhase.toDouble()) + 1.0) * 0.5).toFloat())
-        } else {
-            mouthOpen.value * (1f + 0.06f * sin(lifePhase))
-        }
-
-        drawCharacterEye(
-            center = leftEye,
-            width = eyeW,
-            height = eyeH,
-            open = openAmount,
-            smile = eyeSmile.value,
-            droop = eyeDroop.value,
-            faceColor = faceColor,
-            pupilOffset = Offset(gazeX * eyeW * 0.35f, gazeY * eyeH * 0.3f),
-            pupilAlpha = pupilAlpha.value,
-        )
-        drawCharacterEye(
-            center = rightEye,
-            width = eyeW,
-            height = eyeH,
-            open = openAmount,
-            smile = eyeSmile.value,
-            droop = eyeDroop.value,
-            faceColor = faceColor,
-            pupilOffset = Offset(gazeX * eyeW * 0.35f, gazeY * eyeH * 0.3f),
-            pupilAlpha = pupilAlpha.value,
-        )
-
-        drawCharacterMouth(
-            center = Offset(cx, h * 0.68f),
-            width = w * 0.22f,
-            curve = mouthCurve.value,
-            open = liveMouthOpen,
-            widthFactor = mouthWidth.value,
-            faceColor = faceColor,
-        )
     }
 }
 
-private fun moodPulseMs(mood: AssistantMood): Int = when (mood) {
-    AssistantMood.Listening -> 900
-    AssistantMood.Speaking -> 700
-    AssistantMood.Searching -> 650
-    AssistantMood.Thinking -> 1400
-    AssistantMood.Happy -> 1100
-    AssistantMood.Sad -> 1800
-    AssistantMood.Reading -> 1200
-    AssistantMood.Idle -> 1600
-}
-
-private fun DrawScope.drawEyeGlow(
-    center: Offset,
-    radius: Float,
-    color: Color,
-    alpha: Float,
-) {
-    if (alpha <= 0.01f) return
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                color.copy(alpha = alpha),
-                color.copy(alpha = alpha * 0.35f),
-                Color.Transparent,
-            ),
-            center = center,
-            radius = radius,
-        ),
-        radius = radius,
-        center = center,
-    )
-}
-
-/**
- * Single eye primitive for every mood: soft oval that can squint (smile) or droop.
- */
-private fun DrawScope.drawCharacterEye(
+private fun DrawScope.drawScanlineEye(
     center: Offset,
     width: Float,
     height: Float,
-    open: Float,
-    smile: Float,
-    droop: Float,
-    faceColor: Color,
-    pupilOffset: Offset,
-    pupilAlpha: Float,
+    color: Color,
+    scanPhase: Float,
 ) {
-    val openH = height * open
-    // Smile squeezes the eye into a gentle crescent without swapping draw modes.
-    val topInset = smile * openH * 0.72f
-    val bottomBoost = smile * openH * 0.18f
-    val droopShift = droop * height * 0.2f
-
-    val top = center.y - openH + topInset + droopShift
-    val bottom = center.y + openH + bottomBoost + droopShift
     val left = center.x - width
-    val right = center.x + width
-    val rect = Rect(left, top, right, bottom)
-    val corner = CornerRadius(width, (bottom - top) * 0.5f)
-    val eyePath = Path().apply {
-        addRoundRect(RoundRect(rect, corner, corner, corner, corner))
-    }
+    val top = center.y - height
+    val eyeW = width * 2f
+    val eyeH = height * 2f
+    val radius = CornerRadius(width * 0.35f, height * 0.35f)
+    val rect = RoundRect(
+        left = left,
+        top = top,
+        right = left + eyeW,
+        bottom = top + eyeH,
+        cornerRadius = radius,
+    )
+    val path = Path().apply { addRoundRect(rect) }
 
-    clipPath(eyePath) {
+    clipPath(path) {
         drawRoundRect(
-            color = faceColor,
-            topLeft = rect.topLeft,
-            size = rect.size,
-            cornerRadius = corner,
+            color = color,
+            topLeft = Offset(left, top),
+            size = Size(eyeW, eyeH),
+            cornerRadius = radius,
         )
-        if (pupilAlpha > 0.04f && smile < 0.75f) {
-            val spark = Offset(center.x + pupilOffset.x, center.y + pupilOffset.y + droopShift * 0.3f)
-            drawCircle(
-                color = Color(0xFF0D1B2A).copy(alpha = 0.32f * pupilAlpha),
-                radius = width * 0.26f,
-                center = spark,
+        // Horizontal scanline / pixel grid texture
+        val lineGap = (eyeH / 9f).coerceAtLeast(1.5f)
+        var y = top + lineGap * 0.5f
+        var i = 0
+        while (y < top + eyeH) {
+            val shimmer = 0.08f + 0.1f * ((sin((scanPhase + i * 0.12f) * PI * 2).toFloat() + 1f) * 0.5f)
+            drawLine(
+                color = Color(0xFF0A0C10).copy(alpha = shimmer),
+                start = Offset(left, y),
+                end = Offset(left + eyeW, y),
+                strokeWidth = lineGap * 0.35f,
             )
-            drawCircle(
-                color = Color.White.copy(alpha = 0.5f * pupilAlpha),
-                radius = width * 0.09f,
-                center = spark + Offset(-width * 0.07f, -width * 0.07f),
+            y += lineGap
+            i++
+        }
+        // Soft vertical pixel columns
+        val colGap = (eyeW / 6f).coerceAtLeast(2f)
+        var x = left + colGap
+        while (x < left + eyeW) {
+            drawLine(
+                color = Color(0xFF0A0C10).copy(alpha = 0.06f),
+                start = Offset(x, top),
+                end = Offset(x, top + eyeH),
+                strokeWidth = 1f,
             )
+            x += colGap
         }
-    }
-
-    // Soft lid line that eases in with droop / smile for continuity.
-    if (droop > 0.05f || smile > 0.35f) {
-        val lidY = top + (bottom - top) * (0.18f + droop * 0.12f)
-        drawLine(
-            color = faceColor.copy(alpha = 0.22f * (droop + smile * 0.4f).coerceAtMost(1f)),
-            start = Offset(left + width * 0.15f, lidY),
-            end = Offset(right - width * 0.15f, lidY),
-            strokeWidth = height * 0.06f,
-            cap = StrokeCap.Round,
-        )
-    }
-}
-
-/**
- * Single mouth primitive: curved stroke that blooms into an open oval when speaking.
- */
-private fun DrawScope.drawCharacterMouth(
-    center: Offset,
-    width: Float,
-    curve: Float,
-    open: Float,
-    widthFactor: Float,
-    faceColor: Color,
-) {
-    val halfW = width * widthFactor.coerceIn(0.12f, 0.7f)
-    val stroke = width * 0.11f
-    val curveAmt = curve * width
-
-    if (open > 0.08f) {
-        val mouthH = width * 0.26f * open
-        // Blend open oval with the smile/frown curve so speaking still feels like the same mouth.
-        val midY = center.y + curveAmt * 0.35f
-        val rect = Rect(
-            center.x - halfW,
-            midY - mouthH * 0.25f,
-            center.x + halfW,
-            midY + mouthH,
-        )
-        drawRoundRect(
-            color = faceColor,
-            topLeft = rect.topLeft,
-            size = Size(rect.width, rect.height),
-            cornerRadius = CornerRadius(halfW * 0.85f, mouthH * 0.85f),
-        )
-        // Keep a faint lip curve on top for identity while open.
-        val lip = Path().apply {
-            moveTo(center.x - halfW * 0.92f, midY)
-            quadraticTo(center.x, midY + curveAmt * 0.55f, center.x + halfW * 0.92f, midY)
-        }
-        drawPath(
-            lip,
-            faceColor.copy(alpha = 0.35f),
-            style = Stroke(stroke * 0.55f, cap = StrokeCap.Round),
-        )
-    } else {
-        val path = Path().apply {
-            moveTo(center.x - halfW, center.y)
-            quadraticTo(center.x, center.y + curveAmt, center.x + halfW, center.y)
-        }
-        drawPath(path, faceColor, style = Stroke(stroke, cap = StrokeCap.Round))
     }
 }

@@ -242,24 +242,24 @@ fun AssistantWidgetPreview(
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        color = Color(0xFF0E1522),
+        color = Color(0xFF0A0C12),
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
-                .padding(8.dp),
-            contentAlignment = Alignment.Center,
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            VoiceWaveform(
-                mood = mood,
-                modifier = Modifier.fillMaxSize(),
-                color = mood.glowColor,
-            )
             AssistantFace(
                 mood = mood,
-                modifier = Modifier.size(96.dp),
-                faceColor = Color(0xFFF5F8FF),
+                modifier = Modifier.size(88.dp),
+            )
+            VoiceWaveform(
+                mood = mood,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(36.dp),
             )
         }
     }

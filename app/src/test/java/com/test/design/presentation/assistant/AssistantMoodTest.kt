@@ -1,6 +1,5 @@
 package com.test.design.presentation.assistant
 
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -43,25 +42,23 @@ class AssistantMoodTest {
         AssistantMood.entries.forEach { mood ->
             val pose = mood.toFacePose()
             assertTrue(pose.eyeOpen in 0.4f..1.3f)
-            assertTrue(pose.eyeSmile in 0f..1f)
-            assertTrue(pose.eyeDroop in 0f..1f)
-            assertTrue(pose.mouthWidth in 0.1f..0.8f)
-            assertTrue(pose.mouthOpen in 0f..1f)
-            assertEquals(mood.glowIntensity, pose.glowIntensity, 0.001f)
+            assertTrue(pose.eyeWidth in 0.5f..1.3f)
+            assertTrue(pose.eyeHeight in 0.4f..1.3f)
+            assertTrue(pose.borderGlow in 0f..1.2f)
         }
     }
 
     @Test
-    fun wavePoseLayersStayContinuous() {
+    fun wavePoseSharesSameStyleWithStateEnergy() {
         AssistantMood.entries.forEach { mood ->
             val wave = mood.toWavePose()
-            assertTrue(wave.ringAmount in 0f..1f)
-            assertTrue(wave.ribbonAmount in 0f..1f)
-            assertTrue(wave.barAmount in 0f..1f)
-            assertTrue(wave.haloAmount in 0f..1f)
-            assertTrue(wave.energy in 0f..1f)
+            assertTrue(wave.amplitude in 0f..1.2f)
+            assertTrue(wave.speed in 0f..1.5f)
+            assertTrue(wave.thickness in 0f..1.5f)
+            assertTrue(wave.bloom in 0f..1.2f)
         }
-        assertTrue(AssistantMood.Speaking.toWavePose().barAmount > AssistantMood.Idle.toWavePose().barAmount)
-        assertTrue(AssistantMood.Listening.toWavePose().ringAmount > AssistantMood.Sad.toWavePose().ringAmount)
+        assertTrue(AssistantMood.Speaking.toWavePose().amplitude > AssistantMood.Idle.toWavePose().amplitude)
+        assertTrue(AssistantMood.Listening.toWavePose().amplitude > AssistantMood.Sad.toWavePose().amplitude)
+        assertTrue(AssistantMood.Speaking.toWavePose().speed > AssistantMood.Thinking.toWavePose().speed)
     }
 }
