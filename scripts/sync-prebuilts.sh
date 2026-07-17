@@ -38,7 +38,7 @@ cat > "$PREBUILT/README.md" <<'EOF'
 | `DewdDynamicAospRRO-design.apk` | Dewd interim bridge (patched) |
 | `DewdDynamicAospRRO.orig.apk` | Dewd stock Dynamic RRO (patch input) |
 
-Rebuild: `./scripts/sync-prebuilts.sh`
+Rebuild: `./scripts/sync-prebuilts.sh` or `.\scripts\sync-prebuilts.ps1`
 EOF
 
 ls -lh "$PREBUILT"

@@ -65,7 +65,8 @@ Legacy bars are **off**: `config_enableTop/Bottom/Left/RightSystemBar=false`.
 ```bash
 ./gradlew :scalable-ui-rro:assembleDebug :framework-scalable-rro:assembleDebug :app:assembleDebug
 # or sync all APKs into ./prebuilt:
-./scripts/sync-prebuilts.sh
+./scripts/sync-prebuilts.sh          # macOS / Linux
+.\scripts\sync-prebuilts.ps1         # Windows
 ```
 
 ## Install (products that already declare these resource names)
