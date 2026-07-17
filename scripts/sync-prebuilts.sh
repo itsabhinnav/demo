@@ -17,14 +17,15 @@ cp -f "$ROOT/scalable-ui-rro/build/outputs/apk/debug/scalable-ui-rro-debug.apk" 
 cp -f "$ROOT/framework-scalable-rro/build/outputs/apk/debug/framework-scalable-rro-debug.apk" \
   "$PREBUILT/DesignFrameworkScalableUiRRO.apk"
 
-# Keep Dewd bridge APKs alongside product RROs when present
-if [[ -f "$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk" ]]; then
-  cp -f "$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk" \
-    "$PREBUILT/DewdDynamicAospRRO-design.apk"
-fi
-if [[ -f "$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO.orig.apk" ]]; then
-  cp -f "$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO.orig.apk" \
-    "$PREBUILT/DewdDynamicAospRRO.orig.apk"
+# Rebuild Dewd interim bridge (floating status/nav + map/widget patches)
+DEWD_ORIG="$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO.orig.apk"
+DEWD_DESIGN="$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk"
+if [[ -f "$DEWD_ORIG" ]]; then
+  python3 "$ROOT/scalable-ui-rro/scripts/patch_dewd_fullpower.py" \
+    --input "$DEWD_ORIG" \
+    --output "$DEWD_DESIGN"
+  cp -f "$DEWD_ORIG" "$PREBUILT/DewdDynamicAospRRO.orig.apk"
+  cp -f "$DEWD_DESIGN" "$PREBUILT/DewdDynamicAospRRO-design.apk"
 fi
 
 cat > "$PREBUILT/README.md" <<'EOF'

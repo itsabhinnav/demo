@@ -4,13 +4,20 @@
     <bool name="config_enableScalableUI" translatable="false">true</bool>
 
     <!--
-      Disable legacy CarSystemBarPanel paths. Home chrome is Scalable UI
-      <SystemBar> panels listed in window_states (status / nav).
+      Disable legacy CarSystemBarPanel paths (Top/Bottom/Left/RightCarSystemBar).
+      Home chrome must be Scalable UI floating <SystemBar id="status|nav"> panels
+      in window_states — side-inset + Corner glass bars, not full-bleed strips.
+      See https://source.android.com/docs/automotive/scalableui/system-bars
     -->
     <bool name="config_enableTopSystemBar">false</bool>
     <bool name="config_enableBottomSystemBar">false</bool>
     <bool name="config_enableLeftSystemBar">false</bool>
     <bool name="config_enableRightSystemBar">false</bool>
+
+    <!-- Scalable UI drag discovery (fallback if XML attrs are ignored) -->
+    <string-array name="config_notificationDragOpenListener" translatable="false">
+        <item>status</item>
+    </string-array>
 
     <!-- Prefer root-task model over legacy split-screen multitasking conflicts -->
     <bool name="config_enableClearBackStack">false</bool>

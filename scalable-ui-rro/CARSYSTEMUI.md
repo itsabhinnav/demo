@@ -8,7 +8,9 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 1. **Disable legacy CarSystemBarPanel**  
    RRO already sets `config_enableTop/Bottom/Left/RightSystemBar=false`.  
    Confirm product SystemUI does not re-enable legacy bars or inflate
-   `TopCarSystemBar` / `BottomCarSystemBar` IDs (reserved / legacy).
+   `TopCarSystemBar` / `BottomCarSystemBar` IDs (reserved / legacy).  
+   If those flags stay `true`, the UI shows **full-bleed legacy strips** even
+   when Scalable UI `<SystemBar>` XML exists.
 
 2. **Glass bar layouts for `status` / `nav`**  
    Scalable UI `<SystemBar id="status|nav">` still needs View suppliers:
@@ -22,9 +24,11 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
      `_Design_OpenParking` (see `strings.xml` event ids)
 
 3. **SystemBar inset / corner clipping**  
-   RRO sets `Corner` + side `leftOffset`/`rightOffset`. Verify
+   RRO sets `Corner radius="28dp"` + `leftOffset`/`rightOffset="12dp"` (literal
+   dp — no Design-only dimen names required for idmap). Verify
    `CarSystemBarWindow` clips content to rounded bounds and does not force
-   opaque full-bleed behind the bar.
+   opaque full-bleed behind the bar. Bounds still touch the top/bottom edge
+   (Scalable UI requirement); side insets + corner create the floating look.
 
 4. **`window_states` ownership**  
    Product must load this RRO’s `array/window_states` (or merge the same
@@ -72,6 +76,11 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 ## Dewd interim (until above lands)
 
 Use `scripts/patch_dewd_fullpower.py` against stock
-`DewdDynamicAospRRO.apk` so device keeps Dewd `status`/`nav` while map goes
-full-bleed and widget floats at layer 20. That is a bridge, not the sealed
-product Adaptive Space path.
+`DewdDynamicAospRRO.apk` so device:
+- keeps Dewd `status`/`nav` SystemBar hosts
+- converts those bars from **full-bleed (legacy look)** to **12dp side-inset
+  floating bounds**
+- makes map full-bleed and widget float at layer 20
+
+Corner radius still needs Design RRO / CarSystemUI window clipping. This is a
+bridge, not the sealed product Adaptive Space path.
