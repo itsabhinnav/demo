@@ -18,7 +18,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
@@ -31,10 +36,12 @@ import com.test.design.core.theme.AppThemeMode
 import com.test.design.core.theme.LocalAppThemeMode
 import com.test.design.core.theme.LocalThemeModeUpdater
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
+import com.test.design.presentation.motion.MotionPhysicsSampleScreen
 import com.test.design.theme.AdaptiveLayout
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carListItemHeight
@@ -55,6 +62,15 @@ fun SharedTransitionScope.SettingsScreen(
     val selectedThemeMode = LocalAppThemeMode.current
     val onThemeModeChange = LocalThemeModeUpdater.current
     val motionLocked = drivingState != DrivingUxState.Parked
+    var showMotionStudio by remember { mutableStateOf(false) }
+
+    if (showMotionStudio) {
+        MotionPhysicsSampleScreen(
+            onBack = { showMotionStudio = false },
+            modifier = modifier.fillMaxSize(),
+        )
+        return
+    }
 
     DetailSurfaceCard(
         modifier = widgetContainerTransform(
@@ -77,6 +93,7 @@ fun SharedTransitionScope.SettingsScreen(
                     onBack = onBack,
                     animatedVisibilityScope = animatedVisibilityScope,
                     modifier = Modifier.fillMaxWidth(),
+                    trailingContent = { SimulatedBadge() },
                 )
 
                 Column(
@@ -104,6 +121,18 @@ fun SharedTransitionScope.SettingsScreen(
                             )
                         }
                     }
+                    Text(
+                        text = when (drivingState) {
+                            DrivingUxState.Parked ->
+                                "Expressive motion allowed. Cluster shows 0 MPH / Park."
+                            DrivingUxState.Driving ->
+                                "Motion clamped to Standard. Cluster shows highway speed."
+                            DrivingUxState.Restricted ->
+                                "Driver distraction policy — glanceables only (see Dual Zone)."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     HorizontalDivider()
                     Text(
                         text = "Motion scheme",
@@ -130,6 +159,24 @@ fun SharedTransitionScope.SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    ListItem(
+                        modifier = Modifier.carListItemHeight(),
+                        headlineContent = {
+                            Text("Motion Studio", style = MaterialTheme.typography.bodyLarge)
+                        },
+                        supportingContent = {
+                            Text(
+                                "Compare Standard / Expressive / Custom springs",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        trailingContent = {
+                            TextButton(onClick = { showMotionStudio = true }) {
+                                Text("Open")
+                            }
+                        },
+                    )
                     HorizontalDivider()
                     Text(
                         text = "Appearance",

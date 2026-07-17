@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
@@ -143,16 +144,22 @@ fun SharedTransitionScope.VehicleScreen(
                         onBack = onBack,
                         animatedVisibilityScope = animatedVisibilityScope,
                         trailingContent = {
-                            FilterChip(
-                                selected = uiState.isCharging,
-                                onClick = { onEvent(VehicleEvent.ToggleCharging) },
-                                label = {
-                                    Text(
-                                        text = if (uiState.isCharging) "Charging" else "Charge",
-                                        style = MaterialTheme.typography.labelLarge,
-                                    )
-                                },
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                SimulatedBadge()
+                                FilterChip(
+                                    selected = uiState.isCharging,
+                                    onClick = { onEvent(VehicleEvent.ToggleCharging) },
+                                    label = {
+                                        Text(
+                                            text = if (uiState.isCharging) "Charging" else "Charge",
+                                            style = MaterialTheme.typography.labelLarge,
+                                        )
+                                    },
+                                )
+                            }
                         },
                     )
 

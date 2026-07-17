@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,6 +32,8 @@ import com.test.design.presentation.ivi.dashboard.components.FloatingBottomSyste
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarEdgeInset
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarInset
 import com.test.design.presentation.ivi.dashboard.components.FloatingTopSystemBar
+import com.test.design.presentation.ivi.hun.DemoHunNotifications
+import com.test.design.presentation.ivi.hun.HeadsUpNotificationHost
 import com.test.design.theme.AppTheme
 
 /** Activity-scoped ViewModel shared across NavHost destinations (e.g. climate for floating bars). */
@@ -57,6 +63,9 @@ fun DesignAppShell(
     val themeMode by themeModeViewModel.themeMode.collectAsStateWithLifecycle()
     val climateState by climateViewModel.state.collectAsStateWithLifecycle()
 
+    var hunVisible by remember { mutableStateOf(false) }
+    var hunNotifications by remember { mutableStateOf(DemoHunNotifications) }
+
     AppTheme(
         themeMode = themeMode,
         drivingUxState = drivingState,
@@ -79,12 +88,38 @@ fun DesignAppShell(
                     content()
                     if (showFloatingSystemBars) {
                         FloatingTopSystemBar(
+                            onNotificationsClick = {
+                                if (hunNotifications.isEmpty()) {
+                                    hunNotifications = DemoHunNotifications
+                                }
+                                hunVisible = !hunVisible
+                            },
+                            notificationCount = if (hunVisible) 0 else hunNotifications.size,
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .padding(
                                     start = FloatingSystemBarInset,
                                     end = FloatingSystemBarInset,
                                     top = FloatingSystemBarEdgeInset,
+                                ),
+                        )
+                        HeadsUpNotificationHost(
+                            visible = hunVisible,
+                            notifications = hunNotifications,
+                            onDismiss = { id ->
+                                hunNotifications = hunNotifications.filterNot { it.id == id }
+                                if (hunNotifications.isEmpty()) hunVisible = false
+                            },
+                            onDismissAll = {
+                                hunNotifications = emptyList()
+                                hunVisible = false
+                            },
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(
+                                    start = FloatingSystemBarInset,
+                                    end = FloatingSystemBarInset,
+                                    top = FloatingSystemBarEdgeInset + 72.dp,
                                 ),
                         )
                         FloatingBottomSystemBar(

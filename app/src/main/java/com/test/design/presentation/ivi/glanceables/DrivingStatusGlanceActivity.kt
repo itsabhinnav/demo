@@ -26,6 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.test.design.core.LocalDrivingUxState
+import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 
 /** Scalable UI `driving_status` TaskPanel — speed / range / gear glanceable. */
@@ -36,11 +38,12 @@ class DrivingStatusGlanceActivity : GlanceableActivity() {
     @Composable
     override fun GlanceContent() {
         val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
+        val cluster = ClusterUiState.fromDrivingUx(LocalDrivingUxState.current)
         GlanceRoot {
             DrivingStatusGlance(
-                speedMph = 54,
-                speedLimitMph = 60,
-                gear = "D",
+                speedMph = cluster.speedMph,
+                speedLimitMph = cluster.speedLimitMph,
+                gear = cluster.gear,
                 batteryPercent = vehicleState.batteryPercent,
                 rangeMiles = vehicleState.rangeMiles,
                 modifier = Modifier.fillMaxSize(),

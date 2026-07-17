@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.test.design.core.DrivingUxState
+import com.test.design.core.LocalDrivingUxState
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.adaptivespace.AdaptiveSpaceScreen
@@ -38,6 +42,7 @@ import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
 import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dualzone.DualZoneScreen
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
 import com.test.design.presentation.ivi.navigation.NavigationScreen
@@ -58,7 +63,7 @@ import com.test.design.theme.carTouchTarget
 fun IviDemoScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    dashboardViewModel: DashboardViewModel = viewModel(),
+    dashboardViewModel: DashboardViewModel = activityViewModel(),
     climateViewModel: ClimateViewModel = activityViewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
     navigationViewModel: NavigationViewModel = viewModel(),
@@ -127,6 +132,13 @@ fun IviDemoScreen(
                         onBack = collapseWidget,
                         animatedVisibilityScope = this@AnimatedContent,
                     )
+                    DashboardWidget.DualZone -> DualZoneScreen(
+                        mediaState = mediaState,
+                        onMediaEvent = mediaViewModel::onEvent,
+                        navigationState = navigationState,
+                        onBack = collapseWidget,
+                        animatedVisibilityScope = this@AnimatedContent,
+                    )
                     DashboardWidget.Climate -> ClimateControlScreen(
                         uiState = climateState,
                         activeTemperature = climateViewModel.activeTemperature(),
@@ -185,6 +197,7 @@ private fun SharedTransitionScope.DashboardHubContent(
     onVehicleEvent: (com.test.design.presentation.ivi.vehicle.VehicleEvent) -> Unit,
     onBack: (() -> Unit)? = null,
 ) {
+    val drivingUx = LocalDrivingUxState.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -210,6 +223,20 @@ private fun SharedTransitionScope.DashboardHubContent(
                     text = "Apps",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        if (drivingUx == DrivingUxState.Restricted) {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.85f),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "Restricted driving UX — prefer Dual Zone / Adaptive Space glanceables. Deep apps stay available for demo, but motion is Standard.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(14.dp),
                 )
             }
         }

@@ -36,6 +36,7 @@ import com.test.design.presentation.ivi.climate.components.ClimateTemperatureSec
 import com.test.design.presentation.ivi.climate.components.CoolSnowflakeOverlay
 import com.test.design.presentation.ivi.climate.components.MorphingAirflowSegmentedButton
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
@@ -161,6 +162,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
+                                        SimulatedBadge()
                                         FilterChip(
                                             selected = true,
                                             onClick = { onEvent(ClimateEvent.ToggleTemperatureUnit) },

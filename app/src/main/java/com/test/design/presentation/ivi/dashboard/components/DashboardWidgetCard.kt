@@ -72,6 +72,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
 ) {
     val baseColor = when (widget) {
         DashboardWidget.AdaptiveSpace -> MaterialTheme.colorScheme.primaryContainer
+        DashboardWidget.DualZone -> MaterialTheme.colorScheme.secondaryContainer
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primaryContainer
@@ -82,6 +83,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     }
     val accent = when (widget) {
         DashboardWidget.AdaptiveSpace -> MaterialTheme.colorScheme.primary
+        DashboardWidget.DualZone -> MaterialTheme.colorScheme.secondary
         DashboardWidget.Media -> MaterialTheme.colorScheme.secondary
         DashboardWidget.Climate -> MaterialTheme.colorScheme.tertiary
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.primary
@@ -92,6 +94,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     }
     val contentColor = when (widget) {
         DashboardWidget.AdaptiveSpace -> MaterialTheme.colorScheme.onPrimaryContainer
+        DashboardWidget.DualZone -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Media -> MaterialTheme.colorScheme.onSecondaryContainer
         DashboardWidget.Climate -> MaterialTheme.colorScheme.onTertiaryContainer
         DashboardWidget.Navigation -> MaterialTheme.colorScheme.onPrimaryContainer

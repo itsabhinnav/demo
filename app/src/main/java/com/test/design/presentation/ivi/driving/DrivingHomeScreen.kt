@@ -26,6 +26,7 @@ import com.test.design.presentation.ivi.dashboard.DashboardViewModel
 import com.test.design.presentation.ivi.dashboard.components.DrivingDashboardLayout
 import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
+import com.test.design.presentation.ivi.dualzone.DualZoneScreen
 import com.test.design.presentation.ivi.map.MapLaunchConfig
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -48,7 +49,7 @@ fun DrivingHomeScreen(
     modifier: Modifier = Modifier,
     mapLaunchConfig: MapLaunchConfig = MapLaunchConfig.default(),
     onOpenMain: (() -> Unit)? = null,
-    dashboardViewModel: DashboardViewModel = viewModel(),
+    dashboardViewModel: DashboardViewModel = activityViewModel(),
     climateViewModel: ClimateViewModel = activityViewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
     navigationViewModel: NavigationViewModel = viewModel(),
@@ -118,6 +119,13 @@ fun DrivingHomeScreen(
                             DashboardWidget.AdaptiveSpace -> AdaptiveSpaceScreen(
                                 mediaState = mediaState,
                                 onMediaEvent = mediaViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                            DashboardWidget.DualZone -> DualZoneScreen(
+                                mediaState = mediaState,
+                                onMediaEvent = mediaViewModel::onEvent,
+                                navigationState = navigationState,
                                 onBack = collapseWidget,
                                 animatedVisibilityScope = this@AnimatedContent,
                             )

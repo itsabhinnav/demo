@@ -30,6 +30,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -40,8 +42,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,6 +58,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -83,7 +88,36 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
     var mediaOpen by remember { mutableStateOf(false) }
     var parkingOpen by remember { mutableStateOf(false) }
     var splitFraction by remember { mutableFloatStateOf(0f) }
+    var choreographyToken by remember { mutableIntStateOf(0) }
+    var isPlayingDemo by remember { mutableStateOf(false) }
+    var activeSceneLabel by remember { mutableStateOf<String?>(null) }
     val splitActive = splitFraction > 0.02f
+
+    LaunchedEffect(choreographyToken) {
+        if (choreographyToken == 0) return@LaunchedEffect
+        isPlayingDemo = true
+        try {
+            playAdaptiveSpaceChoreography(
+                onScene = { scene ->
+                    val panel = scene.toPanelState()
+                    mediaOpen = panel.mediaOpen
+                    parkingOpen = panel.parkingOpen
+                    splitFraction = panel.splitFraction
+                    activeSceneLabel = scene.name
+                },
+            )
+        } finally {
+            isPlayingDemo = false
+            activeSceneLabel = null
+        }
+    }
+
+    fun resetPanels() {
+        mediaOpen = false
+        parkingOpen = false
+        splitFraction = 0f
+        activeSceneLabel = null
+    }
 
     Box(
         modifier = modifier
@@ -95,7 +129,6 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                 ),
             ),
     ) {
-        // Primary: high-resolution map as the background panel
         OsmMapBackground(
             center = DefaultMapCenter,
             zoom = 15.0,
@@ -103,7 +136,6 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Soft depth scrim when overlays / split are active
         val scrimAlpha by animateFloatAsState(
             targetValue = when {
                 mediaOpen || parkingOpen -> 0.28f
@@ -129,25 +161,33 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                 widget = DashboardWidget.AdaptiveSpace,
                 onBack = onBack,
                 animatedVisibilityScope = animatedVisibilityScope,
+                trailingContent = { SimulatedBadge() },
             )
 
             AdaptiveSpaceControlRail(
                 mediaOpen = mediaOpen,
                 parkingOpen = parkingOpen,
                 splitFraction = splitFraction,
+                isPlayingDemo = isPlayingDemo,
+                activeSceneLabel = activeSceneLabel,
                 onToggleMedia = {
+                    if (isPlayingDemo) return@AdaptiveSpaceControlRail
                     mediaOpen = !mediaOpen
                     if (mediaOpen) parkingOpen = false
                 },
                 onToggleParking = {
+                    if (isPlayingDemo) return@AdaptiveSpaceControlRail
                     parkingOpen = !parkingOpen
                     if (parkingOpen) mediaOpen = false
                 },
-                onSplitChange = { splitFraction = it },
+                onSplitChange = {
+                    if (!isPlayingDemo) splitFraction = it
+                },
+                onPlayDemo = { choreographyToken += 1 },
                 onReset = {
-                    mediaOpen = false
-                    parkingOpen = false
-                    splitFraction = 0f
+                    choreographyToken = 0
+                    isPlayingDemo = false
+                    resetPanels()
                 },
             )
 
@@ -163,7 +203,6 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                     label = "split_width",
                 )
 
-                // Map remainder stays live underneath overlays
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (splitActive) {
                         Surface(
@@ -172,7 +211,8 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                                 .width(animatedSplit)
                                 .fillMaxHeight()
                                 .padding(end = 12.dp)
-                                .pointerInput(Unit) {
+                                .pointerInput(isPlayingDemo) {
+                                    if (isPlayingDemo) return@pointerInput
                                     detectDragGestures { change, dragAmount ->
                                         change.consume()
                                         val delta = dragAmount.x / size.width.coerceAtLeast(1)
@@ -241,9 +281,12 @@ private fun AdaptiveSpaceControlRail(
     mediaOpen: Boolean,
     parkingOpen: Boolean,
     splitFraction: Float,
+    isPlayingDemo: Boolean,
+    activeSceneLabel: String?,
     onToggleMedia: () -> Unit,
     onToggleParking: () -> Unit,
     onSplitChange: (Float) -> Unit,
+    onPlayDemo: () -> Unit,
     onReset: () -> Unit,
 ) {
     Surface(
@@ -270,9 +313,29 @@ private fun AdaptiveSpaceControlRail(
                         color = Color.White,
                     )
                     Text(
-                        text = "Map-Under-Apps · overlays · zero-stutter resize",
+                        text = if (isPlayingDemo && activeSceneLabel != null) {
+                            "Playing demo · $activeSceneLabel"
+                        } else {
+                            "Map-Under-Apps · overlays · zero-stutter resize"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.65f),
+                    )
+                }
+                TextButton(
+                    onClick = onPlayDemo,
+                    enabled = !isPlayingDemo,
+                ) {
+                    Icon(
+                        imageVector = if (isPlayingDemo) Icons.Default.Stop else Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = Color(0xFF9EC5FF),
+                        modifier = Modifier.height(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isPlayingDemo) "Playing…" else "Play demo",
+                        color = Color(0xFF9EC5FF),
                     )
                 }
                 TextButton(onClick = onReset) {
@@ -284,6 +347,7 @@ private fun AdaptiveSpaceControlRail(
                 FilterChip(
                     selected = mediaOpen,
                     onClick = onToggleMedia,
+                    enabled = !isPlayingDemo,
                     label = { Text("Media overlay") },
                     leadingIcon = {
                         Icon(Icons.Default.MusicNote, contentDescription = null, modifier = Modifier.height(18.dp))
@@ -298,6 +362,7 @@ private fun AdaptiveSpaceControlRail(
                 FilterChip(
                     selected = parkingOpen,
                     onClick = onToggleParking,
+                    enabled = !isPlayingDemo,
                     label = { Text("Parking") },
                     leadingIcon = {
                         Icon(Icons.Default.LocalParking, contentDescription = null, modifier = Modifier.height(18.dp))
@@ -325,6 +390,7 @@ private fun AdaptiveSpaceControlRail(
                     Slider(
                         value = splitFraction,
                         onValueChange = onSplitChange,
+                        enabled = !isPlayingDemo,
                         valueRange = 0f..1f,
                     )
                     Text(
