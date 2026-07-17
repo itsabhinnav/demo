@@ -221,7 +221,6 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .zIndex(1f)
                     .padding(
                         start = mapContentStart,
                         end = OverlayInset,
