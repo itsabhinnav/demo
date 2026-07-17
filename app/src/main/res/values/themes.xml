@@ -4,7 +4,8 @@
     <!-- Used by Material Symbols vector drawables (android:tint="?attr/colorControlNormal"). -->
     <attr name="colorControlNormal" format="color|reference" />
 
-    <style name="Theme.Design" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- Dark window chrome by default (Compose still honors Light/System from Settings). -->
+    <style name="Theme.Design" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/canvas_background</item>
         <item name="android:colorBackground">@color/canvas_background</item>
         <item name="android:textColorPrimary">@color/text_primary</item>

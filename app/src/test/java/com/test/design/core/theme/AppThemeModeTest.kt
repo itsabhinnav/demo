@@ -17,4 +17,10 @@ class AppThemeModeTest {
         assertFalse(AppThemeMode.Light.resolveDarkTheme(systemInDarkTheme = true))
         assertTrue(AppThemeMode.Dark.resolveDarkTheme(systemInDarkTheme = false))
     }
+
+    @Test
+    fun darkStaysDarkRegardlessOfSystem() {
+        assertTrue(AppThemeMode.Dark.resolveDarkTheme(systemInDarkTheme = false))
+        assertTrue(AppThemeMode.Dark.resolveDarkTheme(systemInDarkTheme = true))
+    }
 }
