@@ -1,8 +1,14 @@
 package com.test.design.presentation.assistant
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -14,10 +20,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
@@ -26,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +41,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.test.design.presentation.ivi.common.WidgetScreenHeader
-import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
-import com.test.design.theme.CarDesignTokens
 
 /**
- * Transparent overlay — dialogue simulation + side persona rail.
+ * Google Assistant–style entry: scrim + voice plate sliding up from the bottom,
+ * dialogues playing inside the plate immediately.
  */
 @Composable
 fun VirtualAssistantOverlay(
@@ -50,47 +53,82 @@ fun VirtualAssistantOverlay(
     initialMood: AssistantMood = AssistantMood.Idle,
 ) {
     var mood by rememberSaveable { mutableStateOf(initialMood) }
+    var sheetVisible by remember { mutableStateOf(false) }
+    var closing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        sheetVisible = true
+    }
+
+    fun dismiss() {
+        if (closing) return
+        closing = true
+        sheetVisible = false
+    }
+
+    LaunchedEffect(closing, sheetVisible) {
+        if (closing && !sheetVisible) {
+            kotlinx.coroutines.delay(300)
+            onDismiss()
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.32f))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onDismiss,
-                ),
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(16.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {},
-                ),
+        AnimatedVisibility(
+            visible = sheetVisible,
+            enter = fadeIn(tween(220)),
+            exit = fadeOut(tween(200)),
         ) {
-            MoodToggleRow(
-                selected = mood,
-                onSelect = { mood = it },
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { dismiss() },
+                    ),
+            )
+        }
+
+        AnimatedVisibility(
+            visible = sheetVisible,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = slideInVertically(
+                animationSpec = tween(420),
+                initialOffsetY = { fullHeight -> fullHeight },
+            ) + fadeIn(tween(280)),
+            exit = slideOutVertically(
+                animationSpec = tween(280),
+                targetOffsetY = { fullHeight -> fullHeight },
+            ) + fadeOut(tween(200)),
+        ) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(bottom = 10.dp),
-                compact = true,
-            )
-            AssistantDialogueStage(
-                mood = mood,
-                onMoodChange = { mood = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {},
+                    ),
+            ) {
+                MoodToggleRow(
+                    selected = mood,
+                    onSelect = { mood = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    compact = true,
+                )
+                AssistantVoicePlate(
+                    mood = mood,
+                    onMoodChange = { mood = it },
+                    onDismiss = { dismiss() },
+                    autoPlay = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -103,32 +141,12 @@ fun SharedTransitionScope.VirtualAssistantScreen(
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
 ) {
-    var mood by rememberSaveable { mutableStateOf(initialMood) }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(CarDesignTokens.SectionPadding),
-        verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
-    ) {
-        WidgetScreenHeader(
-            widget = DashboardWidget.VirtualAssistant,
-            onBack = onBack,
-            animatedVisibilityScope = animatedVisibilityScope,
-        )
-        AssistantDialogueStage(
-            mood = mood,
-            onMoodChange = { mood = it },
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-        )
-        MoodToggleRow(
-            selected = mood,
-            onSelect = { mood = it },
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+    // Widget entry uses the same bottom-sheet experience as the activity.
+    VirtualAssistantOverlay(
+        onDismiss = onBack,
+        modifier = modifier.fillMaxSize(),
+        initialMood = initialMood,
+    )
 }
 
 @Composable
@@ -150,10 +168,11 @@ fun VirtualAssistantStage(
     onMoodChange: (AssistantMood) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AssistantDialogueStage(
+    AssistantVoicePlate(
         mood = mood,
         onMoodChange = onMoodChange,
-        modifier = modifier.height(420.dp),
+        autoPlay = true,
+        modifier = modifier,
     )
 }
 
@@ -242,7 +261,7 @@ fun AssistantWidgetPreview(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Dialogue sim",
+                    text = "Tap to open voice plate",
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.White.copy(alpha = 0.7f),
                 )
