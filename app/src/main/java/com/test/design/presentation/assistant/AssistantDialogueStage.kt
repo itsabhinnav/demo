@@ -1,12 +1,10 @@
 package com.test.design.presentation.assistant
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-/**
- * Legacy side-by-side stage — delegates to the bottom voice plate experience.
- */
+/** Legacy entry — routes to the side panel experience. */
 @Composable
 fun AssistantDialogueStage(
     mood: AssistantMood,
@@ -14,10 +12,10 @@ fun AssistantDialogueStage(
     modifier: Modifier = Modifier,
     autoPlay: Boolean = true,
 ) {
-    AssistantVoicePlate(
+    AssistantSidePanel(
         mood = mood,
         onMoodChange = onMoodChange,
         autoPlay = autoPlay,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxHeight(),
     )
 }
