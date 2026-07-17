@@ -147,38 +147,18 @@ private fun PersonaStage(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = modifier.size(240.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier.size(220.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            AssistantPresence(
-                mood = mood,
-                modifier = Modifier.fillMaxSize(),
-            )
-            AssistantFace(
-                mood = mood,
-                modifier = Modifier.size(176.dp),
-            )
-        }
-        Spacer(Modifier.height(12.dp))
-        AnimatedContent(
-            targetState = mood.voiceLabel,
-            transitionSpec = { PromptCrossfade },
-            label = "status",
-        ) { label ->
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    letterSpacing = 0.4.sp,
-                    fontWeight = FontWeight.Medium,
-                ),
-                color = mood.glowColor.copy(alpha = 0.9f),
-            )
-        }
+        AssistantPresence(
+            mood = mood,
+            modifier = Modifier.fillMaxSize(),
+        )
+        AssistantFace(
+            mood = mood,
+            modifier = Modifier.size(184.dp),
+        )
     }
 }
 
@@ -195,17 +175,12 @@ private fun PanelHeader(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Gemini",
+                text = "In-car assistant",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.1.sp,
                 ),
                 color = AssistantTokens.OnSurface,
-            )
-            Text(
-                text = "In-car assistant",
-                style = MaterialTheme.typography.bodySmall,
-                color = AssistantTokens.OnSurfaceMuted,
             )
         }
 
@@ -243,14 +218,6 @@ private fun PanelInlinePrompt(
     ) {
         when (beat.speaker) {
             DialogueSpeaker.User -> {
-                Text(
-                    text = "You",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        letterSpacing = 0.6.sp,
-                        fontWeight = FontWeight.Medium,
-                    ),
-                    color = AssistantTokens.Accent,
-                )
                 Text(
                     text = beat.text,
                     style = MaterialTheme.typography.headlineSmall.copy(

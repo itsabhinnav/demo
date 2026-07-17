@@ -296,7 +296,7 @@ internal fun DrawScope.drawCheekBlush(
     amount: Float,
 ) {
     if (amount < 0.02f) return
-    val color = Color(0xFFFF8A9B).copy(alpha = 0.28f * amount)
+    val color = Color(0xFFFF8A9B).copy(alpha = 0.42f * amount)
     drawCircle(color, radius, left)
     drawCircle(color, radius, right)
 }
