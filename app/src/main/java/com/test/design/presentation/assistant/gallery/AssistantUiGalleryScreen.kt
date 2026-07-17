@@ -1,0 +1,162 @@
+package com.test.design.presentation.assistant.gallery
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.test.design.presentation.assistant.AssistantMood
+
+/**
+ * Semi-transparent assistant UI gallery — pick a chrome style and mood.
+ * Preview sits over a soft scrim so glass surfaces read clearly.
+ */
+@Composable
+fun AssistantUiGalleryScreen(
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    initialStyle: AssistantUiStyle = AssistantUiStyle.VoicePlate,
+) {
+    var style by rememberSaveable { mutableStateOf(initialStyle) }
+    var mood by rememberSaveable { mutableStateOf(AssistantMood.Listening) }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AssistantUiChrome.Scrim)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+    ) {
+        // Live preview fills the stage
+        AssistantUiVariant(
+            style = style,
+            mood = mood,
+            modifier = Modifier.fillMaxSize(),
+            prompt = moodPrompt(mood),
+        )
+
+        // Top chrome: style picker
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = style.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = AssistantUiChrome.OnGlass,
+                    )
+                    Text(
+                        text = style.blurb,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AssistantUiChrome.OnGlassMuted,
+                    )
+                }
+                Text(
+                    text = "Close",
+                    color = AssistantUiChrome.Accent,
+                    modifier = Modifier
+                        .clickable(onClick = onClose)
+                        .padding(8.dp),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AssistantUiStyle.entries.forEach { entry ->
+                    FilterChip(
+                        selected = style == entry,
+                        onClick = { style = entry },
+                        label = { Text(entry.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = Color(0x99141820),
+                            labelColor = AssistantUiChrome.OnGlassMuted,
+                            selectedContainerColor = AssistantUiChrome.Accent.copy(alpha = 0.28f),
+                            selectedLabelColor = AssistantUiChrome.OnGlass,
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                    )
+                }
+            }
+        }
+
+        // Bottom mood chips
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf(
+                AssistantMood.Idle,
+                AssistantMood.Listening,
+                AssistantMood.Speaking,
+                AssistantMood.Thinking,
+                AssistantMood.Happy,
+                AssistantMood.Searching,
+            ).forEach { entry ->
+                FilterChip(
+                    selected = mood == entry,
+                    onClick = { mood = entry },
+                    label = { Text(entry.label) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = Color(0x99141820),
+                        labelColor = AssistantUiChrome.OnGlassMuted,
+                        selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
+                        selectedLabelColor = AssistantUiChrome.OnGlass,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+private fun moodPrompt(mood: AssistantMood): String = when (mood) {
+    AssistantMood.Idle -> "Ready when you are"
+    AssistantMood.Listening -> "Listening…"
+    AssistantMood.Speaking -> "Here's what I found"
+    AssistantMood.Thinking -> "Working on it"
+    AssistantMood.Happy -> "Glad I could help"
+    AssistantMood.Sad -> "Sorry about that"
+    AssistantMood.Reading -> "Scanning…"
+    AssistantMood.Searching -> "Looking that up"
+}
