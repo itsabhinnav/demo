@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
+import com.test.design.presentation.ivi.adaptivespace.AdaptiveSpaceScreen
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
@@ -114,6 +115,12 @@ fun DrivingHomeScreen(
                             .floatingSystemChromePadding(),
                     ) {
                         when (expandedWidget) {
+                            DashboardWidget.AdaptiveSpace -> AdaptiveSpaceScreen(
+                                mediaState = mediaState,
+                                onMediaEvent = mediaViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
                             DashboardWidget.Climate -> ClimateControlScreen(
                                 uiState = climateState,
                                 activeTemperature = climateViewModel.activeTemperature(),

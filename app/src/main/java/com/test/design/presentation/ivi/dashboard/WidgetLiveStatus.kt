@@ -14,6 +14,7 @@ fun DashboardWidget.liveStatus(
     navigationState: NavigationUiState? = null,
     vehicleState: VehicleUiState? = null,
 ): String = when (this) {
+    DashboardWidget.AdaptiveSpace -> "Map-Under-Apps · overlays · zero-stutter resize"
     DashboardWidget.Media -> mediaState?.let { state ->
         val play = if (state.isPlaying) "Playing" else "Paused"
         "$play · ${state.currentTrack.title}"

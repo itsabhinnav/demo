@@ -1,62 +1,98 @@
-# Design Scalable UI RRO
+# Design Adaptive Space — Scalable UI RRO
 
-Sealed home layout matching the Design app driving home — via **Scalable UI
-panels only** (no legacy `CarSystemBarPanel`).
+Production-level **Android 17 Scalable UI / Advanced Windowing** overlay for the
+Design Adaptive Space home: Map-Under-Apps, dynamic secondary overlays, and
+zero-stutter split resize.
 
 ```
-┌─────────────────────────────────────────────┐
-│  status  (floating SystemBar, layer Z 200)  │
-├──────┬──────────────────────────────────────┤
-│      │                                      │
-│ rail │     map_panel (full-bleed, L2)       │
-│ L20  │     MapActivity / Maps placeholder   │
-│      │                                      │
-├──────┴──────────────────────────────────────┤
-│  nav  (floating SystemBar, layer Z 210)     │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  status  (floating SystemBar, Z 200)                     │
+├──────┬───────────────────────────────────────────┬───────┤
+│      │                                           │ media │
+│ rail │     map_panel (full-bleed, L2)            │ /park │
+│ L20  │     MapActivity — stays live under apps   │ L40–50│
+│      │                                           │       │
+├──────┴───────────────────────────────────────────┴───────┤
+│  nav  (floating SystemBar, Z 210)                        │
+└──────────────────────────────────────────────────────────┘
 ```
 
 | Panel | Type | Layer | Content |
 |-------|------|-------|---------|
-| `map_panel` | TaskPanel | 2 | Full-screen map (`MapActivity`) |
+| `map_panel` | TaskPanel | 2 | Full-bleed map (`MapActivity`) |
+| `depth_scrim` | DecorPanel | 10 | Z-depth dim between map and overlays |
 | `widget_panel` | TaskPanel | 20 | Floating left rail (`DrivingRailActivity`) |
-| `app_panel` | TaskPanel | 100 | Transient apps |
-| `status` | SystemBar | Z 200 | Floating top bar (geometry in RRO; views in SystemUI) |
-| `nav` | SystemBar | Z 210 | Floating bottom bar + HVAC dock (geometry in RRO; views in SystemUI) |
+| `media_overlay` | TaskPanel | 40 | Slide-in media controller |
+| `parking_assistant` | TaskPanel | 50 | Slide-in parking overlay |
+| `app_panel` | TaskPanel | 100 | Transient / split-screen apps |
+| `status` | SystemBar | Z 200 | Floating top bar |
+| `nav` | SystemBar | Z 210 | Floating bottom bar |
+
+## Adaptive Space behaviors
+
+### Map-Under-Apps
+`map_panel` is the primary background. Secondary panels animate above it; the
+map task stays `UNTRIMMABLE` and is not restarted when overlays open.
+
+### Dynamic panel transitions
+OEM events (wire to `CarSystemBarButton` `selectedEvent` / `unselectedEvent`):
+
+| Event | Effect |
+|-------|--------|
+| `_Design_OpenMediaOverlay` / `_Design_CloseMediaOverlay` | Slide media overlay |
+| `_Design_ToggleMediaOverlay` | Toggle media |
+| `_Design_OpenParking` / `_Design_CloseParking` | Slide parking assistant |
+| `_Design_ToggleParking` | Toggle parking |
+
+### Zero-stutter split resize
+`app_panel` variants `split_narrow` (40%) → `split_mid` (55%) → `split_wide` (70%)
+plus `DynamicVariant split_resizing` for continuous drag. Hosted activities declare
+`resizeableActivity=true` and broad `configChanges` so Android 17 delivers
+`onConfigurationChanged` without restarting the activity.
+
+| Event | Variant |
+|-------|---------|
+| `_Design_SplitNarrow` | `split_narrow` |
+| `_Design_SplitMid` | `split_mid` |
+| `_Design_SplitWide` | `split_wide` |
+| `_Design_SplitFull` | `opened` |
+| `_Design_CloseSplit` | `closed` |
 
 Legacy bars are **off**: `config_enableTop/Bottom/Left/RightSystemBar=false`.
 
 ## Build
 
 ```bash
-./gradlew :scalable-ui-rro:assembleDebug
-# APK: scalable-ui-rro/build/outputs/apk/debug/scalable-ui-rro-debug.apk
-```
-
-Optional framework handshake:
-
-```bash
-./gradlew :framework-scalable-rro:assembleDebug
+./gradlew :scalable-ui-rro:assembleDebug :framework-scalable-rro:assembleDebug :app:assembleDebug
+# or sync all APKs into ./prebuilt:
+./scripts/sync-prebuilts.sh
 ```
 
 ## Install (products that already declare these resource names)
 
 ```bash
+./scalable-ui-rro/install-rro.sh
+```
+
+Manual:
+
+```bash
 adb root && adb remount
-adb push scalable-ui-rro/build/outputs/apk/debug/scalable-ui-rro-debug.apk \
-  /system_ext/overlay/DesignScalableUiRRO.apk
-adb shell chmod 644 /system_ext/overlay/DesignScalableUiRRO.apk
+adb push prebuilt/DesignScalableUiRRO.apk /system_ext/overlay/DesignScalableUiRRO.apk
+adb push prebuilt/DesignFrameworkScalableUiRRO.apk /system_ext/overlay/DesignFrameworkScalableUiRRO.apk
+adb shell chmod 644 /system_ext/overlay/Design*.apk
 adb reboot
 # after boot:
 adb shell cmd overlay enable --user 10 com.test.design.systemui.scalableui
 adb shell cmd overlay set-priority --user 10 com.test.design.systemui.scalableui highest
+adb shell cmd statusbar carsysui-dispatch-event _System_OnHomeEvent
+adb shell cmd statusbar carsysui-dispatch-event _Design_OpenMediaOverlay
 ```
 
 ## Dewd `aosp_tangorpro_car` (interim)
 
 Do **not** rely on installing this RRO alone on stock Dewd (idmap cannot add
-Dewd-only XML names; replacing `window_states` without product support drops
-bars). Use the in-place patch bridge:
+Dewd-only XML names). Use the in-place patch bridge:
 
 ```bash
 python scalable-ui-rro/scripts/patch_dewd_fullpower.py \
@@ -64,17 +100,14 @@ python scalable-ui-rro/scripts/patch_dewd_fullpower.py \
   --output scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk
 adb push scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk \
   /system_ext/overlay/DewdDynamicAospRRO.apk
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r prebuilt/app-debug.apk
 adb reboot
 ```
 
-## Swap map host
+## In-app demo
 
-| Goal | Change |
-|------|--------|
-| Design OSM map (default) | `string/default_map_activity` → Design `MapActivity` |
-| AAOS green placeholder | → `com.android.car.mapsplaceholder/.MapsPlaceholderActivity` |
-| Google Maps | → Maps package component + update controller filter |
+Open **Adaptive Space** from the Apps dashboard — Compose showcase of
+Map-Under-Apps, media/parking overlays, and fluid split resize without SystemUI.
 
 ## CarSystemUI work (not RRO)
 

@@ -1,7 +1,7 @@
 # CarSystemUI follow-ups (RRO cannot do these)
 
-This RRO seals **panel geometry + hosts**. These items need CarSystemUI (or product)
-code / layouts — do them when you work in the SystemUI repo.
+This RRO seals **panel geometry + hosts** for Adaptive Space. These items need
+CarSystemUI (or product) code / layouts — do them when you work in the SystemUI repo.
 
 ## Must-do for floating SystemBars
 
@@ -18,6 +18,8 @@ code / layouts — do them when you work in the SystemUI repo.
      HVAC ±, dock, mic) — port from
      `app/.../FloatingSystemBars.kt` visually
    - Transparent / rounded window background so map shows in bar corners
+   - Wire Media / Parking buttons to `_Design_OpenMediaOverlay` /
+     `_Design_OpenParking` (see `strings.xml` event ids)
 
 3. **SystemBar inset / corner clipping**  
    RRO sets `Corner` + side `leftOffset`/`rightOffset`. Verify
@@ -26,11 +28,12 @@ code / layouts — do them when you work in the SystemUI repo.
 
 4. **`window_states` ownership**  
    Product must load this RRO’s `array/window_states` (or merge the same
-   panel list). On Dewd today, Dynamic RRO owns `window_states`; a mutable
-   Design RRO cannot add Dewd-only XML names via idmap until those names
-   exist on base CarSystemUI.
+   panel list including `depth_scrim`, `media_overlay`, `parking_assistant`).
+   On Dewd today, Dynamic RRO owns `window_states`; a mutable Design RRO
+   cannot add Dewd-only XML names via idmap until those names exist on base
+   CarSystemUI.
 
-## Must-do for map + widgets
+## Must-do for Adaptive Space panels
 
 5. **Map host**  
    Controllers point at Design `MapActivity`. Swap
@@ -39,30 +42,36 @@ code / layouts — do them when you work in the SystemUI repo.
    `NAVIGATE` update filter.
 
 6. **Transparent TaskPanel windows**  
-   Widget rail uses `Theme.Design.Panel` (app-side). SystemUI must not force
-   an opaque task surface behind floating panels.
+   Widget rail + overlays use `Theme.Design.Panel` (app-side). SystemUI must
+   not force an opaque task surface behind floating panels.
 
 7. **Home / StubCarLauncher**  
    Scalable UI home should not fight a full-screen launcher. Prefer Dewd /
    StubCarLauncher + `_System_OnHomeEvent` restoring `map_panel` +
    `widget_panel` opened variants (already in panel XML).
 
+8. **DecorPanel depth scrim**  
+   `depth_scrim` is declared in the RRO. Confirm CarSystemUI inflates
+   DecorPanels (view supplier / empty translucent layer) so Alpha transitions
+   render between map and overlays.
+
+9. **Split resize events**  
+   Expose `_Design_SplitNarrow|Mid|Wide|Full` / `_Design_CloseSplit` from a
+   drag handle or SystemBar control so `app_panel` DynamicVariant /
+   discrete variants animate without activity restart.
+
 ## Nice-to-have
 
-8. Split `widget_panel` into per-glanceable TaskPanels / DecorPanels
-   (media, driving status, apps, climate) if you want independent animate /
-   hide — RRO can add more `@xml/*` once base SystemUI declares the names.
+10. Split `widget_panel` into per-glanceable TaskPanels if you want independent
+    animate / hide beyond the combined rail.
 
-9. DecorPanel shadows / scrims between map and widgets (MultiPanelLandscapeRRO
-   pattern) if glass needs depth beyond TaskPanel corner radius.
-
-10. Framework: keep `:framework-scalable-rro`
-    (`config_remoteInsetsControllerControlsSystemBars`) if remote insets
-    handshake is required for floating bars.
+11. Keep `:framework-scalable-rro`
+    (`config_remoteInsetsControllerControlsSystemBars`) for floating-bar
+    SafeBounds handshake.
 
 ## Dewd interim (until above lands)
 
 Use `scripts/patch_dewd_fullpower.py` against stock
 `DewdDynamicAospRRO.apk` so device keeps Dewd `status`/`nav` while map goes
 full-bleed and widget floats at layer 20. That is a bridge, not the sealed
-product path.
+product Adaptive Space path.

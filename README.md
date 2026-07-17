@@ -11,24 +11,26 @@ chmod +x ./gradlew
 
 Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 
-## Architecture — Scalable UI
+## Architecture — Adaptive Space (Scalable UI)
 
-Sealed home layout lives in **`:scalable-ui-rro`** (not Compose fake chrome):
+Sealed home layout lives in **`:scalable-ui-rro`** (Android 17 Advanced Windowing):
 
 | Panel | Role |
 |-------|------|
-| `map_panel` | Full-bleed map (`MapActivity` / Maps placeholder) |
+| `map_panel` | Full-bleed map under everything (`MapActivity`) |
+| `depth_scrim` | DecorPanel Z-depth between map and overlays |
 | `widget_panel` | Floating left rail (`DrivingRailActivity`) |
-| `status` / `nav` | Floating Scalable UI `<SystemBar>` (not legacy CarSystemBarPanel) |
-| `app_panel` | Transient apps |
+| `media_overlay` | Slide-in media controller (map stays live) |
+| `parking_assistant` | Slide-in parking overlay |
+| `app_panel` | Transient / split-screen apps (zero-stutter resize) |
+| `status` / `nav` | Floating Scalable UI `<SystemBar>` |
 
 - RRO + install: [`scalable-ui-rro/README.md`](scalable-ui-rro/README.md)
-- CarSystemUI follow-ups (glass layouts, Dagger): [`scalable-ui-rro/CARSYSTEMUI.md`](scalable-ui-rro/CARSYSTEMUI.md)
-- Dewd interim bridge: `scalable-ui-rro/scripts/patch_dewd_fullpower.py`
+- Prebuilt APKs: [`prebuilt/`](prebuilt/) — `./scripts/sync-prebuilts.sh`
+- CarSystemUI follow-ups: [`scalable-ui-rro/CARSYSTEMUI.md`](scalable-ui-rro/CARSYSTEMUI.md)
+- In-app demo: **Adaptive Space** widget on the Apps dashboard
 
 `MainActivity` remains an in-process Compose demo of the same home.
-
-`MainActivity` remains an in-process Compose demo.
 
 ### Intent filters
 

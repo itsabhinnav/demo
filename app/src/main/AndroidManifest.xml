@@ -33,7 +33,7 @@
             android:taskAffinity="com.test.design.main"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
             android:theme="@style/Theme.Design"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -54,7 +54,7 @@
             android:taskAffinity="com.test.design.map"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
             android:theme="@style/Theme.Design"
             android:windowSoftInputMode="adjustResize">
             <!-- Launcher + AAOS map role (separate task from MainActivity) -->
@@ -96,7 +96,7 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
@@ -136,7 +136,7 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
@@ -150,7 +150,7 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
@@ -164,7 +164,7 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
@@ -178,7 +178,35 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.glanceables.MediaOverlayActivity"
+            android:exported="true"
+            android:label="Media overlay"
+            android:taskAffinity="com.test.design.overlay.media"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.adaptivespace.ParkingAssistantActivity"
+            android:exported="true"
+            android:label="Parking assistant"
+            android:taskAffinity="com.test.design.overlay.parking"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
@@ -192,7 +220,7 @@
             android:resizeableActivity="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Design.Panel"
-            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />

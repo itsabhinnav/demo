@@ -3,6 +3,7 @@ package com.test.design.presentation.ivi.dashboard.model
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Palette
@@ -18,6 +19,12 @@ enum class DashboardWidget(
     val gridColumnSpan: Int = 1,
     val gridRowSpan: Int = 2,
 ) {
+    AdaptiveSpace(
+        title = "Adaptive Space",
+        subtitle = "Scalable UI · Map-Under-Apps",
+        icon = Icons.Default.Layers,
+        sharedElementKey = "widget_adaptive_space",
+    ),
     Media(
         title = "Media",
         subtitle = "Now playing · Synthwave Nights",

@@ -70,6 +70,11 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
     modifier: Modifier = Modifier,
 ) {
     when (widget) {
+        DashboardWidget.AdaptiveSpace -> AdaptiveSpaceWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
         DashboardWidget.Media -> {
             val state = mediaState ?: return
             val onEvent = onMediaEvent ?: return
@@ -508,6 +513,52 @@ private fun SharedTransitionScope.CustomizedWidgetEmbedded(
                     text = "Open brand system",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.AdaptiveSpaceWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Map-Under-Apps · overlays · split resize",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.AdaptiveSpace,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        Surface(
+            shape = ExpressiveShapes.small,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.AdaptiveSpace,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(CarDesignTokens.MinTouchTarget),
+            ),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "Open Adaptive Space",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }

@@ -8,10 +8,10 @@
     -->
     <overlay
         android:targetPackage="android"
-        android:priority="300"
+        android:priority="900"
         android:isStatic="true" />
 
     <application
         android:hasCode="false"
-        android:label="Design Scalable UI Framework RRO" />
+        android:label="Design Adaptive Space Framework RRO" />
 </manifest>
