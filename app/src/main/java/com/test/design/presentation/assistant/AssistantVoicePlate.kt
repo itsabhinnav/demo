@@ -168,7 +168,7 @@ fun AssistantSidePanel(
 }
 
 /**
- * Center stage: pastel orb persona over a cool mood-reactive waveform.
+ * Center stage: abstract glowing persona over a cool mood-reactive waveform.
  */
 @Composable
 private fun PersonaStage(
@@ -181,7 +181,7 @@ private fun PersonaStage(
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier.size(220.dp),
+            modifier = Modifier.size(240.dp),
             contentAlignment = Alignment.Center,
         ) {
             AssistantPresence(
@@ -190,15 +190,15 @@ private fun PersonaStage(
             )
             AssistantFace(
                 mood = mood,
-                modifier = Modifier.size(176.dp),
+                modifier = Modifier.size(184.dp),
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         VoiceWaveform(
             mood = mood,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp)
+                .height(64.dp)
                 .padding(horizontal = 8.dp),
         )
     }
