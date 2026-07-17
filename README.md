@@ -26,7 +26,7 @@ Sealed home layout lives in **`:scalable-ui-rro`** (Android 17 Advanced Windowin
 | `status` / `nav` | Floating Scalable UI `<SystemBar>` |
 
 - RRO + install: [`scalable-ui-rro/README.md`](scalable-ui-rro/README.md)
-- Prebuilt APKs: [`prebuilt/`](prebuilt/) — `./scripts/sync-prebuilts.sh` / `.\scripts\sync-prebuilts.ps1`
+- Prebuilt APKs: [`prebuilt/`](prebuilt/) — sync `./scripts/sync-prebuilts.sh` / `.\scripts\sync-prebuilts.ps1`, install `./scripts/install-prebuilts.sh` / `.\scripts\install-prebuilts.ps1`
 - CarSystemUI follow-ups: [`scalable-ui-rro/CARSYSTEMUI.md`](scalable-ui-rro/CARSYSTEMUI.md)
 - In-app demo: **Adaptive Space** widget on the Apps dashboard
 

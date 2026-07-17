@@ -40,6 +40,8 @@ cat > "$PREBUILT/README.md" <<'EOF'
 | `DewdDynamicAospRRO.orig.apk` | Dewd stock Dynamic RRO (patch input) |
 
 Rebuild: `./scripts/sync-prebuilts.sh` or `.\scripts\sync-prebuilts.ps1`
+
+Install: `./scripts/install-prebuilts.sh` or `.\scripts\install-prebuilts.ps1`
 EOF
 
 ls -lh "$PREBUILT"
