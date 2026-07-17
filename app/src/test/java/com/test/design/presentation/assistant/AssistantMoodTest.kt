@@ -46,7 +46,7 @@ class AssistantMoodTest {
             assertTrue(pose.eyeHeight in 0.4f..1.3f)
             assertTrue(pose.borderGlow in 0f..1.2f)
             assertTrue(pose.blush in 0f..1f)
-            assertTrue(pose.roundness in 0.3f..1f)
+            assertTrue(pose.roundness in 0.5f..1f)
             assertTrue(pose.mouthCurve in -1.1f..1.1f)
             assertTrue(pose.mouthOpen in 0f..1f)
             assertTrue(pose.mouthWidth in 0.5f..1.3f)
