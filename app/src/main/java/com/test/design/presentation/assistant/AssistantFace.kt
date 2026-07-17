@@ -10,7 +10,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -164,11 +163,7 @@ fun AssistantFace(
         }
     }
 
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1.15f),
-    ) {
+    Canvas(modifier = modifier.aspectRatio(1.15f)) {
         val w = size.width
         val h = size.height
         val cx = w * 0.5f

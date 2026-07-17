@@ -9,12 +9,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.test.design.presentation.DesignAppShell
-import com.test.design.presentation.ivi.map.MapIntents
 
 /**
- * Standalone virtual-assistant personality demo — eyes + mouth with mood animations.
+ * Transparent virtual-assistant overlay — bottom voice plate with face + wave moods.
  *
- * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT].
+ * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT]. Content behind the
+ * activity stays visible through the translucent window.
  */
 class VirtualAssistantActivity : ComponentActivity() {
 
@@ -27,24 +27,12 @@ class VirtualAssistantActivity : ComponentActivity() {
 
         setContent {
             DesignAppShell(
-                applySafeDrawingInsets = true,
+                applySafeDrawingInsets = false,
                 showFloatingSystemBars = false,
-                onOpenApps = {
-                    startActivity(MapIntents.openMain(this, openDashboard = true))
-                },
-                onOpenSettings = {
-                    startActivity(MapIntents.openMain(this, openDashboard = true))
-                },
-                onOpenHome = {
-                    startActivity(MapIntents.openMain(this))
-                    finish()
-                },
+                showScreenBackground = false,
             ) {
-                VirtualAssistantScreen(
-                    onBack = {
-                        startActivity(MapIntents.openMain(this))
-                        finish()
-                    },
+                VirtualAssistantOverlay(
+                    onDismiss = { finish() },
                     modifier = Modifier.fillMaxSize(),
                 )
             }

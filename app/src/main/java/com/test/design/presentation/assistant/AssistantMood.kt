@@ -31,7 +31,7 @@ enum class AssistantMood(
         glowIntensity = 0.7f,
     ),
     Thinking(
-        label = "Thinking",
+        label = "Working",
         caption = "Working it out",
         glowColor = Color(0xFFB39DDB),
         glowIntensity = 0.65f,
