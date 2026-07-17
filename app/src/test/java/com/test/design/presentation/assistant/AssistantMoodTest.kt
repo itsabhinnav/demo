@@ -63,4 +63,12 @@ class AssistantMoodTest {
         assertTrue(AssistantMood.Listening.toWavePose().amplitude > AssistantMood.Sad.toWavePose().amplitude)
         assertTrue(AssistantMood.Speaking.toWavePose().speed > AssistantMood.Thinking.toWavePose().speed)
     }
+
+    @Test
+    fun dialogueScriptCoversAllMoods() {
+        val moods = DemoDialogueScript.map { it.mood }.toSet()
+        assertTrue(moods.containsAll(AssistantMood.entries.toSet()))
+        assertTrue(DemoDialogueScript.any { it.speaker == DialogueSpeaker.User })
+        assertTrue(DemoDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })
+    }
 }

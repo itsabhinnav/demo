@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import com.test.design.presentation.DesignAppShell
 
 /**
- * Transparent virtual-assistant overlay — bottom voice plate with face + wave moods.
+ * Transparent virtual-assistant overlay — side persona + dialogue simulation.
  *
  * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT]. Content behind the
  * activity stays visible through the translucent window.
