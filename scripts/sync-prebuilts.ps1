@@ -47,6 +47,8 @@ try {
 | ``DewdDynamicAospRRO.orig.apk`` | Dewd stock Dynamic RRO (patch input) |
 
 Rebuild: ``./scripts/sync-prebuilts.sh`` or ``.\scripts\sync-prebuilts.ps1``
+
+Install: ``./scripts/install-prebuilts.sh`` or ``.\scripts\install-prebuilts.ps1``
 "@ | Set-Content -Path (Join-Path $Prebuilt "README.md") -Encoding utf8
 
     Get-ChildItem $Prebuilt | Format-Table Name, Length, LastWriteTime

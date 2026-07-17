@@ -75,6 +75,16 @@ Windows: `.\scripts\sync-prebuilts.ps1`
 
 ## Install (products that already declare these resource names)
 
+Full stack (app + RROs) from `./prebuilt`:
+
+```bash
+./scripts/install-prebuilts.sh
+```
+
+Windows: `.\scripts\install-prebuilts.ps1`
+
+RRO-only:
+
 ```bash
 ./scalable-ui-rro/install-rro.sh
 ```
@@ -98,6 +108,15 @@ adb shell cmd statusbar carsysui-dispatch-event _Design_OpenMediaOverlay
 
 Do **not** rely on installing this RRO alone on stock Dewd (idmap cannot add
 Dewd-only XML names). Use the in-place patch bridge:
+
+```bash
+./scripts/sync-prebuilts.sh
+./scripts/install-prebuilts.sh --dewd
+```
+
+Windows: `.\scripts\sync-prebuilts.ps1` then `.\scripts\install-prebuilts.ps1 -Dewd`
+
+Manual:
 
 ```bash
 python scalable-ui-rro/scripts/patch_dewd_fullpower.py \
