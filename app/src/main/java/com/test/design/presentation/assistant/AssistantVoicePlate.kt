@@ -96,15 +96,6 @@ fun AssistantSidePanel(
                     ),
             )
 
-            AssistantPresence(
-                mood = mood,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-                    .align(Alignment.TopCenter)
-                    .padding(top = 72.dp),
-            )
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -117,36 +108,19 @@ fun AssistantSidePanel(
                     onDismiss = onDismiss,
                 )
 
-                Spacer(Modifier.height(36.dp))
+                Spacer(Modifier.height(20.dp))
 
+                // Persona hero — ambient aura behind eyes + mouth character
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        AssistantFace(
-                            mood = mood,
-                            modifier = Modifier.size(152.dp),
-                        )
-                        Spacer(Modifier.height(20.dp))
-                        AnimatedContent(
-                            targetState = mood.voiceLabel,
-                            transitionSpec = { PromptCrossfade },
-                            label = "status",
-                        ) { label ->
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    letterSpacing = 0.4.sp,
-                                    fontWeight = FontWeight.Medium,
-                                ),
-                                color = mood.glowColor.copy(alpha = 0.9f),
-                            )
-                        }
-                    }
+                    PersonaStage(mood = mood)
                 }
+
+                Spacer(Modifier.height(8.dp))
 
                 AnimatedContent(
                     targetState = beat,
@@ -160,6 +134,50 @@ fun AssistantSidePanel(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Single composition: soft presence wraps the squircle face so eyes/mouth
+ * stay the product, not a waveform or empty chrome.
+ */
+@Composable
+private fun PersonaStage(
+    mood: AssistantMood,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.size(220.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            AssistantPresence(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+            )
+            AssistantFace(
+                mood = mood,
+                modifier = Modifier.size(176.dp),
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        AnimatedContent(
+            targetState = mood.voiceLabel,
+            transitionSpec = { PromptCrossfade },
+            label = "status",
+        ) { label ->
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    letterSpacing = 0.4.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                color = mood.glowColor.copy(alpha = 0.9f),
+            )
         }
     }
 }

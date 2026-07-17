@@ -24,6 +24,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -36,7 +38,9 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Continuous eye pose for the squircle character — same eyes, morphing openness.
+ * Continuous face pose — eyes + mouth morph together as one persona.
+ *
+ * Mouth: [mouthCurve] −1 frown … +1 smile; [mouthOpen] 0 closed … 1 talking.
  */
 internal data class FacePose(
     val eyeOpen: Float = 1f,
@@ -49,6 +53,9 @@ internal data class FacePose(
     val lookY: Float = 0f,
     val blush: Float = 0.2f,
     val roundness: Float = 0.55f,
+    val mouthCurve: Float = 0.35f,
+    val mouthOpen: Float = 0.08f,
+    val mouthWidth: Float = 1f,
 )
 
 internal fun AssistantMood.toFacePose(): FacePose = when (this) {
@@ -58,6 +65,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.72f,
         blush = 0.25f,
         roundness = 0.58f,
+        mouthCurve = 0.4f,
+        mouthOpen = 0.06f,
+        mouthWidth = 0.92f,
     )
     AssistantMood.Listening -> FacePose(
         eyeOpen = 1.1f,
@@ -67,6 +77,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 1f,
         blush = 0.45f,
         roundness = 0.6f,
+        mouthCurve = 0.15f,
+        mouthOpen = 0.28f,
+        mouthWidth = 0.78f,
     )
     AssistantMood.Speaking -> FacePose(
         eyeOpen = 0.96f,
@@ -75,6 +88,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.9f,
         blush = 0.35f,
         roundness = 0.55f,
+        mouthCurve = 0.45f,
+        mouthOpen = 0.55f,
+        mouthWidth = 1.05f,
     )
     AssistantMood.Thinking -> FacePose(
         eyeOpen = 0.86f,
@@ -85,6 +101,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.8f,
         blush = 0.15f,
         roundness = 0.52f,
+        mouthCurve = -0.08f,
+        mouthOpen = 0.04f,
+        mouthWidth = 0.7f,
     )
     AssistantMood.Happy -> FacePose(
         eyeOpen = 0.58f,
@@ -94,6 +113,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.95f,
         blush = 0.7f,
         roundness = 0.72f,
+        mouthCurve = 0.95f,
+        mouthOpen = 0.12f,
+        mouthWidth = 1.18f,
     )
     AssistantMood.Sad -> FacePose(
         eyeOpen = 0.72f,
@@ -103,6 +125,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.55f,
         blush = 0.08f,
         roundness = 0.5f,
+        mouthCurve = -0.75f,
+        mouthOpen = 0.05f,
+        mouthWidth = 0.85f,
     )
     AssistantMood.Reading -> FacePose(
         eyeOpen = 0.92f,
@@ -111,6 +136,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.75f,
         blush = 0.2f,
         roundness = 0.55f,
+        mouthCurve = 0.1f,
+        mouthOpen = 0.03f,
+        mouthWidth = 0.72f,
     )
     AssistantMood.Searching -> FacePose(
         eyeOpen = 1.06f,
@@ -119,6 +147,9 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.95f,
         blush = 0.3f,
         roundness = 0.58f,
+        mouthCurve = 0.25f,
+        mouthOpen = 0.18f,
+        mouthWidth = 0.88f,
     )
 }
 
@@ -132,9 +163,11 @@ private val ShellBorder = Color(0xFFF2F5FF)
 private val EyeWhite = Color(0xFFF7F9FF)
 private val AccentWarm = Color(0xFFE85A6B)
 private val AccentCool = Color(0xFFB8D4FF)
+private val MouthFill = Color(0xFF1A1D24)
+private val MouthLip = Color(0xFFF2F5FF)
 
 /**
- * Cute squircle persona — soft eyes, blush, floating mood props.
+ * Cute squircle persona — eyes, mouth, blush, and floating mood props.
  */
 @Composable
 fun AssistantFace(
@@ -153,6 +186,9 @@ fun AssistantFace(
     val lookY = remember { Animatable(target.lookY) }
     val blush = remember { Animatable(target.blush) }
     val roundness = remember { Animatable(target.roundness) }
+    val mouthCurve = remember { Animatable(target.mouthCurve) }
+    val mouthOpen = remember { Animatable(target.mouthOpen) }
+    val mouthWidth = remember { Animatable(target.mouthWidth) }
     val propVisibility = remember { Animatable(0f) }
     val blink = remember { Animatable(1f) }
 
@@ -165,6 +201,11 @@ fun AssistantFace(
         launch { borderGlow.animateTo(target.borderGlow, PoseSpring) }
         launch { blush.animateTo(target.blush, PoseSpring) }
         launch { roundness.animateTo(target.roundness, PoseSpring) }
+        launch { mouthCurve.animateTo(target.mouthCurve, PoseSpring) }
+        launch { mouthWidth.animateTo(target.mouthWidth, PoseSpring) }
+        if (mood != AssistantMood.Speaking) {
+            launch { mouthOpen.animateTo(target.mouthOpen, PoseSpring) }
+        }
         launch {
             propVisibility.animateTo(
                 if (mood == AssistantMood.Idle) 0f else 1f,
@@ -175,6 +216,21 @@ fun AssistantFace(
             launch { lookX.animateTo(target.lookX, PoseSpring) }
         }
         launch { lookY.animateTo(target.lookY, PoseSpring) }
+    }
+
+    // Talking mouth — soft phoneme-like open/close while Speaking
+    LaunchedEffect(mood) {
+        if (mood != AssistantMood.Speaking) return@LaunchedEffect
+        while (isActive) {
+            mouthOpen.animateTo(
+                Random.nextFloat() * 0.45f + 0.35f,
+                tween(Random.nextInt(90, 160), easing = FastOutSlowInEasing),
+            )
+            mouthOpen.animateTo(
+                Random.nextFloat() * 0.18f + 0.08f,
+                tween(Random.nextInt(70, 130), easing = FastOutSlowInEasing),
+            )
+        }
     }
 
     val infinite = rememberInfiniteTransition(label = "squircle_face")
@@ -221,7 +277,6 @@ fun AssistantFace(
                 AssistantMood.Happy -> 0.4f
                 else -> 0.1f
             }
-            // Soft, natural blink — not snappy
             blink.animateTo(closeTo, tween(90, easing = FastOutSlowInEasing))
             delay(50)
             blink.animateTo(1f, tween(150, easing = FastOutSlowInEasing))
@@ -254,17 +309,15 @@ fun AssistantFace(
     Canvas(modifier = modifier.aspectRatio(1.15f)) {
         val side = minOf(size.width, size.height)
         val cx = size.width * 0.5f
-        val cy = size.height * 0.52f
-        val shell = side * 0.68f
+        val cy = size.height * 0.5f
+        val shell = side * 0.66f
         val corner = shell * 0.32f
         val border = shell * 0.052f
 
-        // Gentle natural bob
         val bobY = sin(life * 0.7f).toFloat() * shell * 0.02f
         translate(top = bobY) {
             val liveTilt = tilt.value + 0.9f * sin(life * 0.45f).toFloat()
 
-            // Props float outside rotation for a softer read
             drawMoodProp(
                 mood = mood,
                 center = Offset(cx, cy),
@@ -338,9 +391,10 @@ fun AssistantFace(
 
                 val open = (eyeOpen.value * blink.value).coerceIn(0.08f, 1.25f)
                 val eW = shell * 0.125f * eyeWidth.value
-                val eH = shell * 0.175f * eyeHeight.value * open
+                val eH = shell * 0.165f * eyeHeight.value * open
                 val gap = shell * 0.125f * eyeGap.value
-                val eyeY = cy + lookY.value * shell * 0.08f
+                // Eyes sit upper-center so mouth has room below
+                val eyeY = cy - shell * 0.06f + lookY.value * shell * 0.08f
                 val gaze = lookX.value * shell * 0.04f +
                     if (mood == AssistantMood.Thinking) 0.018f * shell * sin(life) else 0f
 
@@ -348,8 +402,8 @@ fun AssistantFace(
                 val rightEye = Offset(cx + gap + eW * 0.5f + gaze, eyeY)
 
                 drawCheekBlush(
-                    left = Offset(cx - shell * 0.28f, cy + shell * 0.16f),
-                    right = Offset(cx + shell * 0.28f, cy + shell * 0.16f),
+                    left = Offset(cx - shell * 0.28f, cy + shell * 0.1f),
+                    right = Offset(cx + shell * 0.28f, cy + shell * 0.1f),
                     radius = shell * 0.07f,
                     amount = blush.value,
                 )
@@ -373,12 +427,92 @@ fun AssistantFace(
                     scanPhase = scan + 0.12f,
                     roundness = roundness.value,
                 )
+
+                drawPersonaMouth(
+                    center = Offset(cx, cy + shell * 0.22f),
+                    shell = shell,
+                    curve = mouthCurve.value,
+                    open = mouthOpen.value,
+                    widthScale = mouthWidth.value,
+                    life = life,
+                    speaking = mood == AssistantMood.Speaking,
+                )
             }
         }
     }
 }
 
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawScanlineEye(
+/**
+ * Soft expressive mouth — smile / frown arcs, and an oval when open (talking).
+ */
+private fun DrawScope.drawPersonaMouth(
+    center: Offset,
+    shell: Float,
+    curve: Float,
+    open: Float,
+    widthScale: Float,
+    life: Float,
+    speaking: Boolean,
+) {
+    val halfW = shell * 0.14f * widthScale
+    val smileLift = shell * 0.07f * curve
+    val openH = shell * 0.055f * open.coerceIn(0f, 1f)
+    val talkWobble = if (speaking) {
+        sin(life * 3.2f).toFloat() * shell * 0.008f
+    } else {
+        0f
+    }
+
+    if (openH > shell * 0.012f) {
+        // Open mouth — rounded capsule that breathes while speaking
+        val left = center.x - halfW * 0.72f
+        val top = center.y - openH * 0.35f + talkWobble
+        val w = halfW * 1.44f
+        val h = openH * 1.55f + smileLift.coerceAtLeast(0f) * 0.25f
+        val rr = CornerRadius(w * 0.45f, h * 0.5f)
+        drawRoundRect(
+            color = MouthFill,
+            topLeft = Offset(left, top),
+            size = Size(w, h),
+            cornerRadius = rr,
+        )
+        drawRoundRect(
+            color = MouthLip.copy(alpha = 0.55f),
+            topLeft = Offset(left, top),
+            size = Size(w, h),
+            cornerRadius = rr,
+            style = Stroke(width = shell * 0.012f, cap = StrokeCap.Round),
+        )
+        // Soft inner highlight for life
+        drawCircle(
+            color = Color.White.copy(alpha = 0.12f),
+            radius = h * 0.22f,
+            center = Offset(center.x - w * 0.12f, top + h * 0.35f),
+        )
+    } else {
+        // Closed mouth — single expressive stroke (smile / neutral / frown)
+        val path = Path().apply {
+            val y0 = center.y + talkWobble
+            moveTo(center.x - halfW, y0)
+            quadraticTo(
+                center.x,
+                y0 + smileLift,
+                center.x + halfW,
+                y0,
+            )
+        }
+        drawPath(
+            path = path,
+            color = MouthLip.copy(alpha = 0.92f),
+            style = Stroke(
+                width = shell * 0.028f,
+                cap = StrokeCap.Round,
+            ),
+        )
+    }
+}
+
+private fun DrawScope.drawScanlineEye(
     center: Offset,
     width: Float,
     height: Float,
@@ -409,7 +543,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawScanlineEye(
             size = Size(eyeW, eyeH),
             cornerRadius = radius,
         )
-        // Softer scanlines — cute digital eyes, not harsh CRT
         val lineGap = (eyeH / 8f).coerceAtLeast(1.8f)
         var y = top + lineGap * 0.5f
         var i = 0
