@@ -126,7 +126,8 @@ private fun DrawScope.drawAmbientPresence(
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    tint.copy(alpha = 0.10f * energy),
+                    tint.copy(alpha = 0.22f * energy),
+                    tint.copy(alpha = 0.08f * energy),
                     Color.Transparent,
                 ),
                 center = Offset(cx, cy),
@@ -145,8 +146,8 @@ private fun DrawScope.drawAmbientPresence(
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    color.copy(alpha = 0.16f * energy),
-                    color.copy(alpha = 0.04f * energy),
+                    color.copy(alpha = 0.28f * energy),
+                    color.copy(alpha = 0.08f * energy),
                     Color.Transparent,
                 ),
                 center = Offset(ox, oy),
@@ -160,8 +161,8 @@ private fun DrawScope.drawAmbientPresence(
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.10f * energy),
-                tint.copy(alpha = 0.07f * energy),
+                Color.White.copy(alpha = 0.18f * energy),
+                tint.copy(alpha = 0.14f * energy),
                 Color.Transparent,
             ),
             center = Offset(cx, cy),

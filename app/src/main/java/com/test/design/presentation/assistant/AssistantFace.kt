@@ -62,44 +62,44 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
     AssistantMood.Idle -> FacePose(
         eyeOpen = 1f,
         tilt = 3.5f,
-        borderGlow = 0.72f,
-        blush = 0.25f,
+        borderGlow = 0.88f,
+        blush = 0.45f,
         roundness = 0.82f,
         mouthCurve = 0.4f,
         mouthOpen = 0.06f,
         mouthWidth = 0.92f,
     )
     AssistantMood.Listening -> FacePose(
-        eyeOpen = 1.1f,
-        eyeWidth = 1.06f,
-        eyeHeight = 1.04f,
+        eyeOpen = 1.12f,
+        eyeWidth = 1.08f,
+        eyeHeight = 1.06f,
         tilt = 2.5f,
         borderGlow = 1f,
-        blush = 0.45f,
+        blush = 0.55f,
         roundness = 0.85f,
         mouthCurve = 0.15f,
         mouthOpen = 0.28f,
         mouthWidth = 0.78f,
     )
     AssistantMood.Speaking -> FacePose(
-        eyeOpen = 0.96f,
-        eyeHeight = 0.94f,
+        eyeOpen = 0.98f,
+        eyeHeight = 0.96f,
         tilt = 5f,
-        borderGlow = 0.9f,
-        blush = 0.35f,
+        borderGlow = 0.95f,
+        blush = 0.5f,
         roundness = 0.8f,
         mouthCurve = 0.45f,
         mouthOpen = 0.55f,
         mouthWidth = 1.05f,
     )
     AssistantMood.Thinking -> FacePose(
-        eyeOpen = 0.86f,
-        eyeHeight = 0.82f,
+        eyeOpen = 0.88f,
+        eyeHeight = 0.84f,
         lookX = 0.22f,
         lookY = -0.22f,
         tilt = 6f,
-        borderGlow = 0.8f,
-        blush = 0.15f,
+        borderGlow = 0.9f,
+        blush = 0.35f,
         roundness = 0.78f,
         mouthCurve = -0.08f,
         mouthOpen = 0.04f,
@@ -110,8 +110,8 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         eyeWidth = 1.14f,
         eyeHeight = 0.52f,
         tilt = 2f,
-        borderGlow = 0.95f,
-        blush = 0.7f,
+        borderGlow = 1f,
+        blush = 0.85f,
         roundness = 0.92f,
         mouthCurve = 0.95f,
         mouthOpen = 0.12f,
@@ -122,30 +122,30 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         eyeHeight = 0.68f,
         lookY = 0.18f,
         tilt = 7f,
-        borderGlow = 0.55f,
-        blush = 0.08f,
+        borderGlow = 0.7f,
+        blush = 0.28f,
         roundness = 0.76f,
         mouthCurve = -0.75f,
         mouthOpen = 0.05f,
         mouthWidth = 0.85f,
     )
     AssistantMood.Reading -> FacePose(
-        eyeOpen = 0.92f,
+        eyeOpen = 0.94f,
         lookX = 0.3f,
         tilt = 3.5f,
-        borderGlow = 0.75f,
-        blush = 0.2f,
+        borderGlow = 0.85f,
+        blush = 0.4f,
         roundness = 0.8f,
         mouthCurve = 0.1f,
         mouthOpen = 0.03f,
         mouthWidth = 0.72f,
     )
     AssistantMood.Searching -> FacePose(
-        eyeOpen = 1.06f,
-        eyeWidth = 1.04f,
+        eyeOpen = 1.08f,
+        eyeWidth = 1.06f,
         tilt = 4f,
-        borderGlow = 0.95f,
-        blush = 0.3f,
+        borderGlow = 1f,
+        blush = 0.48f,
         roundness = 0.84f,
         mouthCurve = 0.25f,
         mouthOpen = 0.18f,
@@ -158,22 +158,23 @@ private val PoseSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
-private val ShellFill = Color(0xFF0A0C10)
-private val ShellBorder = Color(0xFFF2F5FF)
-private val EyeWhite = Color(0xFFF7F9FF)
-private val AccentWarm = Color(0xFFE85A6B)
+private val ShellCore = Color(0xFF1B1830)
+private val ShellWarm = Color(0xFF2A2240)
+private val ShellBorder = Color(0xFFFFF6F0)
+private val EyeCream = Color(0xFFFFF8F2)
+private val AccentWarm = Color(0xFFFF8FA3)
 private val AccentCool = Color(0xFFB8D4FF)
-private val MouthFill = Color(0xFF1A1D24)
-private val MouthLip = Color(0xFFF2F5FF)
+private val MouthFill = Color(0xFF2A1E28)
+private val MouthLip = Color(0xFFFFD0D8)
 
 /**
- * Cute squircle persona — eyes, mouth, blush, and floating mood props.
+ * Cute round persona — warm glow, big eyes, soft mouth (not a hollow ghost).
  */
 @Composable
 fun AssistantFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
-    faceColor: Color = EyeWhite,
+    faceColor: Color = EyeCream,
 ) {
     val target = mood.toFacePose()
     val eyeOpen = remember { Animatable(target.eyeOpen) }
@@ -311,9 +312,9 @@ fun AssistantFace(
         val cx = size.width * 0.5f
         val cy = size.height * 0.5f
         val shell = side * 0.68f
-        // Near-circle soft blob — still a gentle squircle, not a hard square
         val corner = shell * 0.48f
-        val border = shell * 0.048f
+        val border = shell * 0.042f
+        val moodGlow = mood.glowColor
 
         val bobY = sin(life * 0.7f).toFloat() * shell * 0.02f
         translate(top = bobY) {
@@ -340,31 +341,56 @@ fun AssistantFace(
                 )
                 val shellPath = Path().apply { addRoundRect(shellRect) }
 
-                val glowR = shell * 0.62f * pulse * borderGlow.value
+                // Outer mood glow halo
+                val outerGlow = shell * 0.82f * pulse * (0.75f + 0.25f * borderGlow.value)
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            AccentCool.copy(alpha = 0.16f * borderGlow.value),
-                            AccentWarm.copy(alpha = 0.1f * borderGlow.value),
+                            moodGlow.copy(alpha = 0.42f * borderGlow.value),
+                            moodGlow.copy(alpha = 0.14f * borderGlow.value),
                             Color.Transparent,
                         ),
                         center = Offset(cx, cy),
-                        radius = glowR,
+                        radius = outerGlow,
                     ),
-                    radius = glowR,
+                    radius = outerGlow,
+                    center = Offset(cx, cy),
+                )
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            AccentWarm.copy(alpha = 0.22f * borderGlow.value),
+                            AccentCool.copy(alpha = 0.12f * borderGlow.value),
+                            Color.Transparent,
+                        ),
+                        center = Offset(cx, cy),
+                        radius = shell * 0.7f * pulse,
+                    ),
+                    radius = shell * 0.7f * pulse,
                     center = Offset(cx, cy),
                 )
 
-                drawPath(shellPath, ShellFill)
+                // Warm filled body — soft character, not a black void
+                drawPath(
+                    path = shellPath,
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            ShellWarm,
+                            ShellCore,
+                            Color(0xFF12101C),
+                        ),
+                        center = Offset(cx - shell * 0.08f, cy - shell * 0.12f),
+                        radius = shell * 0.75f,
+                    ),
+                )
 
                 drawRoundRect(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            ShellBorder,
-                            AccentCool,
-                            ShellBorder,
-                            AccentWarm.copy(alpha = 0.8f),
-                            ShellBorder,
+                            ShellBorder.copy(alpha = 0.95f),
+                            moodGlow.copy(alpha = 0.85f),
+                            AccentWarm.copy(alpha = 0.75f),
+                            ShellBorder.copy(alpha = 0.9f),
                         ),
                         start = Offset(left, top + shell),
                         end = Offset(left + shell, top),
@@ -372,30 +398,42 @@ fun AssistantFace(
                     topLeft = Offset(left, top),
                     size = Size(shell, shell),
                     cornerRadius = CornerRadius(corner, corner),
-                    style = Stroke(width = border * (0.95f + 0.08f * borderGlow.value * pulse)),
+                    style = Stroke(width = border * (1f + 0.12f * borderGlow.value * pulse)),
                 )
 
                 clipPath(shellPath) {
                     drawCircle(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                AccentWarm.copy(alpha = 0.18f),
+                                AccentWarm.copy(alpha = 0.28f),
                                 Color.Transparent,
                             ),
-                            center = Offset(cx + shell * 0.22f, cy - shell * 0.18f),
-                            radius = shell * 0.35f,
+                            center = Offset(cx + shell * 0.18f, cy - shell * 0.2f),
+                            radius = shell * 0.4f,
                         ),
-                        radius = shell * 0.35f,
-                        center = Offset(cx + shell * 0.22f, cy - shell * 0.18f),
+                        radius = shell * 0.4f,
+                        center = Offset(cx + shell * 0.18f, cy - shell * 0.2f),
+                    )
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                moodGlow.copy(alpha = 0.16f),
+                                Color.Transparent,
+                            ),
+                            center = Offset(cx, cy + shell * 0.1f),
+                            radius = shell * 0.55f,
+                        ),
+                        radius = shell * 0.55f,
+                        center = Offset(cx, cy + shell * 0.1f),
                     )
                 }
 
                 val open = (eyeOpen.value * blink.value).coerceIn(0.08f, 1.25f)
-                val eW = shell * 0.125f * eyeWidth.value
-                val eH = shell * 0.165f * eyeHeight.value * open
-                val gap = shell * 0.125f * eyeGap.value
-                // Eyes sit upper-center so mouth has room below
-                val eyeY = cy - shell * 0.06f + lookY.value * shell * 0.08f
+                // Bigger cuter eyes
+                val eW = shell * 0.145f * eyeWidth.value
+                val eH = shell * 0.185f * eyeHeight.value * open
+                val gap = shell * 0.115f * eyeGap.value
+                val eyeY = cy - shell * 0.05f + lookY.value * shell * 0.08f
                 val gaze = lookX.value * shell * 0.04f +
                     if (mood == AssistantMood.Thinking) 0.018f * shell * sin(life) else 0f
 
@@ -403,14 +441,14 @@ fun AssistantFace(
                 val rightEye = Offset(cx + gap + eW * 0.5f + gaze, eyeY)
 
                 drawCheekBlush(
-                    left = Offset(cx - shell * 0.28f, cy + shell * 0.1f),
-                    right = Offset(cx + shell * 0.28f, cy + shell * 0.1f),
-                    radius = shell * 0.07f,
+                    left = Offset(cx - shell * 0.3f, cy + shell * 0.12f),
+                    right = Offset(cx + shell * 0.3f, cy + shell * 0.12f),
+                    radius = shell * 0.09f,
                     amount = blush.value,
                 )
 
-                drawCircle(faceColor.copy(alpha = 0.18f * open), eW * 1.35f, leftEye)
-                drawCircle(faceColor.copy(alpha = 0.18f * open), eW * 1.35f, rightEye)
+                drawCircle(faceColor.copy(alpha = 0.28f * open), eW * 1.45f, leftEye)
+                drawCircle(faceColor.copy(alpha = 0.28f * open), eW * 1.45f, rightEye)
 
                 drawScanlineEye(
                     center = leftEye,
@@ -419,6 +457,7 @@ fun AssistantFace(
                     color = faceColor,
                     scanPhase = scan,
                     roundness = roundness.value,
+                    glow = moodGlow,
                 )
                 drawScanlineEye(
                     center = rightEye,
@@ -427,10 +466,11 @@ fun AssistantFace(
                     color = faceColor,
                     scanPhase = scan + 0.12f,
                     roundness = roundness.value,
+                    glow = moodGlow,
                 )
 
                 drawPersonaMouth(
-                    center = Offset(cx, cy + shell * 0.22f),
+                    center = Offset(cx, cy + shell * 0.24f),
                     shell = shell,
                     curve = mouthCurve.value,
                     open = mouthOpen.value,
@@ -520,6 +560,7 @@ private fun DrawScope.drawScanlineEye(
     color: Color,
     scanPhase: Float,
     roundness: Float,
+    glow: Color,
 ) {
     val left = center.x - width
     val top = center.y - height
@@ -539,24 +580,37 @@ private fun DrawScope.drawScanlineEye(
 
     clipPath(path) {
         drawRoundRect(
-            color = color,
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    color,
+                    color.copy(alpha = 0.92f),
+                    glow.copy(alpha = 0.35f),
+                ),
+            ),
             topLeft = Offset(left, top),
             size = Size(eyeW, eyeH),
             cornerRadius = radius,
         )
-        val lineGap = (eyeH / 8f).coerceAtLeast(1.8f)
+        // Soft shimmer bands — cute, not CRT ghost
+        val lineGap = (eyeH / 7f).coerceAtLeast(2f)
         var y = top + lineGap * 0.5f
         var i = 0
         while (y < top + eyeH) {
-            val shimmer = 0.05f + 0.07f * ((sin((scanPhase + i * 0.12f) * PI * 2).toFloat() + 1f) * 0.5f)
+            val shimmer = 0.03f + 0.05f * ((sin((scanPhase + i * 0.12f) * PI * 2).toFloat() + 1f) * 0.5f)
             drawLine(
-                color = Color(0xFF0A0C10).copy(alpha = shimmer),
+                color = Color(0xFF1B1830).copy(alpha = shimmer),
                 start = Offset(left, y),
                 end = Offset(left + eyeW, y),
-                strokeWidth = lineGap * 0.28f,
+                strokeWidth = lineGap * 0.22f,
             )
             y += lineGap
             i++
         }
+        // Catch light
+        drawCircle(
+            color = Color.White.copy(alpha = 0.55f),
+            radius = minOf(eyeW, eyeH) * 0.14f,
+            center = Offset(center.x - eyeW * 0.18f, center.y - eyeH * 0.22f),
+        )
     }
 }
