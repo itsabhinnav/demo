@@ -17,10 +17,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -181,7 +179,7 @@ fun VehicleEnergyCockpit(
         ) {
             Text(
                 text = if (isCharging) "Charging" else "Energy",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
@@ -200,21 +198,29 @@ fun VehicleEnergyCockpit(
                 contentModifier = contentModifier,
             )
 
-            Row(
+            Column(
                 modifier = controlsModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                EnergyStatChip(
-                    label = if (isCharging) "Rate" else "Range",
-                    value = if (isCharging) "${chargeRateKw.toInt()} kW" else "$maxRangeMiles mi max",
-                )
-                EnergyStatChip(
-                    label = "Status",
-                    value = when {
-                        isCharging -> "Plugged in"
-                        percent < 30 -> "Low"
-                        else -> "Ready"
+                Text(
+                    text = when {
+                        isCharging -> "${chargeRateKw.toInt()} kW"
+                        percent < 30 -> "Low battery"
+                        else -> "Ready to drive"
                     },
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = when {
+                        isCharging -> "Plugged in"
+                        else -> "$maxRangeMiles mi capacity"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -309,14 +315,6 @@ private fun GaugeWithStats(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-    }
-}
-
-@Composable
-private fun EnergyStatChip(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
