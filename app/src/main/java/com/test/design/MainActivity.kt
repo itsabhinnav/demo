@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
@@ -16,11 +17,15 @@ import androidx.navigation.compose.rememberNavController
 import com.test.design.navigation.AppDestination
 import com.test.design.navigation.AppNavHost
 import com.test.design.presentation.DesignAppShell
+import com.test.design.presentation.ivi.dashboard.DashboardEvent
+import com.test.design.presentation.ivi.dashboard.DashboardViewModel
+import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.map.EXTRA_OPEN_DASHBOARD
 
 class MainActivity : ComponentActivity() {
 
     private var openDashboardRequest = mutableStateOf(false)
+    private val dashboardViewModel: DashboardViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,11 +50,19 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 onOpenSettings = {
-                    navController.navigate(AppDestination.Dashboard) {
+                    dashboardViewModel.onEvent(
+                        DashboardEvent.WidgetTapped(DashboardWidget.Settings),
+                    )
+                    // Expand Settings on whichever host is active (shared activity VM).
+                    val route = navController.currentBackStackEntry?.destination?.route
+                    if (route == AppDestination.Dashboard) return@DesignAppShell
+                    navController.navigate(AppDestination.DrivingHome) {
+                        popUpTo(AppDestination.DrivingHome) { inclusive = false }
                         launchSingleTop = true
                     }
                 },
                 onOpenHome = {
+                    dashboardViewModel.onEvent(DashboardEvent.CollapseWidget)
                     navController.navigate(AppDestination.DrivingHome) {
                         popUpTo(AppDestination.DrivingHome) { inclusive = false }
                         launchSingleTop = true

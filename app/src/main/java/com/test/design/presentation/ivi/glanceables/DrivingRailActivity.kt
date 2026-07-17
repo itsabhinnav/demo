@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.test.design.core.LocalDrivingUxState
+import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.map.MapIntents
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -37,6 +39,7 @@ class DrivingRailActivity : GlanceableActivity() {
         val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
         val mediaState by mediaViewModel.state.collectAsStateWithLifecycle()
         val climateState by climateViewModel.state.collectAsStateWithLifecycle()
+        val cluster = ClusterUiState.fromDrivingUx(LocalDrivingUxState.current)
 
         GlanceRoot {
             Column(
@@ -48,9 +51,9 @@ class DrivingRailActivity : GlanceableActivity() {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 DrivingStatusGlance(
-                    speedMph = 54,
-                    speedLimitMph = 60,
-                    gear = "D",
+                    speedMph = cluster.speedMph,
+                    speedLimitMph = cluster.speedLimitMph,
+                    gear = cluster.gear,
                     batteryPercent = vehicleState.batteryPercent,
                     rangeMiles = vehicleState.rangeMiles,
                     modifier = Modifier.fillMaxWidth(),

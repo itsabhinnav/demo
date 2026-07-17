@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -178,6 +179,7 @@ private fun SharedTransitionScope.MediaNowPlayingPanel(
             widget = DashboardWidget.Media,
             onBack = onBack,
             animatedVisibilityScope = animatedVisibilityScope,
+            trailingContent = { SimulatedBadge() },
         )
 
         MediaSourceChips(

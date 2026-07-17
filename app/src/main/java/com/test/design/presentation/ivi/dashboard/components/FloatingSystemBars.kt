@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -113,6 +114,8 @@ private fun FloatingSection(
 fun FloatingTopSystemBar(
     modifier: Modifier = Modifier,
     driverLabel: String = "Driver",
+    onNotificationsClick: () -> Unit = {},
+    notificationCount: Int = 0,
 ) {
     val time = rememberClockText()
 
@@ -160,7 +163,10 @@ fun FloatingTopSystemBar(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                StatusIcon(Icons.Default.Notifications, "Notifications")
+                NotificationStatusButton(
+                    count = notificationCount,
+                    onClick = onNotificationsClick,
+                )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -318,6 +324,52 @@ private fun StatusIcon(
         tint = IconMuted,
         modifier = Modifier.size(28.dp),
     )
+}
+
+@Composable
+private fun NotificationStatusButton(
+    count: Int,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .semantics {
+                role = Role.Button
+                contentDescription = if (count > 0) {
+                    "Notifications, $count unread"
+                } else {
+                    "Notifications"
+                }
+            }
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Notifications,
+            contentDescription = null,
+            tint = IconMuted,
+            modifier = Modifier.size(28.dp),
+        )
+        if (count > 0) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 2.dp, y = (-2).dp)
+                    .size(16.dp)
+                    .background(Color(0xFFE53935), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = count.coerceAtMost(9).toString(),
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
 }
 
 @Composable

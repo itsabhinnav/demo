@@ -91,13 +91,23 @@ Use the [`motion.md`](../motion.md) presentation script.
 
 ---
 
-## Minimal “wow sprint” (add only 3 things)
+## Minimal “wow sprint” (implemented)
 
-1. Scripted Adaptive Space scene transitions
-2. Driver vs passenger dual-zone
-3. Cluster glance + HUN panel
+| Item | Where to show |
+|------|----------------|
+| Scripted Adaptive Space scene transitions | Adaptive Space → **Play demo** (map → media → split → parking → collapse) |
+| Driver vs passenger dual-zone | Apps dashboard → **Dual Zone** widget |
+| Cluster glance + HUN panel | Driving home cluster strip; top-bar **Notifications** → Heads-up panel |
 
-Those three map directly to **Android 17 Scalable UI + MUMD + Display Safety** talking points without rewriting the app.
+Those three map directly to **Android 17 Scalable UI + MUMD + Display Safety** talking points.
+
+### Polish shipped with the sprint
+
+- **Simulated** badges on Climate / Media / Nav / Vehicle / Adaptive Space / Dual Zone / Settings
+- Cluster speed/gear follows Driving UX (Parked / Driving / Restricted)
+- Motion Studio opened from Settings
+- Floating Settings opens the Settings widget (shared activity `DashboardViewModel`)
+- Restricted banner on the Apps hub
 
 ---
 

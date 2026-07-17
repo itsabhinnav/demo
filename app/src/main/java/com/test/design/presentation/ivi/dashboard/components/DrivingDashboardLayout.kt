@@ -50,10 +50,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.test.design.core.LocalDrivingUxState
+import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.climate.components.ClimateHvacIcons
 import com.test.design.presentation.ivi.climate.formatTemperature
+import com.test.design.presentation.ivi.cluster.ClusterGlanceStrip
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -97,6 +100,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     onOpenMain: (() -> Unit)? = null,
 ) {
     var mapZoom by remember(initialMapZoom) { mutableDoubleStateOf(initialMapZoom) }
+    val drivingUx = LocalDrivingUxState.current
+    val cluster = remember(drivingUx) { ClusterUiState.fromDrivingUx(drivingUx) }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val sidebarWidth = maxWidth * SidebarWidthFraction
@@ -112,6 +117,15 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             zoom = mapZoom,
         )
 
+        ClusterGlanceStrip(
+            cluster = cluster,
+            batteryPercent = vehicleState.batteryPercent,
+            rangeMiles = vehicleState.rangeMiles,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = chromeTop),
+        )
+
         DrivingSidebar(
             vehicleState = vehicleState,
             mediaState = mediaState,
@@ -121,12 +135,15 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             onOpenApp = { onEvent(DashboardEvent.WidgetTapped(it)) },
             onOpenWidgetDashboard = onOpenWidgetDashboard,
             animatedVisibilityScope = animatedVisibilityScope,
+            speedMph = cluster.speedMph,
+            gear = cluster.gear,
+            speedLimitMph = cluster.speedLimitMph,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(
                     start = OverlayInset,
                     end = OverlayInset,
-                    top = chromeTop,
+                    top = chromeTop + 56.dp,
                     bottom = chromeBottom,
                 )
                 .width(sidebarWidth - OverlayInset)
@@ -142,7 +159,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 .padding(
                     start = mapContentStart,
                     end = OverlayInset + 64.dp,
-                    top = chromeTop,
+                    top = chromeTop + 56.dp,
                 ),
         )
 

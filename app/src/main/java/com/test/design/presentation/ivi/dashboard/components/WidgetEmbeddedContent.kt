@@ -75,6 +75,11 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         )
+        DashboardWidget.DualZone -> DualZoneWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
         DashboardWidget.Media -> {
             val state = mediaState ?: return
             val onEvent = onMediaEvent ?: return
@@ -531,7 +536,7 @@ private fun SharedTransitionScope.AdaptiveSpaceWidgetEmbedded(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "Map-Under-Apps · overlays · split resize",
+            text = "Play demo · map → media → split → parking",
             style = MaterialTheme.typography.titleMedium,
             color = contentColor,
             modifier = widgetContentSharedElement(
@@ -559,6 +564,52 @@ private fun SharedTransitionScope.AdaptiveSpaceWidgetEmbedded(
                     text = "Open Adaptive Space",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.DualZoneWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Driver restricted · Passenger full UI",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.DualZone,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        Surface(
+            shape = ExpressiveShapes.small,
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.9f),
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.DualZone,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(CarDesignTokens.MinTouchTarget),
+            ),
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "Open Dual Zone",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
         }

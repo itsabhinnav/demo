@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.common.ScreenBackground
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
+import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
@@ -128,20 +130,26 @@ fun SharedTransitionScope.NavigationScreen(
                             horizontal = if (overlay.compactCards) 12.dp else CarDesignTokens.TouchTargetSpacing,
                         ),
                         trailingContent = {
-                            FilterChip(
-                                selected = uiState.showRouteDetails,
-                                onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
-                                label = {
-                                    Text(
-                                        "Steps",
-                                        style = if (overlay.compactCards) {
-                                            MaterialTheme.typography.labelMedium
-                                        } else {
-                                            MaterialTheme.typography.labelLarge
-                                        },
-                                    )
-                                },
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                SimulatedBadge()
+                                FilterChip(
+                                    selected = uiState.showRouteDetails,
+                                    onClick = { onEvent(NavigationEvent.ToggleRouteDetails) },
+                                    label = {
+                                        Text(
+                                            "Steps",
+                                            style = if (overlay.compactCards) {
+                                                MaterialTheme.typography.labelMedium
+                                            } else {
+                                                MaterialTheme.typography.labelLarge
+                                            },
+                                        )
+                                    },
+                                )
+                            }
                         },
                     )
                 }

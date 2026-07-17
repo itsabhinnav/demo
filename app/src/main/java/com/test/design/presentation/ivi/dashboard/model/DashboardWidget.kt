@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -21,9 +22,15 @@ enum class DashboardWidget(
 ) {
     AdaptiveSpace(
         title = "Adaptive Space",
-        subtitle = "Scalable UI · Map-Under-Apps",
+        subtitle = "Scalable UI · Play demo",
         icon = Icons.Default.Layers,
         sharedElementKey = "widget_adaptive_space",
+    ),
+    DualZone(
+        title = "Dual Zone",
+        subtitle = "Driver · Passenger MUMD",
+        icon = Icons.Default.People,
+        sharedElementKey = "widget_dual_zone",
     ),
     Media(
         title = "Media",
