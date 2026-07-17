@@ -13,9 +13,9 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-private val PropWhite = Color(0xFFF5F7FF)
-private val PropSoft = Color(0xFFE8ECFF)
-private val PropAccent = Color(0xFFB39DDB)
+private val PropWhite = Color(0xFFFFF8F4)
+private val PropSoft = Color(0xFFFFE8F0)
+private val PropAccent = Color(0xFFC9A0DC)
 
 /**
  * Floating mood props — thought cloud, scan glass, and friends.

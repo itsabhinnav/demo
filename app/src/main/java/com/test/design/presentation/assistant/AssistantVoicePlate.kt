@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,7 +52,7 @@ private val PromptCrossfade = fadeIn(
 )
 
 /**
- * Production assistant panel — Scalable UI trailing overlay, Gemini-quiet chrome.
+ * Production assistant panel — Scalable UI trailing overlay with soft blue glow.
  */
 @Composable
 fun AssistantSidePanel(
@@ -71,17 +72,34 @@ fun AssistantSidePanel(
     Surface(
         modifier = modifier
             .width(AssistantTokens.PanelWidth)
-            .fillMaxHeight(),
+            .fillMaxHeight()
+            .shadow(
+                elevation = 20.dp,
+                shape = PanelShape,
+                clip = false,
+                ambientColor = AssistantTokens.PanelGlow,
+                spotColor = AssistantTokens.PanelGlowSoft,
+            )
+            .border(
+                width = 1.dp,
+                brush = Brush.linearGradient(
+                    listOf(
+                        AssistantTokens.PanelGlowEdge,
+                        AssistantTokens.Hairline,
+                        AssistantTokens.PanelGlowEdge.copy(alpha = 0.35f),
+                    ),
+                ),
+                shape = PanelShape,
+            ),
         shape = PanelShape,
         color = AssistantTokens.Surface,
-        shadowElevation = 8.dp,
+        shadowElevation = 0.dp,
         tonalElevation = 0.dp,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(PanelShape)
-                .border(1.dp, AssistantTokens.Hairline, PanelShape),
+                .clip(PanelShape),
         ) {
             Box(
                 modifier = Modifier
@@ -93,6 +111,17 @@ fun AssistantSidePanel(
                                 AssistantTokens.SurfaceBottom,
                             ),
                         ),
+                    ),
+            )
+
+            // Soft inner blue wash near the rim
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(
+                        width = 1.5.dp,
+                        color = AssistantTokens.PanelGlowEdge.copy(alpha = 0.22f),
+                        shape = PanelShape,
                     ),
             )
 
@@ -139,25 +168,38 @@ fun AssistantSidePanel(
 }
 
 /**
- * Single composition: soft presence wraps the squircle face so eyes/mouth
- * stay the product, not a waveform or empty chrome.
+ * Center stage: pastel orb persona over a cool mood-reactive waveform.
  */
 @Composable
 private fun PersonaStage(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.size(240.dp),
-        contentAlignment = Alignment.Center,
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        AssistantPresence(
+        Box(
+            modifier = Modifier.size(220.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            AssistantPresence(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+            )
+            AssistantFace(
+                mood = mood,
+                modifier = Modifier.size(176.dp),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        VoiceWaveform(
             mood = mood,
-            modifier = Modifier.fillMaxSize(),
-        )
-        AssistantFace(
-            mood = mood,
-            modifier = Modifier.size(184.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .padding(horizontal = 8.dp),
         )
     }
 }

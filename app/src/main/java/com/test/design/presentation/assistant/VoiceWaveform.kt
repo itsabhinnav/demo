@@ -53,13 +53,13 @@ private val WaveSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
-/** Siri-like palette — teal → cyan → indigo → magenta → warm. */
+/** Cool blue-forward palette — cyan → indigo → soft violet. */
 private val WaveLayers = listOf(
-    WaveLayer(Color(0xFFFFB74D), 1.05f, 0.55f, 0.9f),
-    WaveLayer(Color(0xFFE040FB), 0.95f, 0.7f, 1.15f),
-    WaveLayer(Color(0xFF7C4DFF), 0.85f, 0.75f, 0.8f),
-    WaveLayer(Color(0xFF40C4FF), 0.75f, 0.8f, 1.05f),
-    WaveLayer(Color(0xFF26A69A), 0.65f, 0.7f, 0.95f),
+    WaveLayer(Color(0xFF82B1FF), 1.05f, 0.5f, 0.9f),
+    WaveLayer(Color(0xFF40C4FF), 0.95f, 0.65f, 1.15f),
+    WaveLayer(Color(0xFF7C4DFF), 0.82f, 0.55f, 0.8f),
+    WaveLayer(Color(0xFF26C6DA), 0.72f, 0.7f, 1.05f),
+    WaveLayer(Color(0xFF8AB4F8), 0.62f, 0.6f, 0.95f),
 )
 
 private data class WaveLayer(
@@ -127,13 +127,13 @@ private fun DrawScope.drawSiriWaveform(
     val maxAmp = size.height * 0.42f * amplitude
     val steps = 96
 
-    // Soft bloom behind the ribbons
+    // Soft cool bloom behind the ribbons
     if (bloom > 0.05f) {
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    Color(0xFF7C4DFF).copy(alpha = 0.18f * bloom),
-                    Color(0xFF40C4FF).copy(alpha = 0.1f * bloom),
+                    Color(0xFF40C4FF).copy(alpha = 0.22f * bloom),
+                    Color(0xFF8AB4F8).copy(alpha = 0.12f * bloom),
                     Color.Transparent,
                 ),
                 center = Offset(size.width * 0.5f, midY),
