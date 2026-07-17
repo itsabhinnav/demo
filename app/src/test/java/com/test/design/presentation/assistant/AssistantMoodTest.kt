@@ -14,7 +14,7 @@ class AssistantMoodTest {
                     "Idle",
                     "Listening",
                     "Speaking",
-                    "Thinking",
+                    "Working",
                     "Happy",
                     "Sad",
                     "Reading",

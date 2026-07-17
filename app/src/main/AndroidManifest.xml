@@ -96,7 +96,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
-            android:theme="@style/Theme.Design"
+            android:theme="@style/Theme.Design.Panel"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
