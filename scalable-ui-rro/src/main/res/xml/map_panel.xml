@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive Space map slot — closed by default (no OSM).
-  Host is an empty solid backdrop only; Design MapActivity is not used.
-  Sidebar (widget_panel) is the primary Design surface on home.
+  Full-bleed stock AAOS MapsPlaceholderActivity (green) under floating rail.
+  Design MapActivity / OSM is not used as the map_panel host.
 -->
 <TaskPanel
     id="map_panel"
     controller="@xml/map_panel_controller"
     role="@array/role_map_components"
-    defaultVariant="@id/closed"
+    defaultVariant="@id/opened"
     defaultLayer="@integer/map_panel_layer"
     displayId="0">
 
@@ -51,7 +50,7 @@
     <Transitions>
         <Transition
             onEvent="_System_OnHomeEvent"
-            toVariant="@id/closed"
+            toVariant="@id/opened"
             duration="@integer/home_restore_transition_ms"
             interpolator="@android:anim/decelerate_interpolator" />
         <Transition

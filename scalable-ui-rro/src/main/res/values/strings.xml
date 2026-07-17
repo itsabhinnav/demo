@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Map panel: empty solid backdrop only — no Design OSM MapActivity. -->
-    <string name="default_map_activity" translatable="false">com.test.design/.presentation.ivi.map.ScalableUiBackdropActivity</string>
-    <string name="default_map_intent" translatable="false">intent:#Intent;action=android.intent.action.MAIN;component=com.test.design/.presentation.ivi.map.ScalableUiBackdropActivity;end</string>
+    <!-- Full-bleed green stock AAOS Maps placeholder (not Design OSM MapActivity). -->
+    <string name="default_map_activity" translatable="false">com.android.car.mapsplaceholder/.MapsPlaceholderActivity</string>
+    <string name="default_map_intent" translatable="false">intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;component=com.android.car.mapsplaceholder/.MapsPlaceholderActivity;end</string>
 
-    <!-- Stock AAOS green placeholder (optional). Prefer ScalableUiBackdropActivity. -->
     <string name="maps_placeholder_activity" translatable="false">com.android.car.mapsplaceholder/.MapsPlaceholderActivity</string>
 
     <!-- Floating left rail -->

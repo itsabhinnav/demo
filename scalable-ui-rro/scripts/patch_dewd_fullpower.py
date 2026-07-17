@@ -26,13 +26,7 @@ def patch_arsc(data: bytes) -> bytes:
         b"com.test.design/.presentation.ivi.glanceables.R",
         "widget_component",
     )
-    # MapsPlaceholderAct → ScalableUiBackdropActivity (solid color, no OSM).
-    data = replace_all(
-        data,
-        b"com.android.car.mapsplaceholder/.MapsPlaceholderActivity",
-        b"com.test.design/.presentation.ivi.map.MapsPlaceholderAct",
-        "default_map_activity",
-    )
+    # Keep stock AAOS MapsPlaceholderActivity as full-bleed green map_panel.
     return data
 
 

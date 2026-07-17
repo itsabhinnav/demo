@@ -4,6 +4,9 @@
   Wire selectedEvent / unselectedEvent on CarSystemBarButton to the same event ids.
 -->
 <Actions>
+    <Action intent="@string/default_map_intent">
+        <Event id="_System_TaskOpenEvent" panelId="map_panel" />
+    </Action>
     <Action intent="intent:#Intent;action=android.intent.action.MAIN;component=com.test.design/.presentation.ivi.glanceables.MediaOverlayActivity;end">
         <Event id="_Design_OpenMediaOverlay" />
     </Action>
