@@ -40,10 +40,11 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 ## Must-do for Adaptive Space panels
 
 5. **Map host**  
-   Controllers point at Design `MapActivity`. Swap
-   `string/default_map_activity` to Google Maps / Maps placeholder when ready.
-   Ensure `MapsPanelController` accepts the component and `geo:` /
-   `NAVIGATE` update filter.
+   Controllers default to stock AAOS green `MapsPlaceholderActivity`
+   (`com.android.car.mapsplaceholder`). Swap `string/default_map_activity`
+   to Design `MapActivity` or Google Maps when ready. Ensure
+   `MapsPanelController` accepts the component and `geo:` / `NAVIGATE`
+   update filter.
 
 6. **Transparent TaskPanel windows**  
    Widget rail + overlays use `Theme.Design.Panel` (app-side). SystemUI must

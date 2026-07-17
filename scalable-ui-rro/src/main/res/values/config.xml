@@ -49,7 +49,7 @@
 
     <!-- Boot hosts: panelId;component -->
     <string-array name="config_default_activities" translatable="false">
-        <item>map_panel;com.test.design/.presentation.ivi.map.MapActivity</item>
+        <item>map_panel;com.android.car.mapsplaceholder/.MapsPlaceholderActivity</item>
         <item>widget_panel;com.test.design/.presentation.ivi.glanceables.DrivingRailActivity</item>
         <item>media_overlay;com.test.design/.presentation.ivi.glanceables.MediaOverlayActivity</item>
         <item>parking_assistant;com.test.design/.presentation.ivi.adaptivespace.ParkingAssistantActivity</item>

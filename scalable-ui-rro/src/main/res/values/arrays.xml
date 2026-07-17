@@ -2,9 +2,9 @@
 <resources>
     <!-- TaskPanel role → component allowlists (Android 17 role mapping) -->
     <string-array name="role_map_components" translatable="false">
+        <item>com.android.car.mapsplaceholder/.MapsPlaceholderActivity</item>
         <item>com.test.design/.presentation.ivi.map.MapActivity</item>
         <item>com.test.design/.presentation.ivi.map.MapsPlaceholderAct</item>
-        <item>com.android.car.mapsplaceholder/.MapsPlaceholderActivity</item>
     </string-array>
 
     <string-array name="role_widget_components" translatable="false">
