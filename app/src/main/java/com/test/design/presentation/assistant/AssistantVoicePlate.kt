@@ -1,11 +1,13 @@
 package com.test.design.presentation.assistant
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,26 +26,32 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-private val PanelShape = RoundedCornerShape(28.dp)
+private val PanelShape = RoundedCornerShape(AssistantTokens.PanelCorner)
+
+private val PromptCrossfade = fadeIn(
+    tween(AssistantTokens.CrossfadeMs, easing = FastOutSlowInEasing),
+) togetherWith fadeOut(
+    tween(AssistantTokens.CrossfadeMs - 80, easing = FastOutSlowInEasing),
+)
 
 /**
- * Scalable UI–style assistant panel (Gemini-inspired).
- * Slides over the map from the trailing edge — no voice waveform.
+ * Production assistant panel — Scalable UI trailing overlay, Gemini-quiet chrome.
  */
 @Composable
 fun AssistantSidePanel(
@@ -62,121 +70,142 @@ fun AssistantSidePanel(
 
     Surface(
         modifier = modifier
-            .width(420.dp)
+            .width(AssistantTokens.PanelWidth)
             .fillMaxHeight(),
         shape = PanelShape,
-        color = Color(0xE610141C),
-        shadowElevation = 16.dp,
+        color = AssistantTokens.Surface,
+        shadowElevation = 8.dp,
         tonalElevation = 0.dp,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xF0181E2A),
-                            Color(0xF00A0C12),
+                .clip(PanelShape)
+                .border(1.dp, AssistantTokens.Hairline, PanelShape),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                AssistantTokens.SurfaceTop,
+                                AssistantTokens.SurfaceBottom,
+                            ),
                         ),
                     ),
-                ),
-        ) {
-            // Ambient field behind content
+            )
+
             AssistantPresence(
                 mood = mood,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
+                    .height(240.dp)
                     .align(Alignment.TopCenter)
-                    .padding(top = 48.dp),
+                    .padding(top = 72.dp),
             )
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .padding(AssistantTokens.ContentPadding),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                PanelHeader(
+                    playing = playback.playing,
+                    onPlayPause = playback::playPause,
+                    onReplay = playback::replay,
+                    onDismiss = onDismiss,
+                )
+
+                Spacer(Modifier.height(36.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Column {
-                        Text(
-                            text = "Assistant",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        AssistantFace(
+                            mood = mood,
+                            modifier = Modifier.size(152.dp),
                         )
+                        Spacer(Modifier.height(20.dp))
                         AnimatedContent(
                             targetState = mood.voiceLabel,
-                            transitionSpec = {
-                                fadeIn(tween(220)) togetherWith fadeOut(tween(140))
-                            },
-                            label = "mood",
+                            transitionSpec = { PromptCrossfade },
+                            label = "status",
                         ) { label ->
                             Text(
                                 text = label,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = mood.glowColor,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    letterSpacing = 0.4.sp,
+                                    fontWeight = FontWeight.Medium,
+                                ),
+                                color = mood.glowColor.copy(alpha = 0.9f),
                             )
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        FilledTonalIconButton(onClick = playback::playPause) {
-                            Icon(
-                                imageVector = if (playback.playing) {
-                                    Icons.Default.Pause
-                                } else {
-                                    Icons.Default.PlayArrow
-                                },
-                                contentDescription = if (playback.playing) "Pause" else "Play",
-                            )
-                        }
-                        FilledTonalIconButton(onClick = playback::replay) {
-                            Icon(Icons.Default.Replay, contentDescription = "Replay")
-                        }
-                        if (onDismiss != null) {
-                            FilledTonalIconButton(onClick = onDismiss) {
-                                Icon(Icons.Default.Close, contentDescription = "Close")
-                            }
                         }
                     }
                 }
 
-                Spacer(Modifier.height(28.dp))
-
-                AssistantFace(
-                    mood = mood,
-                    modifier = Modifier.size(168.dp),
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
                 AnimatedContent(
                     targetState = beat,
-                    transitionSpec = {
-                        fadeIn(tween(300)) togetherWith fadeOut(tween(180))
-                    },
+                    transitionSpec = { PromptCrossfade },
                     label = "prompt",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) { current ->
                     PanelInlinePrompt(
                         beat = current,
                         userPrompt = playback.latestUserPrompt,
                     )
                 }
+            }
+        }
+    }
+}
 
-                Spacer(Modifier.height(12.dp))
+@Composable
+private fun PanelHeader(
+    playing: Boolean,
+    onPlayPause: () -> Unit,
+    onReplay: () -> Unit,
+    onDismiss: (() -> Unit)?,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Gemini",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 0.1.sp,
+                ),
+                color = AssistantTokens.OnSurface,
+            )
+            Text(
+                text = "In-car assistant",
+                style = MaterialTheme.typography.bodySmall,
+                color = AssistantTokens.OnSurfaceMuted,
+            )
+        }
 
-                Text(
-                    text = "Map stays live under this panel",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.35f),
-                )
+        val quietColors = IconButtonDefaults.iconButtonColors(
+            contentColor = AssistantTokens.OnSurfaceVariant,
+        )
+        IconButton(onClick = onPlayPause, colors = quietColors) {
+            Icon(
+                imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = if (playing) "Pause" else "Play",
+            )
+        }
+        IconButton(onClick = onReplay, colors = quietColors) {
+            Icon(Icons.Default.Replay, contentDescription = "Replay")
+        }
+        if (onDismiss != null) {
+            IconButton(onClick = onDismiss, colors = quietColors) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
             }
         }
     }
@@ -188,40 +217,49 @@ private fun PanelInlinePrompt(
     userPrompt: String?,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         when (beat.speaker) {
             DialogueSpeaker.User -> {
                 Text(
                     text = "You",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = beat.mood.glowColor.copy(alpha = 0.9f),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        letterSpacing = 0.6.sp,
+                        fontWeight = FontWeight.Medium,
+                    ),
+                    color = AssistantTokens.Accent,
                 )
                 Text(
-                    text = "“${beat.text}”",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
+                    text = beat.text,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = 32.sp,
+                    ),
+                    color = AssistantTokens.OnSurface,
                     textAlign = TextAlign.Center,
-                    fontStyle = FontStyle.Italic,
                 )
             }
             DialogueSpeaker.Assistant -> {
                 if (!userPrompt.isNullOrBlank()) {
                     Text(
-                        text = "You · “$userPrompt”",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.4f),
+                        text = userPrompt,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AssistantTokens.OnSurfaceMuted,
                         textAlign = TextAlign.Center,
-                        fontStyle = FontStyle.Italic,
                         maxLines = 2,
                     )
                 }
                 Text(
                     text = beat.text,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = 32.sp,
+                    ),
+                    color = AssistantTokens.OnSurface,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -229,7 +267,7 @@ private fun PanelInlinePrompt(
                 Text(
                     text = beat.text,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.65f),
+                    color = AssistantTokens.OnSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -241,7 +279,7 @@ private fun PanelInlinePrompt(
 val AssistantMood.voiceLabel: String
     get() = label
 
-/** Back-compat alias while callers migrate off the old voice plate name. */
+/** Back-compat alias. */
 @Composable
 fun AssistantVoicePlate(
     mood: AssistantMood,
