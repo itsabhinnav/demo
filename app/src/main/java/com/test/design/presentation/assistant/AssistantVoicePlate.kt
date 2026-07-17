@@ -1,6 +1,9 @@
 package com.test.design.presentation.assistant
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -18,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +42,12 @@ fun AssistantVoicePlate(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
 ) {
+    val glow by animateColorAsState(
+        targetValue = mood.glowColor,
+        animationSpec = tween(520, easing = FastOutSlowInEasing),
+        label = "plate_glow",
+    )
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = PlateShape,
@@ -67,7 +77,6 @@ fun AssistantVoicePlate(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                // Drag handle
                 Box(
                     modifier = Modifier
                         .size(width = 44.dp, height = 4.dp)
@@ -82,14 +91,13 @@ fun AssistantVoicePlate(
                         .height(200.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    // Glow wash under waves + face
                     Box(
                         modifier = Modifier
                             .size(220.dp)
                             .background(
                                 Brush.radialGradient(
                                     colors = listOf(
-                                        mood.glowColor.copy(alpha = 0.28f * mood.glowIntensity),
+                                        glow.copy(alpha = 0.28f * mood.glowIntensity),
                                         Color.Transparent,
                                     ),
                                 ),
@@ -100,7 +108,7 @@ fun AssistantVoicePlate(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp),
-                        color = mood.glowColor,
+                        color = glow,
                     )
                     AssistantFace(
                         mood = mood,
@@ -113,7 +121,9 @@ fun AssistantVoicePlate(
 
                 AnimatedContent(
                     targetState = mood,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
+                    transitionSpec = {
+                        fadeIn(tween(280)) togetherWith fadeOut(tween(180))
+                    },
                     label = "plate_caption",
                 ) { current ->
                     Column(
