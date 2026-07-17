@@ -17,9 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -41,22 +41,21 @@ import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.theme.CarDesignTokens
 
 /**
- * Transparent overlay host for [VirtualAssistantActivity] — dim scrim + bottom voice plate.
+ * Transparent overlay — dialogue simulation + side persona rail.
  */
 @Composable
 fun VirtualAssistantOverlay(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    initialMood: AssistantMood = AssistantMood.Listening,
+    initialMood: AssistantMood = AssistantMood.Idle,
 ) {
     var mood by rememberSaveable { mutableStateOf(initialMood) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // Scrim — tap outside plate to dismiss; keeps map/UI visible underneath.
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.28f))
+                .background(Color.Black.copy(alpha = 0.32f))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -66,32 +65,32 @@ fun VirtualAssistantOverlay(
 
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .navigationBarsPadding(),
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {},
+                ),
         ) {
             MoodToggleRow(
                 selected = mood,
                 onSelect = { mood = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .horizontalScroll(rememberScrollState()),
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = 10.dp),
                 compact = true,
             )
-            // Consume clicks on the plate so they don't dismiss.
-            Box(
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {},
-                ),
-            ) {
-                AssistantVoicePlate(
-                    mood = mood,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+            AssistantDialogueStage(
+                mood = mood,
+                onMoodChange = { mood = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            )
         }
     }
 }
@@ -109,7 +108,6 @@ fun SharedTransitionScope.VirtualAssistantScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .padding(CarDesignTokens.SectionPadding),
         verticalArrangement = Arrangement.spacedBy(CarDesignTokens.SectionSpacing),
     ) {
@@ -118,9 +116,16 @@ fun SharedTransitionScope.VirtualAssistantScreen(
             onBack = onBack,
             animatedVisibilityScope = animatedVisibilityScope,
         )
-        VirtualAssistantStage(
+        AssistantDialogueStage(
             mood = mood,
             onMoodChange = { mood = it },
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+        )
+        MoodToggleRow(
+            selected = mood,
+            onSelect = { mood = it },
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -145,31 +150,11 @@ fun VirtualAssistantStage(
     onMoodChange: (AssistantMood) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        AssistantVoicePlate(
-            mood = mood,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.extraLarge),
-        )
-        Text(
-            text = "Mood",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
-        )
-        MoodToggleRow(
-            selected = mood,
-            onSelect = onMoodChange,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+    AssistantDialogueStage(
+        mood = mood,
+        onMoodChange = onMoodChange,
+        modifier = modifier.height(420.dp),
+    )
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
@@ -244,23 +229,30 @@ fun AssistantWidgetPreview(
         shape = MaterialTheme.shapes.large,
         color = Color(0xFF0A0C12),
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             AssistantFace(
                 mood = mood,
-                modifier = Modifier.size(88.dp),
+                modifier = Modifier.size(72.dp),
             )
-            VoiceWaveform(
-                mood = mood,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(36.dp),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Dialogue sim",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White.copy(alpha = 0.7f),
+                )
+                VoiceWaveform(
+                    mood = mood,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(28.dp),
+                )
+            }
         }
     }
 }
