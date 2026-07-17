@@ -16,7 +16,7 @@ class ThemeModeViewModel(
     private val stateKey = "app_theme_mode"
 
     val themeMode: StateFlow<AppThemeMode> = savedStateHandle
-        .getStateFlow(stateKey, AppThemeMode.System.name)
+        .getStateFlow(stateKey, AppThemeMode.Dark.name)
         .map(::parseMode)
         .stateIn(
             scope = viewModelScope,
@@ -29,7 +29,7 @@ class ThemeModeViewModel(
     }
 
     private fun parseMode(raw: String?): AppThemeMode =
-        AppThemeMode.entries.find { it.name == raw } ?: AppThemeMode.System
+        AppThemeMode.entries.find { it.name == raw } ?: AppThemeMode.Dark
 }
 
 val LocalThemeModeUpdater = staticCompositionLocalOf<(AppThemeMode) -> Unit> {
