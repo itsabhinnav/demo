@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive Space — full-bleed map under floating widgets + overlays.
-  Map stays visible/live while secondary panels animate above (Map-Under-Apps).
+  Full-bleed stock AAOS MapsPlaceholderActivity (green) under floating rail.
+  Design MapActivity / OSM is not used as the map_panel host.
 -->
 <TaskPanel
     id="map_panel"

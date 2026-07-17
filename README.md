@@ -17,7 +17,7 @@ Sealed home layout lives in **`:scalable-ui-rro`** (Android 17 Advanced Windowin
 
 | Panel | Role |
 |-------|------|
-| `map_panel` | Full-bleed stock Maps placeholder (green) under everything |
+| `map_panel` | Full-bleed stock MapsPlaceholderActivity (green) |
 | `depth_scrim` | DecorPanel Z-depth between map and overlays |
 | `widget_panel` | Floating left rail (`DrivingRailActivity`) |
 | `media_overlay` | Slide-in media controller (map stays live) |

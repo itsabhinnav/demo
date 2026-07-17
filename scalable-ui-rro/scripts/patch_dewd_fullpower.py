@@ -26,7 +26,7 @@ def patch_arsc(data: bytes) -> bytes:
         b"com.test.design/.presentation.ivi.glanceables.R",
         "widget_component",
     )
-    # Keep stock AAOS green MapsPlaceholderActivity as map_panel background.
+    # Keep stock AAOS MapsPlaceholderActivity as full-bleed green map_panel.
     return data
 
 

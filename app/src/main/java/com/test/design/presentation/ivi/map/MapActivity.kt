@@ -21,9 +21,10 @@ import com.test.design.presentation.DesignAppShell
  *
  * Launch via:
  * - App launcher (MAIN / LAUNCHER)
- * - Dewd map_panel (activity-alias MapsPlaceholderAct)
  * - [MapIntents.openMap] or [ACTION_OPEN_MAP]
  * - `geo:` / `androidx.car.app.action.NAVIGATE` intents
+ *
+ * Not used as Scalable UI `map_panel` host (that uses [ScalableUiBackdropActivity]).
  */
 class MapActivity : ComponentActivity() {
 
