@@ -139,8 +139,7 @@ fun AssistantSidePanel(
 }
 
 /**
- * Single composition: soft presence wraps the squircle face so eyes/mouth
- * stay the product, not a waveform or empty chrome.
+ * Single composition: soft presence wraps the pastel orb persona.
  */
 @Composable
 private fun PersonaStage(
@@ -148,7 +147,7 @@ private fun PersonaStage(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier.size(240.dp),
+        modifier = modifier.size(260.dp),
         contentAlignment = Alignment.Center,
     ) {
         AssistantPresence(
@@ -157,7 +156,7 @@ private fun PersonaStage(
         )
         AssistantFace(
             mood = mood,
-            modifier = Modifier.size(184.dp),
+            modifier = Modifier.size(200.dp),
         )
     }
 }
