@@ -117,6 +117,30 @@
         </activity>
 
         <activity
+            android:name=".presentation.assistant.gallery.AssistantUiGalleryActivity"
+            android:exported="true"
+            android:label="Assistant UI gallery"
+            android:theme="@style/Theme.Design.AssistantOverlay"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.APP_AUTOMOTIVE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.test.design.action.OPEN_ASSISTANT_GALLERY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
             android:name=".presentation.assistant.overlay.AssistantOverlayBootstrapActivity"
             android:exported="true"
             android:label="@string/assistant_activity_name"
