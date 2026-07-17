@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
-        hideSystemBarsImmersive()
+        // Immersive temporarily off — keep system bars visible.
+        // hideSystemBarsImmersive()
 
         openDashboardRequest.value = intent.getBooleanExtra(EXTRA_OPEN_DASHBOARD, false)
 
@@ -41,9 +42,9 @@ class MainActivity : ComponentActivity() {
             val shouldOpenDashboard by openDashboardRequest
             val navController = rememberNavController()
 
-            // Immersive launcher: map/chrome go edge-to-edge; floating bars own their margins.
+            // Immersive temporarily off; pad for system bars while debugging.
             DesignAppShell(
-                applySafeDrawingInsets = false,
+                applySafeDrawingInsets = true,
                 onOpenApps = {
                     navController.navigate(AppDestination.Dashboard) {
                         launchSingleTop = true
@@ -87,6 +88,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemBarsImmersive()
+        // Immersive temporarily off.
+        // if (hasFocus) hideSystemBarsImmersive()
     }
 }
