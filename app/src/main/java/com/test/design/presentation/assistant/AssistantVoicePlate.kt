@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -30,21 +32,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-private val PlateShape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp)
+private val PanelShape = RoundedCornerShape(28.dp)
 
 /**
- * Google Assistant–style bottom voice plate.
- * User prompts and assistant replies render as the plate’s main text — no chat list.
+ * Scalable UI–style assistant panel (Gemini-inspired).
+ * Slides over the map from the trailing edge — no voice waveform.
  */
 @Composable
-fun AssistantVoicePlate(
+fun AssistantSidePanel(
     mood: AssistantMood,
     onMoodChange: (AssistantMood) -> Unit,
     modifier: Modifier = Modifier,
@@ -59,137 +61,147 @@ fun AssistantVoicePlate(
     val beat = playback.activeBeat
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = PlateShape,
-        color = Color(0xF00A0C12),
-        shadowElevation = 24.dp,
+        modifier = modifier
+            .width(420.dp)
+            .fillMaxHeight(),
+        shape = PanelShape,
+        color = Color(0xE610141C),
+        shadowElevation = 16.dp,
         tonalElevation = 0.dp,
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
+                .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF151925),
-                            Color(0xFF080A10),
+                        listOf(
+                            Color(0xF0181E2A),
+                            Color(0xF00A0C12),
                         ),
                     ),
-                )
-                .padding(horizontal = 24.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                ),
         ) {
-            Box(
+            // Ambient field behind content
+            AssistantPresence(
+                mood = mood,
                 modifier = Modifier
-                    .size(width = 44.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White.copy(alpha = 0.22f)),
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(top = 48.dp),
             )
 
-            Spacer(Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                AnimatedContent(
-                    targetState = mood.voiceLabel,
-                    transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(140)) },
-                    label = "mood_chip",
-                ) { label ->
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = mood.glowColor,
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    FilledTonalIconButton(onClick = playback::playPause) {
-                        Icon(
-                            imageVector = if (playback.playing) {
-                                Icons.Default.Pause
-                            } else {
-                                Icons.Default.PlayArrow
-                            },
-                            contentDescription = if (playback.playing) "Pause" else "Play",
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column {
+                        Text(
+                            text = "Assistant",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
                         )
+                        AnimatedContent(
+                            targetState = mood.voiceLabel,
+                            transitionSpec = {
+                                fadeIn(tween(220)) togetherWith fadeOut(tween(140))
+                            },
+                            label = "mood",
+                        ) { label ->
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = mood.glowColor,
+                            )
+                        }
                     }
-                    FilledTonalIconButton(onClick = playback::replay) {
-                        Icon(Icons.Default.Replay, contentDescription = "Replay")
-                    }
-                    if (onDismiss != null) {
-                        FilledTonalIconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        FilledTonalIconButton(onClick = playback::playPause) {
+                            Icon(
+                                imageVector = if (playback.playing) {
+                                    Icons.Default.Pause
+                                } else {
+                                    Icons.Default.PlayArrow
+                                },
+                                contentDescription = if (playback.playing) "Pause" else "Play",
+                            )
+                        }
+                        FilledTonalIconButton(onClick = playback::replay) {
+                            Icon(Icons.Default.Replay, contentDescription = "Replay")
+                        }
+                        if (onDismiss != null) {
+                            FilledTonalIconButton(onClick = onDismiss) {
+                                Icon(Icons.Default.Close, contentDescription = "Close")
+                            }
                         }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(28.dp))
 
-            AssistantFace(
-                mood = mood,
-                modifier = Modifier.size(148.dp),
-            )
+                AssistantFace(
+                    mood = mood,
+                    modifier = Modifier.size(168.dp),
+                )
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
-            VoiceWaveform(
-                mood = mood,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 8.dp),
-            )
+                AnimatedContent(
+                    targetState = beat,
+                    transitionSpec = {
+                        fadeIn(tween(300)) togetherWith fadeOut(tween(180))
+                    },
+                    label = "prompt",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                ) { current ->
+                    PanelInlinePrompt(
+                        beat = current,
+                        userPrompt = playback.latestUserPrompt,
+                    )
+                }
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
 
-            // Inline prompt / reply — the only dialogue surface in the plate
-            AnimatedContent(
-                targetState = beat,
-                transitionSpec = { fadeIn(tween(280)) togetherWith fadeOut(tween(160)) },
-                label = "plate_prompt",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-            ) { current ->
-                VoicePlateInlinePrompt(
-                    beat = current,
-                    userPrompt = playback.latestUserPrompt,
+                Text(
+                    text = "Map stays live under this panel",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.35f),
                 )
             }
-
-            Spacer(Modifier.height(12.dp))
         }
     }
 }
 
-/**
- * Shows the active line in the plate: user prompts as heard speech,
- * assistant replies as spoken text — no conversation transcript list.
- */
 @Composable
-private fun VoicePlateInlinePrompt(
+private fun PanelInlinePrompt(
     beat: DialogueBeat,
     userPrompt: String?,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         when (beat.speaker) {
             DialogueSpeaker.User -> {
                 Text(
                     text = "You",
                     style = MaterialTheme.typography.labelMedium,
-                    color = beat.mood.glowColor.copy(alpha = 0.85f),
+                    color = beat.mood.glowColor.copy(alpha = 0.9f),
                 )
                 Text(
                     text = "“${beat.text}”",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     fontStyle = FontStyle.Italic,
@@ -200,7 +212,7 @@ private fun VoicePlateInlinePrompt(
                     Text(
                         text = "You · “$userPrompt”",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.45f),
+                        color = Color.White.copy(alpha = 0.4f),
                         textAlign = TextAlign.Center,
                         fontStyle = FontStyle.Italic,
                         maxLines = 2,
@@ -208,7 +220,7 @@ private fun VoicePlateInlinePrompt(
                 }
                 Text(
                     text = beat.text,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                 )
@@ -225,6 +237,24 @@ private fun VoicePlateInlinePrompt(
     }
 }
 
-/** Voice-plate facing label. */
+/** Shared mood label for chips + captions. */
 val AssistantMood.voiceLabel: String
     get() = label
+
+/** Back-compat alias while callers migrate off the old voice plate name. */
+@Composable
+fun AssistantVoicePlate(
+    mood: AssistantMood,
+    onMoodChange: (AssistantMood) -> Unit,
+    modifier: Modifier = Modifier,
+    onDismiss: (() -> Unit)? = null,
+    autoPlay: Boolean = true,
+) {
+    AssistantSidePanel(
+        mood = mood,
+        onMoodChange = onMoodChange,
+        modifier = modifier,
+        onDismiss = onDismiss,
+        autoPlay = autoPlay,
+    )
+}

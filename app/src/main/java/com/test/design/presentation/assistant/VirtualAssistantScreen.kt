@@ -4,11 +4,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -17,11 +18,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
@@ -43,46 +47,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
- * Google Assistant–style entry: scrim + voice plate sliding up from the bottom,
- * dialogues playing inside the plate immediately.
+ * Scalable UI–style entry: light scrim + assistant panel sliding in from the right.
+ * Dialogues play inline in the panel (no bottom voice plate / waveform).
  */
 @Composable
 fun VirtualAssistantOverlay(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
+    fromEnd: Boolean = true,
 ) {
     var mood by rememberSaveable { mutableStateOf(initialMood) }
-    var sheetVisible by remember { mutableStateOf(false) }
+    var panelVisible by remember { mutableStateOf(false) }
     var closing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        sheetVisible = true
+        panelVisible = true
     }
 
     fun dismiss() {
         if (closing) return
         closing = true
-        sheetVisible = false
+        panelVisible = false
     }
 
-    LaunchedEffect(closing, sheetVisible) {
-        if (closing && !sheetVisible) {
-            kotlinx.coroutines.delay(300)
+    LaunchedEffect(closing, panelVisible) {
+        if (closing && !panelVisible) {
+            kotlinx.coroutines.delay(320)
             onDismiss()
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
+    ) {
         AnimatedVisibility(
-            visible = sheetVisible,
+            visible = panelVisible,
             enter = fadeIn(tween(220)),
             exit = fadeOut(tween(200)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(Color.Black.copy(alpha = 0.28f))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -91,42 +101,44 @@ fun VirtualAssistantOverlay(
             )
         }
 
-        AnimatedVisibility(
-            visible = sheetVisible,
-            modifier = Modifier.align(Alignment.BottomCenter),
-            enter = slideInVertically(
-                animationSpec = tween(420),
-                initialOffsetY = { fullHeight -> fullHeight },
-            ) + fadeIn(tween(280)),
-            exit = slideOutVertically(
-                animationSpec = tween(280),
-                targetOffsetY = { fullHeight -> fullHeight },
-            ) + fadeOut(tween(200)),
+        Column(
+            modifier = Modifier
+                .align(if (fromEnd) Alignment.CenterEnd else Alignment.CenterStart)
+                .fillMaxHeight()
+                .padding(vertical = 8.dp, horizontal = 8.dp),
         ) {
-            Column(
+            MoodToggleRow(
+                selected = mood,
+                onSelect = { mood = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {},
-                    ),
+                    .padding(bottom = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+                compact = true,
+            )
+
+            AnimatedVisibility(
+                visible = panelVisible,
+                enter = slideInHorizontally(
+                    animationSpec = tween(380, easing = FastOutSlowInEasing),
+                    initialOffsetX = { full -> if (fromEnd) full else -full },
+                ) + fadeIn(tween(280)),
+                exit = slideOutHorizontally(
+                    animationSpec = tween(300),
+                    targetOffsetX = { full -> if (fromEnd) full else -full },
+                ) + fadeOut(tween(220)),
             ) {
-                MoodToggleRow(
-                    selected = mood,
-                    onSelect = { mood = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    compact = true,
-                )
-                AssistantVoicePlate(
+                AssistantSidePanel(
                     mood = mood,
                     onMoodChange = { mood = it },
                     onDismiss = { dismiss() },
                     autoPlay = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {},
+                        ),
                 )
             }
         }
@@ -141,7 +153,6 @@ fun SharedTransitionScope.VirtualAssistantScreen(
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
 ) {
-    // Widget entry uses the same bottom-sheet experience as the activity.
     VirtualAssistantOverlay(
         onDismiss = onBack,
         modifier = modifier.fillMaxSize(),
@@ -168,7 +179,7 @@ fun VirtualAssistantStage(
     onMoodChange: (AssistantMood) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AssistantVoicePlate(
+    AssistantSidePanel(
         mood = mood,
         onMoodChange = onMoodChange,
         autoPlay = true,
@@ -261,15 +272,15 @@ fun AssistantWidgetPreview(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Tap to open voice plate",
+                    text = "Tap · side panel slides in",
                     style = MaterialTheme.typography.labelLarge,
                     color = Color.White.copy(alpha = 0.7f),
                 )
-                VoiceWaveform(
+                AssistantPresence(
                     mood = mood,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(28.dp),
+                        .height(36.dp),
                 )
             }
         }

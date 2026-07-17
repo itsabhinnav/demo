@@ -65,6 +65,18 @@ class AssistantMoodTest {
     }
 
     @Test
+    fun presencePoseMorphsEnergyByMood() {
+        AssistantMood.entries.forEach { mood ->
+            val pose = mood.toPresencePose()
+            assertTrue(pose.energy in 0f..1.2f)
+            assertTrue(pose.spread in 0f..1.2f)
+            assertTrue(pose.sparkle in 0f..1.2f)
+        }
+        assertTrue(AssistantMood.Listening.toPresencePose().energy > AssistantMood.Idle.toPresencePose().energy)
+        assertTrue(AssistantMood.Searching.toPresencePose().sparkle > AssistantMood.Sad.toPresencePose().sparkle)
+    }
+
+    @Test
     fun dialogueScriptCoversAllMoods() {
         val moods = DemoDialogueScript.map { it.mood }.toSet()
         assertTrue(moods.containsAll(AssistantMood.entries.toSet()))

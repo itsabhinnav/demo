@@ -32,7 +32,7 @@ fun DashboardWidget.liveStatus(
         val charge = if (state.isCharging) "Charging" else state.driveMode.label
         "Simulated · ${state.batteryPercent}% · ${state.rangeMiles} mi · $charge"
     } ?: subtitle
-    DashboardWidget.VirtualAssistant -> "Tap · voice plate · dialogue sim"
+    DashboardWidget.VirtualAssistant -> "Tap · side panel · Gemini-style"
     DashboardWidget.MaterialComponents -> "Browse Material 3 components"
     DashboardWidget.CustomizedMaterial -> "OEM brand system preview"
     DashboardWidget.Settings -> "Driving UX · Motion Studio · Display"
