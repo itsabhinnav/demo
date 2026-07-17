@@ -2,6 +2,7 @@
 <!--
   Floating bottom SystemBar (Scalable UI), not legacy BottomCarSystemBar / CarSystemBarPanel.
   Touches the bottom edge (required); side insets + Corner give the floating glass look.
+  Literal dp for insets/radius so idmap works on products that lack Design-only dimens.
   HVAC / dock layout is CarSystemUI work (see CARSYSTEMUI.md).
 -->
 <SystemBar
@@ -14,14 +15,15 @@
     <Variant id="@+id/base">
         <Bounds
             left="0"
-            leftOffset="@dimen/system_bar_side_inset"
+            leftOffset="12dp"
             bottom="100%"
-            bottomOffset="@dimen/system_bar_edge_inset"
+            bottomOffset="0dp"
             right="100%"
-            rightOffset="@dimen/system_bar_side_inset"
+            rightOffset="12dp"
             height="@dimen/navigation_bar_height" />
-        <Corner radius="@dimen/system_bar_corner_radius" />
+        <Corner radius="28dp" />
         <Alpha alpha="1.0" />
+        <Insets left="12dp" top="0dp" right="12dp" bottom="@dimen/navigation_bar_height" />
     </Variant>
 
     <Variant id="@+id/open" parent="@id/base">

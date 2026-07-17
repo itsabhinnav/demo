@@ -58,7 +58,10 @@ plus `DynamicVariant split_resizing` for continuous drag. Hosted activities decl
 | `_Design_SplitFull` | `opened` |
 | `_Design_CloseSplit` | `closed` |
 
-Legacy bars are **off**: `config_enableTop/Bottom/Left/RightSystemBar=false`.
+Legacy `CarSystemBarPanel` paths are **off**:
+`config_enableTop/Bottom/Left/RightSystemBar=false`. Status/nav are Scalable UI
+`<SystemBar>` panels with **12dp side insets + 28dp corners** (floating glass),
+not full-bleed legacy strips.
 
 ## Build
 
