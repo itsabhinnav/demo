@@ -141,13 +141,15 @@ private val PoseSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
-private val OrbCore = Color(0xFF050508)
-private val OrbRimHi = Color(0xFF3A3A42)
-private val OrbRimLo = Color(0xFF101014)
-private val Glyph = Color(0xFFF5F7FA)
+private val OrbCore = Color(0xFF020204)
+private val OrbCoreLift = Color(0xFF16161C)
+private val OrbRimChrome = Color(0xFF9AA0A8)
+private val OrbRimDark = Color(0xFF1A1A20)
+private val Glyph = Color(0xFFF8FAFC)
+private val GlyphGlow = Color(0xCCFFFFFF)
 
 /**
- * NOMI-like assistant — matte black soft squircle, glowing white glyph face.
+ * NOMI-like assistant — premium matte squircle with chrome rim + glowing glyphs.
  */
 @Composable
 fun AssistantFace(
@@ -224,6 +226,15 @@ fun AssistantFace(
         ),
         label = "breath",
     )
+    val pulse by infinite.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "pulse",
+    )
 
     LaunchedEffect(mood) {
         while (isActive) {
@@ -262,103 +273,133 @@ fun AssistantFace(
         val side = minOf(size.width, size.height)
         val cx = size.width * 0.5f
         val cy = size.height * 0.5f
-        val shell = side * 0.78f * breath
+        val shell = side * 0.72f * breath
         val half = shell * 0.5f
-        // Soft squircle — less round than a full circle (circle would be ~0.5)
-        val corner = shell * 0.28f
-        val r = half // keep face feature scale keyed off half-size
+        val corner = shell * 0.26f
+        val r = half
         val moodTint = mood.glowColor
         val bodyLeft = cx - half
         val bodyTop = cy - half
         val bodySize = Size(shell, shell)
         val bodyRadius = CornerRadius(corner, corner)
+        val listening = mood == AssistantMood.Listening || mood == AssistantMood.Searching
 
-        val bob = sin(life * 0.55f).toFloat() * r * 0.03f
+        val bob = sin(life * 0.55f).toFloat() * r * 0.035f
         translate(top = bob) {
-            // Soft mood glow under the body
+            // Layered mood bloom
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        moodTint.copy(alpha = 0.35f * borderGlow.value),
-                        moodTint.copy(alpha = 0.08f * borderGlow.value),
+                        moodTint.copy(alpha = 0.5f * borderGlow.value),
+                        moodTint.copy(alpha = 0.16f * borderGlow.value),
                         Color.Transparent,
                     ),
                     center = Offset(cx, cy),
-                    radius = r * 1.55f,
+                    radius = r * 1.75f * if (listening) pulse else 1f,
                 ),
-                radius = r * 1.55f,
+                radius = r * 1.75f * if (listening) pulse else 1f,
                 center = Offset(cx, cy),
             )
+            if (listening) {
+                for (i in 0..2) {
+                    val p = ((pulse - 0.92f) / 0.16f + i * 0.33f) % 1f
+                    drawCircle(
+                        color = moodTint.copy(alpha = (1f - p) * 0.35f),
+                        radius = r * (1.15f + p * 0.85f),
+                        center = Offset(cx, cy),
+                        style = Stroke(width = r * 0.035f * (1f - p)),
+                    )
+                }
+            }
 
-            val liveTilt = tilt.value + 0.6f * sin(life * 0.35f).toFloat()
+            val liveTilt = tilt.value + 0.85f * sin(life * 0.35f).toFloat()
             rotate(liveTilt, pivot = Offset(cx, cy)) {
-                // Matte black squircle body
+                // Soft drop shadow under body
                 drawRoundRect(
-                    color = OrbCore,
-                    topLeft = Offset(bodyLeft, bodyTop),
+                    color = Color.Black.copy(alpha = 0.4f),
+                    topLeft = Offset(bodyLeft + r * 0.06f, bodyTop + r * 0.12f),
                     size = bodySize,
                     cornerRadius = bodyRadius,
                 )
 
-                // Soft 3D rim (top highlight → bottom shade)
+                // Body fill — slight lift gradient so it isn’t a flat void
                 drawRoundRect(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            OrbRimHi.copy(alpha = 0.55f),
-                            Color.Transparent,
-                            OrbRimLo.copy(alpha = 0.8f),
-                        ),
-                        startY = bodyTop,
-                        endY = bodyTop + shell,
+                    brush = Brush.radialGradient(
+                        colors = listOf(OrbCoreLift, OrbCore, Color(0xFF000000)),
+                        center = Offset(cx - r * 0.18f, cy - r * 0.22f),
+                        radius = r * 1.35f,
                     ),
                     topLeft = Offset(bodyLeft, bodyTop),
                     size = bodySize,
                     cornerRadius = bodyRadius,
-                    style = Stroke(width = r * 0.07f),
                 )
-                // Inner hairline
-                val inset = shell * 0.035f
+
+                // Chrome rim
                 drawRoundRect(
-                    color = Color.White.copy(alpha = 0.08f),
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.85f),
+                            OrbRimChrome,
+                            moodTint.copy(alpha = 0.55f),
+                            OrbRimDark,
+                            OrbRimChrome.copy(alpha = 0.7f),
+                        ),
+                        start = Offset(bodyLeft, bodyTop + shell),
+                        end = Offset(bodyLeft + shell, bodyTop),
+                    ),
+                    topLeft = Offset(bodyLeft, bodyTop),
+                    size = bodySize,
+                    cornerRadius = bodyRadius,
+                    style = Stroke(width = r * 0.065f),
+                )
+                // Inner glass lip
+                val inset = shell * 0.04f
+                drawRoundRect(
+                    color = Color.White.copy(alpha = 0.12f),
                     topLeft = Offset(bodyLeft + inset, bodyTop + inset),
                     size = Size(shell - inset * 2f, shell - inset * 2f),
-                    cornerRadius = CornerRadius(corner * 0.9f, corner * 0.9f),
-                    style = Stroke(width = r * 0.012f),
+                    cornerRadius = CornerRadius(corner * 0.88f, corner * 0.88f),
+                    style = Stroke(width = r * 0.014f),
                 )
-                // Specular sheen
+                // Specular
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.14f),
+                            Color.White.copy(alpha = 0.22f),
+                            Color.White.copy(alpha = 0.04f),
                             Color.Transparent,
                         ),
-                        center = Offset(cx - r * 0.28f, cy - r * 0.35f),
-                        radius = r * 0.45f,
+                        center = Offset(cx - r * 0.3f, cy - r * 0.38f),
+                        radius = r * 0.5f,
                     ),
-                    radius = r * 0.45f,
-                    center = Offset(cx - r * 0.28f, cy - r * 0.35f),
+                    radius = r * 0.5f,
+                    center = Offset(cx - r * 0.3f, cy - r * 0.38f),
                 )
 
                 val open = (eyeOpen.value * blink.value).coerceIn(0.08f, 1.3f)
-                val eW = r * 0.11f * eyeWidth.value
-                val eH = r * 0.22f * eyeHeight.value * open
-                val gap = r * 0.22f * eyeGap.value
-                val eyeY = cy - r * 0.04f + lookY.value * r * 0.1f
+                val eW = r * 0.12f * eyeWidth.value
+                val eH = r * 0.24f * eyeHeight.value * open
+                val gap = r * 0.23f * eyeGap.value
+                val eyeY = cy - r * 0.02f + lookY.value * r * 0.1f
                 val gaze = lookX.value * r * 0.06f
                 val left = Offset(cx - gap + gaze, eyeY)
                 val right = Offset(cx + gap + gaze, eyeY)
 
                 if (blush.value > 0.05f) {
-                    val a = 0.22f * blush.value
-                    drawCircle(Color(0xFFFF8FA8).copy(alpha = a), r * 0.1f, Offset(cx - r * 0.42f, cy + r * 0.18f))
-                    drawCircle(Color(0xFFFF8FA8).copy(alpha = a), r * 0.1f, Offset(cx + r * 0.42f, cy + r * 0.18f))
+                    val a = 0.28f * blush.value
+                    drawCircle(Color(0xFFFF8FA8).copy(alpha = a), r * 0.11f, Offset(cx - r * 0.44f, cy + r * 0.2f))
+                    drawCircle(Color(0xFFFF8FA8).copy(alpha = a), r * 0.11f, Offset(cx + r * 0.44f, cy + r * 0.2f))
                 }
+
+                // Soft glyph bloom behind eyes
+                drawCircle(GlyphGlow.copy(alpha = 0.12f), eW * 2.2f, left)
+                drawCircle(GlyphGlow.copy(alpha = 0.12f), eW * 2.2f, right)
 
                 drawNomiEye(left, eW, eH, eyeStyle.value, faceColor)
                 drawNomiEye(right, eW, eH, eyeStyle.value, faceColor)
 
                 drawNomiMouth(
-                    center = Offset(cx, cy + r * 0.32f),
+                    center = Offset(cx, cy + r * 0.34f),
                     faceR = r,
                     curve = mouthCurve.value,
                     open = mouthOpen.value,
