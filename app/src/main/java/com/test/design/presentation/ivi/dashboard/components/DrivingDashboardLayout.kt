@@ -52,6 +52,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.climate.ClimateEvent
@@ -79,6 +80,12 @@ private val OverlayInset = 16.dp
 /** Left-edge strip used to swipe widgets back in when the map is full-bleed. */
 private val WidgetsRevealEdgeWidth = 72.dp
 private val MapSearchShape = RoundedCornerShape(44.dp)
+/**
+ * Vertical space for [ClusterGlanceStrip] (P / LIM / battery) so the map search bar
+ * sits fully below it instead of overlapping and painting over it.
+ */
+private val ClusterGlanceStripClearance = 72.dp
+private val ClusterToMapChromeGap = 12.dp
 
 /**
  * Full-bleed map with sidebar, search, map controls, and HVAC bar.
@@ -118,6 +125,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
         val mapContentStart = OverlayInset + sidebarWidth * reveal
         val chromeTop = FloatingChromeTopSpace + OverlayInset
         val chromeBottom = FloatingChromeBottomSpace + OverlayInset
+        // Search / sidebar sit below the cluster strip so P·LIM·battery never covers Search maps.
+        val mapChromeTop = chromeTop + ClusterGlanceStripClearance + ClusterToMapChromeGap
         val widgetsVisible = reveal > 0.02f
 
         OsmMapBackground(
@@ -134,6 +143,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             rangeMiles = vehicleState.rangeMiles,
             modifier = Modifier
                 .align(Alignment.TopCenter)
+                .zIndex(2f)
                 .padding(top = chromeTop),
         )
 
@@ -148,6 +158,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
                 .width(gestureZoneWidth)
+                .zIndex(1f)
                 .semantics {
                     contentDescription = if (widgetsVisible) {
                         "Swipe left to hide widgets"
@@ -177,7 +188,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                     .padding(
                         start = OverlayInset,
                         end = OverlayInset,
-                        top = chromeTop + 56.dp,
+                        top = mapChromeTop,
                         bottom = chromeBottom,
                     )
                     .width(panelWidth)
@@ -195,11 +206,12 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier
                 .align(Alignment.TopStart)
+                .zIndex(1f)
                 .fillMaxWidth()
                 .padding(
                     start = mapContentStart,
                     end = OverlayInset + 64.dp,
-                    top = chromeTop + 56.dp,
+                    top = mapChromeTop,
                 ),
         )
 
