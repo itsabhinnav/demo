@@ -168,24 +168,38 @@ fun AssistantSidePanel(
 }
 
 /**
- * Single composition: soft presence wraps the pastel orb persona.
+ * Center stage: pastel orb persona over a cool mood-reactive waveform.
  */
 @Composable
 private fun PersonaStage(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.size(260.dp),
-        contentAlignment = Alignment.Center,
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        AssistantPresence(
+        Box(
+            modifier = Modifier.size(220.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            AssistantPresence(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+            )
+            AssistantFace(
+                mood = mood,
+                modifier = Modifier.size(176.dp),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        VoiceWaveform(
             mood = mood,
-            modifier = Modifier.fillMaxSize(),
-        )
-        AssistantFace(
-            mood = mood,
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .padding(horizontal = 8.dp),
         )
     }
 }
