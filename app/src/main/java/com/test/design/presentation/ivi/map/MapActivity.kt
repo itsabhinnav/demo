@@ -24,7 +24,7 @@ import com.test.design.presentation.DesignAppShell
  * - [MapIntents.openMap] or [ACTION_OPEN_MAP]
  * - `geo:` / `androidx.car.app.action.NAVIGATE` intents
  *
- * Not used as Scalable UI `map_panel` host (that uses [ScalableUiBackdropActivity]).
+ * Not used as Scalable UI `map_panel` host (stock MapsPlaceholderActivity is).
  */
 class MapActivity : ComponentActivity() {
 
