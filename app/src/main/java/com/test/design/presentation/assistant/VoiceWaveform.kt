@@ -1,8 +1,6 @@
 package com.test.design.presentation.assistant
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -18,84 +16,36 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlinx.coroutines.launch
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.sin
 
 /**
- * Wave layer weights — same visual system for every mood; amplitudes morph.
+ * Energy for the shared Siri-style waveform — visual stays identical; only amplitude/speed change.
  */
 internal data class WavePose(
-    val ringAmount: Float = 0.15f,
-    val ribbonAmount: Float = 0.35f,
-    val barAmount: Float = 0f,
-    val haloAmount: Float = 0.2f,
-    val energy: Float = 0.35f,
+    val amplitude: Float = 0.35f,
+    val speed: Float = 0.55f,
+    val thickness: Float = 0.7f,
+    val bloom: Float = 0.4f,
 )
 
 internal fun AssistantMood.toWavePose(): WavePose = when (this) {
-    AssistantMood.Listening -> WavePose(
-        ringAmount = 1f,
-        ribbonAmount = 0.85f,
-        barAmount = 0.15f,
-        haloAmount = 0.45f,
-        energy = 0.9f,
-    )
-    AssistantMood.Thinking -> WavePose(
-        ringAmount = 0.2f,
-        ribbonAmount = 1f,
-        barAmount = 0.05f,
-        haloAmount = 0.7f,
-        energy = 0.55f,
-    )
-    AssistantMood.Speaking -> WavePose(
-        ringAmount = 0.25f,
-        ribbonAmount = 0.35f,
-        barAmount = 1f,
-        haloAmount = 0.35f,
-        energy = 0.85f,
-    )
-    AssistantMood.Searching -> WavePose(
-        ringAmount = 0.75f,
-        ribbonAmount = 0.7f,
-        barAmount = 0.2f,
-        haloAmount = 0.4f,
-        energy = 0.8f,
-    )
-    AssistantMood.Happy -> WavePose(
-        ringAmount = 0.35f,
-        ribbonAmount = 0.45f,
-        barAmount = 0.1f,
-        haloAmount = 0.5f,
-        energy = 0.65f,
-    )
-    AssistantMood.Sad -> WavePose(
-        ringAmount = 0.12f,
-        ribbonAmount = 0.25f,
-        barAmount = 0f,
-        haloAmount = 0.25f,
-        energy = 0.3f,
-    )
-    AssistantMood.Reading -> WavePose(
-        ringAmount = 0.2f,
-        ribbonAmount = 0.4f,
-        barAmount = 0.08f,
-        haloAmount = 0.3f,
-        energy = 0.45f,
-    )
-    AssistantMood.Idle -> WavePose(
-        ringAmount = 0.18f,
-        ribbonAmount = 0.32f,
-        barAmount = 0f,
-        haloAmount = 0.22f,
-        energy = 0.35f,
-    )
+    AssistantMood.Listening -> WavePose(amplitude = 0.95f, speed = 0.85f, thickness = 1f, bloom = 0.9f)
+    AssistantMood.Speaking -> WavePose(amplitude = 1f, speed = 1.1f, thickness = 1.05f, bloom = 0.85f)
+    AssistantMood.Thinking -> WavePose(amplitude = 0.55f, speed = 0.45f, thickness = 0.8f, bloom = 0.6f)
+    AssistantMood.Searching -> WavePose(amplitude = 0.8f, speed = 1f, thickness = 0.9f, bloom = 0.75f)
+    AssistantMood.Happy -> WavePose(amplitude = 0.7f, speed = 0.75f, thickness = 0.85f, bloom = 0.7f)
+    AssistantMood.Sad -> WavePose(amplitude = 0.28f, speed = 0.35f, thickness = 0.55f, bloom = 0.3f)
+    AssistantMood.Reading -> WavePose(amplitude = 0.4f, speed = 0.5f, thickness = 0.65f, bloom = 0.45f)
+    AssistantMood.Idle -> WavePose(amplitude = 0.32f, speed = 0.4f, thickness = 0.6f, bloom = 0.35f)
 }
 
 private val WaveSpring = spring<Float>(
@@ -103,8 +53,24 @@ private val WaveSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
+/** Siri-like palette — teal → cyan → indigo → magenta → warm. */
+private val WaveLayers = listOf(
+    WaveLayer(Color(0xFFFFB74D), 1.05f, 0.55f, 0.9f),
+    WaveLayer(Color(0xFFE040FB), 0.95f, 0.7f, 1.15f),
+    WaveLayer(Color(0xFF7C4DFF), 0.85f, 0.75f, 0.8f),
+    WaveLayer(Color(0xFF40C4FF), 0.75f, 0.8f, 1.05f),
+    WaveLayer(Color(0xFF26A69A), 0.65f, 0.7f, 0.95f),
+)
+
+private data class WaveLayer(
+    val color: Color,
+    val ampScale: Float,
+    val alpha: Float,
+    val freq: Float,
+)
+
 /**
- * Unified voice waves — listening / working / speaking share one layer that morphs.
+ * Colorful multi-layer organic waveform. Same look for every state — energy morphs.
  */
 @Composable
 fun VoiceWaveform(
@@ -113,159 +79,116 @@ fun VoiceWaveform(
     color: Color = mood.glowColor,
 ) {
     val target = mood.toWavePose()
-    val ringAmount = remember { Animatable(target.ringAmount) }
-    val ribbonAmount = remember { Animatable(target.ribbonAmount) }
-    val barAmount = remember { Animatable(target.barAmount) }
-    val haloAmount = remember { Animatable(target.haloAmount) }
-    val energy = remember { Animatable(target.energy) }
-
-    val waveColor by animateColorAsState(
-        targetValue = color,
-        animationSpec = tween(520, easing = FastOutSlowInEasing),
-        label = "wave_color",
-    )
+    val amplitude = remember { Animatable(target.amplitude) }
+    val speed = remember { Animatable(target.speed) }
+    val thickness = remember { Animatable(target.thickness) }
+    val bloom = remember { Animatable(target.bloom) }
 
     LaunchedEffect(mood) {
-        launch { ringAmount.animateTo(target.ringAmount, WaveSpring) }
-        launch { ribbonAmount.animateTo(target.ribbonAmount, WaveSpring) }
-        launch { barAmount.animateTo(target.barAmount, WaveSpring) }
-        launch { haloAmount.animateTo(target.haloAmount, WaveSpring) }
-        launch { energy.animateTo(target.energy, WaveSpring) }
+        launch { amplitude.animateTo(target.amplitude, WaveSpring) }
+        launch { speed.animateTo(target.speed, WaveSpring) }
+        launch { thickness.animateTo(target.thickness, WaveSpring) }
+        launch { bloom.animateTo(target.bloom, WaveSpring) }
     }
 
-    val infinite = rememberInfiniteTransition(label = "voice_wave")
+    val infinite = rememberInfiniteTransition(label = "siri_wave")
     val phase by infinite.animateFloat(
         initialValue = 0f,
         targetValue = (2f * PI).toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(1600, easing = LinearEasing),
+            animation = tween(2400, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
-        label = "wave_phase",
+        label = "phase",
     )
-    val pulse by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "wave_pulse",
-    )
+
+    // Suppress unused color param warning while keeping API stable for callers.
+    @Suppress("UNUSED_VARIABLE")
+    val ignoredAccent = color
 
     Canvas(modifier = modifier) {
-        drawUnifiedWaves(
-            color = waveColor,
-            phase = phase,
-            pulse = pulse,
-            ringAmount = ringAmount.value,
-            ribbonAmount = ribbonAmount.value,
-            barAmount = barAmount.value,
-            haloAmount = haloAmount.value,
-            energy = energy.value,
+        drawSiriWaveform(
+            phase = phase * (0.55f + speed.value),
+            amplitude = amplitude.value,
+            thickness = thickness.value,
+            bloom = bloom.value,
         )
     }
 }
 
-private fun DrawScope.drawUnifiedWaves(
-    color: Color,
+private fun DrawScope.drawSiriWaveform(
     phase: Float,
-    pulse: Float,
-    ringAmount: Float,
-    ribbonAmount: Float,
-    barAmount: Float,
-    haloAmount: Float,
-    energy: Float,
-) {
-    val cx = size.width * 0.5f
-    val cy = size.height * 0.48f
-    val maxR = minOf(size.width, size.height) * 0.48f
-
-    if (haloAmount > 0.02f) {
-        val breath = 0.88f + 0.12f * sin(phase).toFloat()
-        drawCircle(
-            color = color.copy(alpha = 0.16f * haloAmount * energy),
-            radius = maxR * 0.72f * breath,
-            center = Offset(cx, cy),
-        )
-    }
-
-    if (ringAmount > 0.02f) {
-        for (i in 0..3) {
-            val t = ((pulse + i * 0.22f) % 1f)
-            val r = maxR * (0.28f + t * 0.72f)
-            val alpha = (1f - t) * 0.42f * ringAmount * energy
-            if (alpha < 0.01f) continue
-            drawCircle(
-                color = color.copy(alpha = alpha),
-                radius = r,
-                center = Offset(cx, cy),
-                style = Stroke(width = (3.5f - t * 1.5f) * (0.6f + 0.4f * ringAmount)),
-            )
-        }
-    }
-
-    if (ribbonAmount > 0.02f) {
-        val ampBase = size.height * 0.055f * ribbonAmount * (0.65f + 0.35f * energy)
-        drawSineRibbon(
-            color = color.copy(alpha = 0.5f * ribbonAmount),
-            y = size.height * 0.78f,
-            amplitude = ampBase,
-            wavelength = size.width * 0.3f,
-            phase = phase,
-            stroke = 3.2f,
-        )
-        drawSineRibbon(
-            color = color.copy(alpha = 0.28f * ribbonAmount),
-            y = size.height * 0.84f,
-            amplitude = ampBase * 0.65f,
-            wavelength = size.width * 0.36f,
-            phase = -phase * 1.15f,
-            stroke = 2.4f,
-        )
-    }
-
-    if (barAmount > 0.02f) {
-        val barCount = 28
-        val gap = size.width * 0.012f
-        val totalGap = gap * (barCount - 1)
-        val barW = ((size.width * 0.72f) - totalGap) / barCount
-        val startX = size.width * 0.14f
-        val midY = size.height * 0.78f
-        val maxH = size.height * 0.2f * barAmount
-
-        for (i in 0 until barCount) {
-            val n = i / barCount.toFloat()
-            val envelope = sin(n * PI).toFloat().coerceAtLeast(0.15f)
-            val wobble = abs(sin(phase * 1.6f + i * 0.55f)).toFloat()
-            val h = maxH * envelope * (0.22f + 0.78f * wobble) * energy
-            val x = startX + i * (barW + gap)
-            drawLine(
-                color = color.copy(alpha = (0.3f + 0.5f * wobble) * barAmount),
-                start = Offset(x + barW * 0.5f, midY - h),
-                end = Offset(x + barW * 0.5f, midY + h * 0.5f),
-                strokeWidth = barW.coerceAtMost(8f),
-                cap = StrokeCap.Round,
-            )
-        }
-    }
-}
-
-private fun DrawScope.drawSineRibbon(
-    color: Color,
-    y: Float,
     amplitude: Float,
-    wavelength: Float,
-    phase: Float,
-    stroke: Float,
+    thickness: Float,
+    bloom: Float,
 ) {
-    if (size.width <= 0f || amplitude < 0.5f) return
-    val path = Path()
-    val steps = 64
-    for (i in 0..steps) {
-        val x = size.width * i / steps.toFloat()
-        val yy = y + amplitude * sin((x / wavelength) * 2f * PI + phase).toFloat()
-        if (i == 0) path.moveTo(x, yy) else path.lineTo(x, yy)
+    if (size.width <= 0f || size.height <= 0f) return
+    val midY = size.height * 0.5f
+    val maxAmp = size.height * 0.42f * amplitude
+    val steps = 96
+
+    // Soft bloom behind the ribbons
+    if (bloom > 0.05f) {
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF7C4DFF).copy(alpha = 0.18f * bloom),
+                    Color(0xFF40C4FF).copy(alpha = 0.1f * bloom),
+                    Color.Transparent,
+                ),
+                center = Offset(size.width * 0.5f, midY),
+                radius = size.width * 0.42f,
+            ),
+            radius = size.width * 0.42f,
+            center = Offset(size.width * 0.5f, midY),
+        )
     }
-    drawPath(path, color, style = Stroke(width = stroke, cap = StrokeCap.Round))
+
+    // Colored organic ribbons (filled lobes above/below center)
+    WaveLayers.forEachIndexed { index, layer ->
+        val path = Path()
+        val layerAmp = maxAmp * layer.ampScale
+        val layerPhase = phase * layer.freq + index * 0.7f
+        path.moveTo(0f, midY)
+        for (i in 0..steps) {
+            val t = i / steps.toFloat()
+            val x = size.width * t
+            val envelope = sin(t * PI).toFloat().coerceAtLeast(0f)
+            val y = midY - layerAmp * envelope *
+                (0.55f + 0.45f * sin(t * PI * 3f * layer.freq + layerPhase).toFloat())
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        for (i in steps downTo 0) {
+            val t = i / steps.toFloat()
+            val x = size.width * t
+            val envelope = sin(t * PI).toFloat().coerceAtLeast(0f)
+            val y = midY + layerAmp * 0.85f * envelope *
+                (0.5f + 0.5f * sin(t * PI * 2.6f * layer.freq - layerPhase * 0.8f + 1.2f).toFloat())
+            path.lineTo(x, y)
+        }
+        path.close()
+        drawPath(
+            path = path,
+            color = layer.color.copy(alpha = layer.alpha * (0.45f + 0.55f * amplitude)),
+            style = Fill,
+        )
+    }
+
+    // Bright center spine
+    val spine = Path()
+    for (i in 0..steps) {
+        val t = i / steps.toFloat()
+        val x = size.width * t
+        val envelope = sin(t * PI).toFloat()
+        val y = midY + maxAmp * 0.08f * envelope * sin(t * 8f + phase * 1.4f).toFloat()
+        if (i == 0) spine.moveTo(x, y) else spine.lineTo(x, y)
+    }
+    drawPath(
+        spine,
+        Color.White.copy(alpha = 0.85f),
+        style = Stroke(
+            width = (2.5f * thickness).coerceAtLeast(1.5f),
+            cap = StrokeCap.Round,
+        ),
+    )
 }
