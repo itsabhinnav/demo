@@ -42,8 +42,8 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 5. **Map host**  
    Controllers default to stock AAOS green `MapsPlaceholderActivity`
    (`com.android.car.mapsplaceholder`) full-bleed under the floating rail.
-   Do not point `default_map_activity` at Design `MapActivity` unless you
-   intentionally want OSM in Scalable UI.
+   Do **not** use Design `MapActivity`, `MapsPlaceholderAct`, or any app-side
+   solid backdrop — those look different from the real placeholder.
 
 6. **Transparent TaskPanel windows**  
    Widget rail + overlays use `Theme.Design.Panel` (app-side). SystemUI must
