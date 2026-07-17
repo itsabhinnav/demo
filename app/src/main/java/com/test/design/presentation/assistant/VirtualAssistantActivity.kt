@@ -1,5 +1,7 @@
 package com.test.design.presentation.assistant
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -7,17 +9,32 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import com.test.design.presentation.DesignAppShell
+import kotlinx.coroutines.flow.collectLatest
 
 /**
- * Transparent virtual-assistant host — only the side panel is drawn.
+ * Transparent NOMI host — black orb only, no panel / no text.
  *
- * Launch from the app launcher or via [ACTION_OPEN_ASSISTANT]. Content behind
- * the activity stays fully visible (no scrim / dim).
+ * Listens for “Hey assistant”; on match the orb peeks / bounces / falls in
+ * with a random entrance. Tap summons when speech isn’t available.
  */
 class VirtualAssistantActivity : ComponentActivity() {
+
+    private var micGranted by mutableStateOf(false)
+
+    private val micPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        micGranted = granted
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,15 +45,29 @@ class VirtualAssistantActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
 
+        micGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!micGranted) {
+            micPermission.launch(Manifest.permission.RECORD_AUDIO)
+        }
+
         setContent {
             DesignAppShell(
                 applySafeDrawingInsets = false,
                 showFloatingSystemBars = false,
                 showScreenBackground = false,
             ) {
+                LaunchedEffect(micGranted) {
+                    if (!micGranted) return@LaunchedEffect
+                    hotwordDetections(this@VirtualAssistantActivity).collectLatest {
+                        notifyAssistantHotword()
+                    }
+                }
+
                 VirtualAssistantOverlay(
-                    onDismiss = { finish() },
+                    onDismiss = { /* keep listening for the next hotword */ },
                     modifier = Modifier.fillMaxSize(),
+                    awaitHotword = true,
                 )
             }
         }
