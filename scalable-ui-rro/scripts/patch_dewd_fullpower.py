@@ -26,7 +26,14 @@ def patch_arsc(data: bytes) -> bytes:
         b"com.test.design/.presentation.ivi.glanceables.R",
         "widget_component",
     )
-    # Keep stock AAOS MapsPlaceholderActivity as full-bleed green map_panel.
+    # Stock MapsPlaceholderActivity only declares APP_MAPS (not LAUNCHER).
+    # Same-length swap so Dewd DefaultIntent actually starts the green placeholder.
+    data = replace_all(
+        data,
+        b"android.intent.category.LAUNCHER",
+        b"android.intent.category.APP_MAPS",
+        "default_map_intent category",
+    )
     return data
 
 

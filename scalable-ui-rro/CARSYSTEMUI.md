@@ -41,10 +41,10 @@ CarSystemUI (or product) code / layouts — do them when you work in the SystemU
 
 5. **Map host**  
    Controllers default to stock AAOS `MapsPlaceholderActivity`
-   (`com.android.car.mapsplaceholder`, `car_green_500` + error text).
-   Intent must use `APP_MAPS` (not `LAUNCHER`). Prefer
-   `BaseTaskPanelController` + `PersistentActivity` so the panel does not
-   stay black when `MapsPanelController` fails to bind.
+   (`com.android.car.mapsplaceholder`, `car_green_500` + “no maps installed” text).
+   Intent must use `APP_MAPS` (not `LAUNCHER`) — Dewd Dynamic ships LAUNCHER;
+   `patch_dewd_fullpower.py` rewrites that category in-place. Prefer
+   `BaseTaskPanelController` + `PersistentActivity` on Design RRO.
 
 6. **Transparent TaskPanel windows**  
    Widget rail + overlays use `Theme.Design.Panel` (app-side). SystemUI must
