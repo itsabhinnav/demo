@@ -70,5 +70,10 @@ class AssistantMoodTest {
         assertTrue(moods.containsAll(AssistantMood.entries.toSet()))
         assertTrue(DemoDialogueScript.any { it.speaker == DialogueSpeaker.User })
         assertTrue(DemoDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })
+        assertTrue(
+            DemoDialogueScript.any {
+                it.speaker == DialogueSpeaker.User && it.text.isNotBlank()
+            },
+        )
     }
 }
