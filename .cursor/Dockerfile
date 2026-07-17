@@ -24,4 +24,9 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
         "build-tools;37.0.0" \
         "emulator" \
         "system-images;android-34;google_apis;x86_64" \
+        "system-images;android-37.0;google_apis_ps16k;x86_64" \
+    # Android 17 (API 37) AVD — requires a host with KVM to boot (the Android 17
+    # x86_64 image needs AVX/F16C, which QEMU software/TCG mode cannot emulate).
+    && echo "no" | avdmanager create avd -n android17_avd -k "system-images;android-37.0;google_apis_ps16k;x86_64" --device "pixel_6" --force \
+    # Android 14 (API 34) AVD — boots under software emulation (no KVM) in cloud VMs.
     && echo "no" | avdmanager create avd -n cloud_avd -k "system-images;android-34;google_apis;x86_64" --device "pixel_6" --force
