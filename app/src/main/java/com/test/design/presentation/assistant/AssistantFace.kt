@@ -147,7 +147,7 @@ private val OrbRimLo = Color(0xFF101014)
 private val Glyph = Color(0xFFF5F7FA)
 
 /**
- * NOMI-like assistant orb — matte black sphere, glowing white glyph face.
+ * NOMI-like assistant — matte black soft squircle, glowing white glyph face.
  */
 @Composable
 fun AssistantFace(
@@ -262,12 +262,20 @@ fun AssistantFace(
         val side = minOf(size.width, size.height)
         val cx = size.width * 0.5f
         val cy = size.height * 0.5f
-        val r = side * 0.42f * breath
+        val shell = side * 0.78f * breath
+        val half = shell * 0.5f
+        // Soft squircle — less round than a full circle (circle would be ~0.5)
+        val corner = shell * 0.28f
+        val r = half // keep face feature scale keyed off half-size
         val moodTint = mood.glowColor
+        val bodyLeft = cx - half
+        val bodyTop = cy - half
+        val bodySize = Size(shell, shell)
+        val bodyRadius = CornerRadius(corner, corner)
 
         val bob = sin(life * 0.55f).toFloat() * r * 0.03f
         translate(top = bob) {
-            // Soft mood glow under the orb
+            // Soft mood glow under the body
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
@@ -284,29 +292,37 @@ fun AssistantFace(
 
             val liveTilt = tilt.value + 0.6f * sin(life * 0.35f).toFloat()
             rotate(liveTilt, pivot = Offset(cx, cy)) {
-                // Matte black sphere body
-                drawCircle(OrbCore, r, Offset(cx, cy))
+                // Matte black squircle body
+                drawRoundRect(
+                    color = OrbCore,
+                    topLeft = Offset(bodyLeft, bodyTop),
+                    size = bodySize,
+                    cornerRadius = bodyRadius,
+                )
 
                 // Soft 3D rim (top highlight → bottom shade)
-                drawCircle(
+                drawRoundRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             OrbRimHi.copy(alpha = 0.55f),
                             Color.Transparent,
                             OrbRimLo.copy(alpha = 0.8f),
                         ),
-                        startY = cy - r,
-                        endY = cy + r,
+                        startY = bodyTop,
+                        endY = bodyTop + shell,
                     ),
-                    radius = r,
-                    center = Offset(cx, cy),
+                    topLeft = Offset(bodyLeft, bodyTop),
+                    size = bodySize,
+                    cornerRadius = bodyRadius,
                     style = Stroke(width = r * 0.07f),
                 )
                 // Inner hairline
-                drawCircle(
+                val inset = shell * 0.035f
+                drawRoundRect(
                     color = Color.White.copy(alpha = 0.08f),
-                    radius = r * 0.96f,
-                    center = Offset(cx, cy),
+                    topLeft = Offset(bodyLeft + inset, bodyTop + inset),
+                    size = Size(shell - inset * 2f, shell - inset * 2f),
+                    cornerRadius = CornerRadius(corner * 0.9f, corner * 0.9f),
                     style = Stroke(width = r * 0.012f),
                 )
                 // Specular sheen
