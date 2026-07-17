@@ -68,6 +68,8 @@ Legacy bars are **off**: `config_enableTop/Bottom/Left/RightSystemBar=false`.
 ./scripts/sync-prebuilts.sh
 ```
 
+Windows: `.\scripts\sync-prebuilts.ps1`
+
 ## Install (products that already declare these resource names)
 
 ```bash
