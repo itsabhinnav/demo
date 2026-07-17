@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
 import com.test.design.presentation.ivi.climate.ClimateZone
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
@@ -135,17 +134,13 @@ fun FanSpeedBars(
                 animationSpec = motionSpec,
                 label = "fan_bar_$level",
             )
-            val barShape = RoundedCornerShape(8.dp)
-            val scheme = MaterialTheme.colorScheme
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .height(targetHeight)
-                    .skeuomorphicFanBar(
-                        shape = barShape,
-                        active = active,
-                        primary = scheme.primary.copy(alpha = 0.35f + animatedFraction * 0.65f),
-                        container = scheme.surfaceContainerHigh,
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.25f + animatedFraction * 0.75f),
                     )
                     .carTouchTarget()
                     .clickable { onSpeedSelected(level) },

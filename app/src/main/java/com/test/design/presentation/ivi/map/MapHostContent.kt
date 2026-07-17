@@ -1,11 +1,11 @@
 package com.test.design.presentation.ivi.map
 
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,8 +17,8 @@ import com.test.design.presentation.ivi.navigation.NavigationScreen
 import com.test.design.presentation.ivi.navigation.NavigationViewModel
 
 /**
- * Standalone map/navigation host for [MapActivity] — same UI as tapping
- * "Search maps" on the driving home screen.
+ * Standalone map/navigation host for [MapActivity] — Scalable UI `map_panel` content.
+ * SystemUI owns status/nav bars; do not pad for Compose fake chrome.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -31,21 +31,22 @@ fun MapHostContent(
 
     IviExpressiveTheme {
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
-            AnimatedContent(
-                targetState = Unit,
+            AnimatedVisibility(
+                visible = true,
                 modifier = Modifier.fillMaxSize(),
-                transitionSpec = {
-                    EnterTransition.None togetherWith ExitTransition.None
-                },
+                enter = EnterTransition.None,
+                exit = ExitTransition.None,
                 label = "map_host",
             ) {
-                NavigationScreen(
-                    uiState = navigationState,
-                    onEvent = navigationViewModel::onEvent,
-                    onBack = onBack,
-                    animatedVisibilityScope = this@AnimatedContent,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    NavigationScreen(
+                        uiState = navigationState,
+                        onEvent = navigationViewModel::onEvent,
+                        onBack = onBack,
+                        animatedVisibilityScope = this@AnimatedVisibility,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }

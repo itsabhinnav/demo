@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Map panel host — Design MapActivity (swap to Google Maps component when ready). -->
+    <string name="default_map_activity" translatable="false">com.test.design/.presentation.ivi.map.MapActivity</string>
+    <string name="default_map_intent" translatable="false">intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;component=com.test.design/.presentation.ivi.map.MapActivity;end</string>
+
+    <!-- Stock AAOS maps placeholder (optional swap target). -->
+    <string name="maps_placeholder_activity" translatable="false">com.android.car.mapsplaceholder/.MapsPlaceholderActivity</string>
+
+    <!-- Floating left rail -->
+    <string name="widget_component" translatable="false">com.test.design/.presentation.ivi.glanceables.DrivingRailActivity</string>
+</resources>

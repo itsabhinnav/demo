@@ -27,6 +27,9 @@ import com.test.design.core.motion.AppMotionScheme
 import com.test.design.core.motion.LocalAppMotionScheme
 import com.test.design.core.motion.LocalEffectiveMotionScheme
 import com.test.design.core.motion.LocalMotionSchemeUpdater
+import com.test.design.core.theme.AppThemeMode
+import com.test.design.core.theme.LocalAppThemeMode
+import com.test.design.core.theme.LocalThemeModeUpdater
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -49,6 +52,8 @@ fun SharedTransitionScope.SettingsScreen(
     val selectedMotionScheme = LocalAppMotionScheme.current
     val effectiveMotionScheme = LocalEffectiveMotionScheme.current
     val onMotionSchemeChange = LocalMotionSchemeUpdater.current
+    val selectedThemeMode = LocalAppThemeMode.current
+    val onThemeModeChange = LocalThemeModeUpdater.current
     val motionLocked = drivingState != DrivingUxState.Parked
 
     DetailSurfaceCard(
@@ -127,9 +132,40 @@ fun SharedTransitionScope.SettingsScreen(
                     }
                     HorizontalDivider()
                     Text(
+                        text = "Appearance",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing)) {
+                        items(AppThemeMode.entries, key = { it.name }) { mode ->
+                            FilterChip(
+                                selected = selectedThemeMode == mode,
+                                onClick = { onThemeModeChange(mode) },
+                                modifier = Modifier
+                                    .carTouchTarget()
+                                    .height(CarDesignTokens.MinTouchTarget),
+                                label = { Text(mode.label, style = MaterialTheme.typography.labelLarge) },
+                            )
+                        }
+                    }
+                    HorizontalDivider()
+                    Text(
                         text = "Display",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    ListItem(
+                        modifier = Modifier.carListItemHeight(),
+                        headlineContent = {
+                            Text("Theme", style = MaterialTheme.typography.bodyLarge)
+                        },
+                        supportingContent = {
+                            Text(
+                                selectedThemeMode.label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
                     )
                     ListItem(
                         modifier = Modifier.carListItemHeight(),

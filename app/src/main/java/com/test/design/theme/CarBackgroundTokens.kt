@@ -6,8 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 object CarBackgroundTokens {
-    /** Matches `background_image_lhd.png` — automotive dark gray canvas. */
-    val CanvasGray = Color(0xFF1C1E22)
+    /** Automotive dark gray canvas (matches `background_image_lhd.png`). */
+    val CanvasDark = Color(0xFF1C1E22)
+
+    /** Soft light canvas for daytime / light theme. */
+    val CanvasLight = Color(0xFFF0F2F5)
+
+    @Deprecated("Use CanvasDark", ReplaceWith("CanvasDark"))
+    val CanvasGray = CanvasDark
 
     const val TopBarAlpha = 0.86f
     const val GlassSurfaceAlpha = 0.90f

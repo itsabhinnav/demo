@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -23,11 +22,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
-import com.test.design.presentation.ivi.climate.components.FrontDefrostIcon
-import com.test.design.presentation.ivi.climate.components.SeatHeatIcon
+import com.test.design.presentation.ivi.climate.components.ClimateHvacIcons
 import com.test.design.presentation.ivi.climate.formatTemperature
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
@@ -80,7 +79,7 @@ fun SharedTransitionScope.DashboardClimateBar(
                 modifier = Modifier.size(52.dp),
             ) {
                 Icon(
-                    imageVector = FrontDefrostIcon,
+                    painter = painterResource(ClimateHvacIcons.FrontDefrost),
                     contentDescription = "Front defrost",
                     modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
                 )
@@ -90,7 +89,7 @@ fun SharedTransitionScope.DashboardClimateBar(
                 modifier = Modifier.size(52.dp),
             ) {
                 Icon(
-                    imageVector = SeatHeatIcon,
+                    painter = painterResource(ClimateHvacIcons.SeatHeat),
                     contentDescription = "Seat heat",
                     tint = if (climateState.seatHeatLevel > 0) {
                         MaterialTheme.colorScheme.tertiary
@@ -117,7 +116,7 @@ fun SharedTransitionScope.DashboardClimateBar(
                 ),
             ) {
                 Icon(
-                    imageVector = Icons.Default.AcUnit,
+                    painter = painterResource(ClimateHvacIcons.Ac),
                     contentDescription = "A/C",
                     modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
                 )

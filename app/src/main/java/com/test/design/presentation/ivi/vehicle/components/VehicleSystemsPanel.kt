@@ -59,6 +59,7 @@ fun VehicleSystemsPanel(
         modifier = modifier.fillMaxWidth(),
         shape = ExpressiveShapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shadowElevation = 4.dp,
     ) {
         Column(
@@ -73,7 +74,11 @@ fun VehicleSystemsPanel(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text("Vehicle health", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Vehicle health",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     Text(
                         text = if (alertCount == 0) "All systems nominal" else "$alertCount item${if (alertCount == 1) "" else "s"} to review",
                         style = MaterialTheme.typography.bodyMedium,
@@ -159,6 +164,7 @@ private fun PowerFlowStrip(
             .clickable(onClick = onRegenClick),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -172,6 +178,7 @@ private fun PowerFlowStrip(
                 Text(
                     text = if (isCharging) "Charging flow" else "Regenerative braking",
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = if (isCharging) "AC" else regenLevel.label,
@@ -283,6 +290,7 @@ private fun SystemMetricRow(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = containerColor,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Row(
             modifier = Modifier
@@ -305,7 +313,11 @@ private fun SystemMetricRow(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(system.label, style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        system.label,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     Text(
                         "${system.valuePercent}%",
                         style = MaterialTheme.typography.labelLarge,

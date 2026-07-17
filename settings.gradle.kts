@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Design"
 include(":app")
+include(":scalable-ui-rro")
+include(":framework-scalable-rro")

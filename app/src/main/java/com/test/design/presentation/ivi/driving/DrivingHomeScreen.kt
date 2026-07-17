@@ -8,6 +8,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,12 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.DashboardViewModel
 import com.test.design.presentation.ivi.dashboard.components.DrivingDashboardLayout
+import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.map.MapLaunchConfig
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
@@ -45,7 +48,7 @@ fun DrivingHomeScreen(
     mapLaunchConfig: MapLaunchConfig = MapLaunchConfig.default(),
     onOpenMain: (() -> Unit)? = null,
     dashboardViewModel: DashboardViewModel = viewModel(),
-    climateViewModel: ClimateViewModel = viewModel(),
+    climateViewModel: ClimateViewModel = activityViewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
     navigationViewModel: NavigationViewModel = viewModel(),
     vehicleViewModel: VehicleViewModel = viewModel(),
@@ -105,41 +108,49 @@ fun DrivingHomeScreen(
                         onOpenMain = onOpenMain,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    DashboardWidget.Climate -> ClimateControlScreen(
-                        uiState = climateState,
-                        activeTemperature = climateViewModel.activeTemperature(),
-                        onEvent = climateViewModel::onEvent,
-                        onBack = collapseWidget,
-                        animatedVisibilityScope = this@AnimatedContent,
-                    )
-                    DashboardWidget.Media -> MediaPlayerScreen(
-                        uiState = mediaState,
-                        onEvent = mediaViewModel::onEvent,
-                        onBack = collapseWidget,
-                        animatedVisibilityScope = this@AnimatedContent,
-                    )
-                    DashboardWidget.Navigation -> NavigationScreen(
-                        uiState = navigationState,
-                        onEvent = navigationViewModel::onEvent,
-                        onBack = collapseWidget,
-                        animatedVisibilityScope = this@AnimatedContent,
-                    )
-                    DashboardWidget.Vehicle -> VehicleScreen(
-                        uiState = vehicleState,
-                        onEvent = vehicleViewModel::onEvent,
-                        onBack = collapseWidget,
-                        animatedVisibilityScope = this@AnimatedContent,
-                    )
-                    DashboardWidget.MaterialComponents -> MaterialComponentsScreen(
-                        onBack = collapseWidget,
-                    )
-                    DashboardWidget.CustomizedMaterial -> CustomizedMaterialComponentsScreen(
-                        onBack = collapseWidget,
-                    )
-                    DashboardWidget.Settings -> SettingsScreen(
-                        onBack = collapseWidget,
-                        animatedVisibilityScope = this@AnimatedContent,
-                    )
+                    else -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .floatingSystemChromePadding(),
+                    ) {
+                        when (expandedWidget) {
+                            DashboardWidget.Climate -> ClimateControlScreen(
+                                uiState = climateState,
+                                activeTemperature = climateViewModel.activeTemperature(),
+                                onEvent = climateViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                            DashboardWidget.Media -> MediaPlayerScreen(
+                                uiState = mediaState,
+                                onEvent = mediaViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                            DashboardWidget.Navigation -> NavigationScreen(
+                                uiState = navigationState,
+                                onEvent = navigationViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                            DashboardWidget.Vehicle -> VehicleScreen(
+                                uiState = vehicleState,
+                                onEvent = vehicleViewModel::onEvent,
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                            DashboardWidget.MaterialComponents -> MaterialComponentsScreen(
+                                onBack = collapseWidget,
+                            )
+                            DashboardWidget.CustomizedMaterial -> CustomizedMaterialComponentsScreen(
+                                onBack = collapseWidget,
+                            )
+                            DashboardWidget.Settings -> SettingsScreen(
+                                onBack = collapseWidget,
+                                animatedVisibilityScope = this@AnimatedContent,
+                            )
+                        }
+                    }
                 }
             }
         }

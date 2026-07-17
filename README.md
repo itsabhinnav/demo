@@ -11,30 +11,24 @@ chmod +x ./gradlew
 
 Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 
-## Activities
+## Architecture — Scalable UI
 
-| Activity | Role |
-|----------|------|
-| `MainActivity` | App launcher — map-first driving home and widget dashboard |
-| `MapActivity` | Maps launcher + AAOS Scalable UI map panel (separate task) |
+Sealed home layout lives in **`:scalable-ui-rro`** (not Compose fake chrome):
 
-`MainActivity` shows the map-first driving home with sidebar and widget chrome. `MapActivity` runs in its own task (`com.test.design.map`), appears as **Maps** in the app launcher, and always opens the **Navigation** screen (same as tapping Search maps).
+| Panel | Role |
+|-------|------|
+| `map_panel` | Full-bleed map (`MapActivity` / Maps placeholder) |
+| `widget_panel` | Floating left rail (`DrivingRailActivity`) |
+| `status` / `nav` | Floating Scalable UI `<SystemBar>` (not legacy CarSystemBarPanel) |
+| `app_panel` | Transient apps |
 
-## MapActivity — Scalable UI map panel
+- RRO + install: [`scalable-ui-rro/README.md`](scalable-ui-rro/README.md)
+- CarSystemUI follow-ups (glass layouts, Dagger): [`scalable-ui-rro/CARSYSTEMUI.md`](scalable-ui-rro/CARSYSTEMUI.md)
+- Dewd interim bridge: `scalable-ui-rro/scripts/patch_dewd_fullpower.py`
 
-On Android Automotive OS 17+, Scalable UI can host apps in dedicated panels. Register `MapActivity` as the default map panel activity in a CarSystemUI Runtime Resource Overlay (RRO):
+`MainActivity` remains an in-process Compose demo of the same home.
 
-```xml
-<string-array name="config_default_activities">
-    <item>map_panel;com.test.design/.presentation.ivi.map.MapActivity</item>
-</string-array>
-```
-
-Replace `map_panel` with the panel ID from your Scalable UI panel XML if it differs.
-
-`MapActivity` draws the map full-bleed. Overlay cards apply `WindowInsets.safeDrawing` so they
-respect Scalable UI `SafeBounds` and system bars as the panel publishes inset updates. Cards
-also reflow for compact / medium / expanded panel sizes (padding, typography, secondary pane).
+`MainActivity` remains an in-process Compose demo.
 
 ### Intent filters
 

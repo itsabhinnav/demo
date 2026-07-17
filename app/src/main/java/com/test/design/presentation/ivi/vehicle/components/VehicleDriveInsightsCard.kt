@@ -29,6 +29,7 @@ fun VehicleDriveInsightsCard(
         modifier = modifier.fillMaxWidth(),
         shape = ExpressiveShapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
         shadowElevation = 2.dp,
     ) {
         Column(
@@ -38,6 +39,7 @@ fun VehicleDriveInsightsCard(
             Text(
                 text = driveMode.insightsTitle(),
                 style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

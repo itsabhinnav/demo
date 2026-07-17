@@ -7,10 +7,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -22,6 +24,9 @@ import kotlin.random.Random
 /**
  * Soft drifting snowflakes for cool cabin temperatures.
  * Intensity follows [coolIntensity] in 0..1 (higher = cooler).
+ *
+ * Always occupies its [modifier] layout slot (even at intensity 0) so a dual-zone
+ * Row with `weight(1f)` halves does not let the cool side expand full-width.
  */
 @Composable
 fun CoolSnowflakeOverlay(
@@ -32,7 +37,10 @@ fun CoolSnowflakeOverlay(
     sizeScale: Float = 1f,
 ) {
     val intensity = coolIntensity.coerceIn(0f, 1f)
-    if (intensity <= 0.02f) return
+    if (intensity <= 0.02f) {
+        Spacer(modifier = modifier)
+        return
+    }
 
     val count = flakeCount.coerceIn(1, 48)
     val flakes = remember(count, sizeScale) {
@@ -60,7 +68,7 @@ fun CoolSnowflakeOverlay(
         label = "snow_progress",
     )
 
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.clipToBounds()) {
         val w = size.width
         val h = size.height
         flakes.forEach { flake ->

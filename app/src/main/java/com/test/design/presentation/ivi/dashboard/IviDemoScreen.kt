@@ -29,11 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetCard
 import com.test.design.presentation.ivi.dashboard.components.DashboardWidgetGrid
+import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -56,7 +58,7 @@ fun IviDemoScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
     dashboardViewModel: DashboardViewModel = viewModel(),
-    climateViewModel: ClimateViewModel = viewModel(),
+    climateViewModel: ClimateViewModel = activityViewModel(),
     mediaViewModel: MediaViewModel = viewModel(),
     navigationViewModel: NavigationViewModel = viewModel(),
     vehicleViewModel: VehicleViewModel = viewModel(),
@@ -89,7 +91,11 @@ fun IviDemoScreen(
             }
         }
 
-        SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
+        SharedTransitionLayout(
+            modifier = modifier
+                .fillMaxSize()
+                .floatingSystemChromePadding(),
+        ) {
             AnimatedContent(
                 targetState = dashboardState.expandedWidget,
                 modifier = Modifier.fillMaxSize(),

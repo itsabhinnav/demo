@@ -8,4 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="canvas_gray">#FF1C1E22</color>
+    <color name="canvas_background">#FFF0F2F5</color>
+    <color name="text_primary">#FF1A1C1E</color>
+    <color name="text_secondary">#FF42474E</color>
+    <color name="control_normal">#FF1A1C1E</color>
 </resources>

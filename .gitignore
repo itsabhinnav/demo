@@ -1,5 +1,10 @@
 *.iml
 .gradle
+.tmp-*/
+.tmp-*.apk
+.tmp-*.zip
+.tmp-*.jar
+scalable-ui-rro/screenshot*.png
 /local.properties
 /.idea/caches
 /.idea/libraries

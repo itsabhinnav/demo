@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -211,38 +213,42 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
         min = state.minTemperature,
         max = state.maxTemperature,
     )
-    MaterialTheme(colorScheme = climateColorScheme(temperatureFraction)) {
-        Column(
-            modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    MaterialTheme(colorScheme = climateColorScheme(temperatureFraction, MaterialTheme.colorScheme)) {
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
         ) {
-            ClimateTemperatureSection(
-                temperature = temperature,
-                isAcEnabled = state.isAcEnabled,
-                dialShape = dialShape,
-                onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
-                onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
-                compact = true,
-                temperatureUnit = state.temperatureUnit,
-                modifier = widgetContentSharedElement(
-                    widget = DashboardWidget.Climate,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    modifier = Modifier.fillMaxWidth(),
-                ),
-            )
-            ClimateFanSpeedCard(
-                fanSpeed = state.fanSpeed,
-                maxFanSpeed = state.maxFanSpeed,
-                isAcEnabled = state.isAcEnabled,
-                onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
-                compact = true,
-                modifier = widgetControlsSharedElement(
-                    widget = DashboardWidget.Climate,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    modifier = Modifier.fillMaxWidth(),
-                ),
-            )
+            Column(
+                modifier = modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                ClimateTemperatureSection(
+                    temperature = temperature,
+                    isAcEnabled = state.isAcEnabled,
+                    dialShape = dialShape,
+                    onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
+                    onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
+                    compact = true,
+                    temperatureUnit = state.temperatureUnit,
+                    modifier = widgetContentSharedElement(
+                        widget = DashboardWidget.Climate,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.fillMaxWidth(),
+                    ),
+                )
+                ClimateFanSpeedCard(
+                    fanSpeed = state.fanSpeed,
+                    maxFanSpeed = state.maxFanSpeed,
+                    isAcEnabled = state.isAcEnabled,
+                    onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
+                    compact = true,
+                    modifier = widgetControlsSharedElement(
+                        widget = DashboardWidget.Climate,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.fillMaxWidth(),
+                    ),
+                )
+            }
         }
     }
 }
@@ -299,28 +305,31 @@ private fun SharedTransitionScope.VehicleWidgetEmbedded(
     val dynamicScheme = vehicleColorScheme(
         driveMode = state.driveMode,
         batteryFraction = batteryToFraction(state.batteryPercent),
+        base = MaterialTheme.colorScheme,
         isCharging = state.isCharging,
     )
     MaterialTheme(colorScheme = dynamicScheme) {
-        VehicleEnergyCockpit(
-            percent = state.batteryPercent,
-            rangeMiles = state.rangeMiles,
-            maxRangeMiles = VehicleMaxRangeMiles,
-            isCharging = state.isCharging,
-            chargeRateKw = state.chargeRateKw,
-            gaugeShape = gaugeShape,
-            onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
-            compact = true,
-            contentModifier = widgetContentSharedElement(
-                widget = DashboardWidget.Vehicle,
-                animatedVisibilityScope = animatedVisibilityScope,
-            ),
-            controlsModifier = widgetControlsSharedElement(
-                widget = DashboardWidget.Vehicle,
-                animatedVisibilityScope = animatedVisibilityScope,
-            ),
-            modifier = modifier.fillMaxWidth(),
-        )
+        CompositionLocalProvider(LocalContentColor provides dynamicScheme.onBackground) {
+            VehicleEnergyCockpit(
+                percent = state.batteryPercent,
+                rangeMiles = state.rangeMiles,
+                maxRangeMiles = VehicleMaxRangeMiles,
+                isCharging = state.isCharging,
+                chargeRateKw = state.chargeRateKw,
+                gaugeShape = gaugeShape,
+                onGaugeClick = { onEvent(VehicleEvent.CycleBatteryDemo) },
+                compact = true,
+                contentModifier = widgetContentSharedElement(
+                    widget = DashboardWidget.Vehicle,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                ),
+                controlsModifier = widgetControlsSharedElement(
+                    widget = DashboardWidget.Vehicle,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                ),
+                modifier = modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Floating left glanceable rail over the map (DrivingRailActivity). -->
+<TaskPanel
+    id="widget_panel"
+    controller="@xml/widget_panel_controller"
+    defaultVariant="@id/opened"
+    displayId="0">
+
+    <Restart policy="DEFAULT" maxRetry="3" />
+    <TaskBehavior taskProperties="UNTRIMMABLE" />
+
+    <Variant id="@+id/base">
+        <Layer layer="@integer/widget_panel_layer" />
+        <Bounds
+            left="@dimen/widget_panel_left_inset"
+            top="0"
+            topOffset="@dimen/status_bar_height"
+            width="@dimen/widget_panel_width"
+            bottom="100%"
+            bottomOffset="@dimen/navigation_bar_height" />
+        <!-- Extra breathing room under / above floating bars -->
+        <Insets
+            left="0"
+            top="@dimen/widget_panel_top_gap"
+            right="0"
+            bottom="@dimen/widget_panel_bottom_gap" />
+        <Corner radius="@dimen/widget_panel_corner_radius" />
+        <Focus onTransition="false" />
+    </Variant>
+
+    <Variant id="@+id/opened" parent="@id/base">
+        <Visibility isVisible="true" />
+    </Variant>
+
+    <Variant id="@+id/closed" parent="@id/base">
+        <Visibility isVisible="false" />
+    </Variant>
+
+    <Transitions>
+        <Transition
+            onEvent="_System_OnHomeEvent"
+            toVariant="@id/opened" />
+        <Transition
+            onEvent="_System_TaskOpenEvent"
+            onEventTokens="panelId=app_panel"
+            fromVariant="@id/opened"
+            toVariant="@id/closed" />
+        <Transition
+            onEvent="_System_TaskPanelEmptyEvent"
+            onEventTokens="panelId=app_panel"
+            fromVariant="@id/closed"
+            toVariant="@id/opened" />
+    </Transitions>
+</TaskPanel>

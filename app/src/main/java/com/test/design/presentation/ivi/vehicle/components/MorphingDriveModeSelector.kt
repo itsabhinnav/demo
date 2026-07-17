@@ -50,7 +50,11 @@ fun MorphingDriveModeSelector(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text("Drive mode", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Drive mode",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()

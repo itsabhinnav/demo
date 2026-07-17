@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Transient full-app surface above map/widgets when an app is opened. -->
+<TaskPanel
+    id="app_panel"
+    defaultVariant="@id/closed"
+    displayId="0">
+
+    <Restart policy="DEFAULT" maxRetry="1" />
+
+    <Variant id="@+id/base">
+        <Layer layer="@integer/app_panel_layer" />
+        <Bounds
+            left="0"
+            top="0"
+            topOffset="@dimen/status_bar_height"
+            right="100%"
+            bottom="100%"
+            bottomOffset="@dimen/navigation_bar_height" />
+        <Corner radius="@dimen/widget_panel_corner_radius" />
+        <Focus onTransition="true" />
+    </Variant>
+
+    <Variant id="@+id/opened" parent="@id/base">
+        <Visibility isVisible="true" />
+    </Variant>
+
+    <Variant id="@+id/closed" parent="@id/base">
+        <Visibility isVisible="false" />
+        <Bounds
+            left="100%"
+            top="0"
+            width="0"
+            height="0" />
+    </Variant>
+
+    <Transitions>
+        <Transition
+            onEvent="_System_TaskOpenEvent"
+            onEventTokens="panelId=app_panel"
+            toVariant="@id/opened" />
+        <Transition
+            onEvent="_System_TaskPanelEmptyEvent"
+            onEventTokens="panelId=app_panel"
+            toVariant="@id/closed" />
+        <Transition
+            onEvent="_System_OnHomeEvent"
+            toVariant="@id/closed" />
+    </Transitions>
+</TaskPanel>

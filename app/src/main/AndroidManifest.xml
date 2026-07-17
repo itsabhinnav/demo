@@ -19,11 +19,19 @@
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Design">
+
+        <!-- Avoid androidx.startup crash: library R$string is not packaged into dex (AGP). -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:theme="@style/Theme.Design"
@@ -31,6 +39,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.APP_AUTOMOTIVE" />
             </intent-filter>
@@ -71,6 +81,118 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="geo" />
             </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <!-- Dewd widget_panel host (left rail) -->
+        <activity
+            android:name=".presentation.ivi.glanceables.DrivingRailActivity"
+            android:exported="true"
+            android:label="Driving rail"
+            android:taskAffinity="com.test.design.widget"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <!-- Same-length alias for binary patch of DewdDynamic widget_component string -->
+        <activity-alias
+            android:name=".presentation.ivi.glanceables.R"
+            android:targetActivity=".presentation.ivi.glanceables.DrivingRailActivity"
+            android:exported="true"
+            android:label="Driving rail">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity-alias>
+        <!-- Same-length alias for binary patch of DewdDynamic default_map_activity -->
+        <activity-alias
+            android:name=".presentation.ivi.map.MapsPlaceholderAct"
+            android:targetActivity=".presentation.ivi.map.MapActivity"
+            android:exported="true"
+            android:label="@string/map_activity_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity-alias>
+
+        <!-- Optional standalone glanceables (debug / alternate layouts) -->
+        <activity
+            android:name=".presentation.ivi.glanceables.DrivingStatusGlanceActivity"
+            android:exported="true"
+            android:label="Driving status"
+            android:taskAffinity="com.test.design.glance.driving"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.glanceables.MediaGlanceActivity"
+            android:exported="true"
+            android:label="Media"
+            android:taskAffinity="com.test.design.glance.media"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.glanceables.AppsGlanceActivity"
+            android:exported="true"
+            android:label="Apps"
+            android:taskAffinity="com.test.design.glance.apps"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.glanceables.ClimateGlanceActivity"
+            android:exported="true"
+            android:label="Climate"
+            android:taskAffinity="com.test.design.glance.climate"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <activity
+            android:name=".presentation.ivi.glanceables.ClimatePanelActivity"
+            android:exported="true"
+            android:label="Climate control"
+            android:taskAffinity="com.test.design.panel.climate"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Design.Panel"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />

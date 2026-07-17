@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -42,7 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -52,8 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
-import com.test.design.presentation.ivi.climate.components.FrontDefrostIcon
-import com.test.design.presentation.ivi.climate.components.SeatHeatIcon
+import com.test.design.presentation.ivi.climate.components.ClimateHvacIcons
 import com.test.design.presentation.ivi.climate.formatTemperature
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -75,7 +74,8 @@ private val OverlayInset = 16.dp
 private val MapSearchShape = RoundedCornerShape(44.dp)
 
 /**
- * Full-bleed map with floating sidebar, search, map controls, and HVAC bar.
+ * Full-bleed map with sidebar, search, map controls, and HVAC bar.
+ * Floating system bars are hosted permanently by [com.test.design.presentation.DesignAppShell].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -101,6 +101,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val sidebarWidth = maxWidth * SidebarWidthFraction
         val mapContentStart = sidebarWidth + OverlayInset
+        val chromeTop = FloatingChromeTopSpace + OverlayInset
+        val chromeBottom = FloatingChromeBottomSpace + OverlayInset
 
         OsmMapBackground(
             modifier = Modifier.fillMaxSize(),
@@ -121,7 +123,12 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(OverlayInset)
+                .padding(
+                    start = OverlayInset,
+                    end = OverlayInset,
+                    top = chromeTop,
+                    bottom = chromeBottom,
+                )
                 .width(sidebarWidth - OverlayInset)
                 .fillMaxHeight(),
         )
@@ -135,7 +142,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 .padding(
                     start = mapContentStart,
                     end = OverlayInset + 64.dp,
-                    top = OverlayInset,
+                    top = chromeTop,
                 ),
         )
 
@@ -161,7 +168,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
                 .padding(
                     start = mapContentStart,
                     end = OverlayInset,
-                    bottom = OverlayInset,
+                    bottom = chromeBottom,
                 ),
         )
     }
@@ -276,7 +283,7 @@ private fun SharedTransitionScope.MapHvacBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             HvacLevelControl(
-                icon = SeatHeatIcon,
+                icon = ClimateHvacIcons.SeatHeat,
                 contentDescription = "Seat heat",
                 level = climateState.seatHeatLevel,
                 maxLevel = climateState.maxSeatHeatLevel,
@@ -284,7 +291,7 @@ private fun SharedTransitionScope.MapHvacBar(
                 onClick = { onClimateEvent(ClimateEvent.CycleSeatHeat) },
             )
             HvacToggleControl(
-                icon = FrontDefrostIcon,
+                icon = ClimateHvacIcons.FrontDefrost,
                 contentDescription = "Front defrost",
                 active = climateState.isFrontDefrostOn,
                 activeColor = Color.White,
@@ -314,7 +321,7 @@ private fun SharedTransitionScope.MapHvacBar(
             }
 
             HvacToggleControl(
-                icon = Icons.Default.AcUnit,
+                icon = ClimateHvacIcons.Ac,
                 contentDescription = "A/C",
                 active = climateState.isAcEnabled,
                 activeColor = Color(0xFF4EA1FF),
@@ -344,7 +351,7 @@ private fun SharedTransitionScope.MapHvacBar(
 
 @Composable
 private fun HvacToggleControl(
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     contentDescription: String,
     active: Boolean,
     activeColor: Color,
@@ -376,7 +383,7 @@ private fun HvacToggleControl(
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = null,
             tint = tint,
             modifier = Modifier.size(CarDesignTokens.SecondaryIcon),
@@ -386,7 +393,7 @@ private fun HvacToggleControl(
 
 @Composable
 private fun HvacLevelControl(
-    icon: ImageVector,
+    @DrawableRes icon: Int,
     contentDescription: String,
     level: Int,
     maxLevel: Int,
@@ -422,7 +429,7 @@ private fun HvacLevelControl(
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Icon(
-            imageVector = icon,
+            painter = painterResource(icon),
             contentDescription = null,
             tint = tint,
             modifier = Modifier.size(CarDesignTokens.SecondaryIcon),

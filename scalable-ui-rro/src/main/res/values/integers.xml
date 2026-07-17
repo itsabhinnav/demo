@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Z-order: map under widgets under floating bars -->
+    <integer name="map_panel_layer">2</integer>
+    <integer name="widget_panel_layer">20</integer>
+    <integer name="app_panel_layer">100</integer>
+    <integer name="status_bar_z">200</integer>
+    <integer name="nav_bar_z">210</integer>
+</resources>

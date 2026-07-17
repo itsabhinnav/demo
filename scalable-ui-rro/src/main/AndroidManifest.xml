@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Sealed Scalable UI layout RRO for Design home:
+        full-bleed map + floating widget rail + floating SystemBars.
+
+      No resourcesMap — overlay replaces resources by name when the target
+      CarSystemUI already declares them (or after CARSYSTEMUI.md changes land).
+    -->
+    <overlay
+        android:targetPackage="com.android.systemui"
+        android:priority="300"
+        android:isStatic="false" />
+
+    <application
+        android:hasCode="false"
+        android:label="Design Scalable UI RRO" />
+</manifest>

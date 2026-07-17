@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Floating top SystemBar (Scalable UI), not legacy TopCarSystemBar / CarSystemBarPanel.
+  Touches the top edge (required); side insets + Corner give the floating glass look.
+  View/layout chrome is provided by CarSystemUI (see CARSYSTEMUI.md).
+-->
+<SystemBar
+    id="status"
+    type="status"
+    barZOrder="200"
+    hideForKeyboard="false"
+    dragOpenNotification="true"
+    defaultVariant="@id/open">
+
+    <Variant id="@+id/base">
+        <Bounds
+            left="0"
+            leftOffset="@dimen/system_bar_side_inset"
+            top="@dimen/system_bar_edge_inset"
+            right="100%"
+            rightOffset="@dimen/system_bar_side_inset"
+            height="@dimen/status_bar_height" />
+        <Corner radius="@dimen/system_bar_corner_radius" />
+        <Alpha alpha="1.0" />
+    </Variant>
+
+    <Variant id="@+id/open" parent="@id/base">
+        <Visibility isVisible="true" />
+    </Variant>
+
+    <Variant id="@+id/closed" parent="@id/base">
+        <Visibility isVisible="false" />
+    </Variant>
+
+    <Transitions>
+        <Transition
+            onEvent="_System_Show_Panel"
+            onEventTokens="panelId=status"
+            toVariant="@id/open" />
+        <Transition
+            onEvent="_System_Hide_Panel"
+            onEventTokens="panelId=status"
+            toVariant="@id/closed" />
+    </Transitions>
+</SystemBar>

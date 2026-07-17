@@ -25,10 +25,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +82,7 @@ fun SharedTransitionScope.VehicleScreen(
     val dynamicScheme = vehicleColorScheme(
         driveMode = uiState.driveMode,
         batteryFraction = batteryFraction,
+        base = MaterialTheme.colorScheme,
         isCharging = uiState.isCharging,
     )
     val gaugeShape = rememberVehicleGaugeShape(
@@ -93,6 +96,7 @@ fun SharedTransitionScope.VehicleScreen(
         shapes = ExpressiveShapes,
         motionScheme = MaterialTheme.motionScheme,
     ) {
+        CompositionLocalProvider(LocalContentColor provides dynamicScheme.onBackground) {
         val spatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
         val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
         val animatedPrimary by animateColorAsState(
@@ -184,6 +188,7 @@ fun SharedTransitionScope.VehicleScreen(
                 }
             }
             }
+        }
         }
     }
 }
@@ -299,6 +304,7 @@ private fun DriveModeLayoutBanner(
         Surface(
             shape = ExpressiveShapes.medium,
             color = glassSurfaceColor(),
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             Row(
                 modifier = Modifier
@@ -308,7 +314,11 @@ private fun DriveModeLayoutBanner(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column {
-                    Text(mode.label, style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        mode.label,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                     Text(
                         mode.subtitle,
                         style = MaterialTheme.typography.bodySmall,
@@ -441,7 +451,11 @@ private fun VehicleStatsPanel(
         expandedRadii = VehicleCardActiveRadii,
         modifier = modifier,
     ) {
-        Text("Trip", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Trip",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         Text(
             text = "$efficiencyMpkWh mi/kWh",
             style = MaterialTheme.typography.titleLarge,

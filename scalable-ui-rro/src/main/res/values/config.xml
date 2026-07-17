@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="config_enableScalableUI" translatable="false">true</bool>
+
+    <!--
+      Disable legacy CarSystemBarPanel paths. Home chrome is Scalable UI
+      <SystemBar> panels listed in window_states (status / nav).
+    -->
+    <bool name="config_enableTopSystemBar">false</bool>
+    <bool name="config_enableBottomSystemBar">false</bool>
+    <bool name="config_enableLeftSystemBar">false</bool>
+    <bool name="config_enableRightSystemBar">false</bool>
+
+    <string name="config_privacyIndicatorLocation" translatable="false">status</string>
+
+    <!--
+      Sealed home scene:
+        map_panel     — full-bleed map (placeholder / Maps)
+        widget_panel  — floating left glanceable rail
+        status / nav  — floating Scalable UI SystemBars
+        app_panel     — transient full apps
+    -->
+    <array name="window_states">
+        <item>@xml/map_panel</item>
+        <item>@xml/widget_panel</item>
+        <item>@xml/app_panel</item>
+        <item>@xml/status_bar</item>
+        <item>@xml/nav_bar</item>
+    </array>
+</resources>

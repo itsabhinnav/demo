@@ -86,7 +86,9 @@ fun SharedTransitionScope.NavigationScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            CarBackgroundTokens.CanvasGray.copy(alpha = CarBackgroundTokens.NavigationScrimAlpha),
+                            MaterialTheme.colorScheme.background.copy(
+                                alpha = CarBackgroundTokens.NavigationScrimAlpha,
+                            ),
                             Color.Transparent,
                         ),
                     ),

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-bleed map under floating widgets + SystemBars. -->
+<TaskPanel
+    id="map_panel"
+    controller="@xml/map_panel_controller"
+    defaultVariant="@id/opened"
+    displayId="0">
+
+    <Restart policy="LAST" maxRetry="3" />
+    <TaskBehavior taskProperties="UNTRIMMABLE" />
+
+    <Variant id="@+id/base">
+        <Layer layer="@integer/map_panel_layer" />
+        <Bounds
+            left="0"
+            top="0"
+            right="100%"
+            bottom="100%" />
+        <Corner radius="@dimen/map_corner_radius" />
+        <Focus onTransition="false" />
+    </Variant>
+
+    <Variant id="@+id/opened" parent="@id/base">
+        <Visibility isVisible="true" />
+    </Variant>
+
+    <Variant id="@+id/closed" parent="@id/base">
+        <Visibility isVisible="false" />
+    </Variant>
+
+    <Transitions>
+        <Transition
+            onEvent="_System_OnHomeEvent"
+            toVariant="@id/opened" />
+        <Transition
+            onEvent="_System_TaskOpenEvent"
+            onEventTokens="panelId=app_panel"
+            fromVariant="@id/opened"
+            toVariant="@id/closed" />
+        <Transition
+            onEvent="_System_TaskPanelEmptyEvent"
+            onEventTokens="panelId=app_panel"
+            fromVariant="@id/closed"
+            toVariant="@id/opened" />
+        <Transition
+            onEvent="_System_TaskOpenEvent"
+            onEventTokens="panelId=map_panel"
+            fromVariant="@id/closed"
+            toVariant="@id/opened" />
+    </Transitions>
+</TaskPanel>

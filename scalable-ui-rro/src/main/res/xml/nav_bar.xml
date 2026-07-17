@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Floating bottom SystemBar (Scalable UI), not legacy BottomCarSystemBar / CarSystemBarPanel.
+  Touches the bottom edge (required); side insets + Corner give the floating glass look.
+  HVAC / dock layout is CarSystemUI work (see CARSYSTEMUI.md).
+-->
+<SystemBar
+    id="nav"
+    type="navigation"
+    barZOrder="210"
+    hideForKeyboard="true"
+    defaultVariant="@id/open">
+
+    <Variant id="@+id/base">
+        <Bounds
+            left="0"
+            leftOffset="@dimen/system_bar_side_inset"
+            bottom="100%"
+            bottomOffset="@dimen/system_bar_edge_inset"
+            right="100%"
+            rightOffset="@dimen/system_bar_side_inset"
+            height="@dimen/navigation_bar_height" />
+        <Corner radius="@dimen/system_bar_corner_radius" />
+        <Alpha alpha="1.0" />
+    </Variant>
+
+    <Variant id="@+id/open" parent="@id/base">
+        <Visibility isVisible="true" />
+    </Variant>
+
+    <Variant id="@+id/closed" parent="@id/base">
+        <Visibility isVisible="false" />
+    </Variant>
+
+    <Transitions>
+        <Transition
+            onEvent="_System_Show_Panel"
+            onEventTokens="panelId=nav"
+            toVariant="@id/open" />
+        <Transition
+            onEvent="_System_Hide_Panel"
+            onEventTokens="panelId=nav"
+            toVariant="@id/closed" />
+    </Transitions>
+</SystemBar>
