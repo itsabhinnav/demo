@@ -175,17 +175,12 @@ private fun PanelHeader(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Gemini",
+                text = "In-car assistant",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.1.sp,
                 ),
                 color = AssistantTokens.OnSurface,
-            )
-            Text(
-                text = "In-car assistant",
-                style = MaterialTheme.typography.bodySmall,
-                color = AssistantTokens.OnSurfaceMuted,
             )
         }
 
