@@ -50,6 +50,7 @@ class AssistantMoodTest {
             assertTrue(pose.mouthCurve in -1.1f..1.1f)
             assertTrue(pose.mouthOpen in 0f..1f)
             assertTrue(pose.mouthWidth in 0.5f..1.3f)
+            assertTrue(pose.eyeStyle in -1.1f..1.1f)
         }
         assertTrue(AssistantMood.Happy.toFacePose().mouthCurve > AssistantMood.Sad.toFacePose().mouthCurve)
         assertTrue(AssistantMood.Speaking.toFacePose().mouthOpen > AssistantMood.Idle.toFacePose().mouthOpen)
