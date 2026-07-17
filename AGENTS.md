@@ -54,6 +54,12 @@ Cloud agent setup is defined in:
 
 `ANDROID_HOME` defaults to `/opt/android-sdk` in cloud VMs.
 
+### Build & run gotchas (non-obvious)
+
+- The app's `compileSdk` is `release(37)`, which requires `platforms;android-37.0` (note the `.0` suffix — plain `platforms;android-37` does not exist) and `build-tools;37.0.0`. These are installed by `.cursor/Dockerfile` (the environment source of truth referenced by `.cursor/environment.json`). Gradle uses **JDK 17** (`JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`), not the VM's default JDK 21.
+- Use `./gradlew assembleDebug testDebugUnitTest` to verify. `./gradlew lintDebug` currently **fails on pre-existing lint errors** in the app code (e.g. `MissingSuperCall`), so it is not a reliable gate — do not treat those lint failures as an environment problem.
+- The cloud VM has **no KVM**, so the emulator runs software-only (`-accel off -gpu swiftshader_indirect`). Cold boot takes several minutes, and the starved SystemUI process often shows recurring "System UI isn't responding" ANR dialogs — the demo app itself renders fine behind them. Run `adb shell settings put global hide_error_dialogs 1` and be patient; tap **Wait** to dismiss. Confirm the app is up via `adb shell dumpsys activity activities | grep topResumedActivity` (expect `com.test.design/.MainActivity`).
+
 ### Git workflow (agents)
 
 **Push directly to `main` by default.** Do not create feature branches or PRs unless the user explicitly asks for one.
