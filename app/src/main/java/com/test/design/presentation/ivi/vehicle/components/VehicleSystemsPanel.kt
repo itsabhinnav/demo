@@ -1,7 +1,12 @@
 package com.test.design.presentation.ivi.vehicle.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,30 +63,31 @@ fun VehicleSystemsPanel(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = ExpressiveShapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f),
         contentColor = MaterialTheme.colorScheme.onSurface,
-        shadowElevation = 4.dp,
+        shadowElevation = 0.dp,
+        tonalElevation = 2.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(CarDesignTokens.TouchTargetSpacing),
-            verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        "Vehicle health",
+                        "Systems",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
-                        text = if (alertCount == 0) "All systems nominal" else "$alertCount item${if (alertCount == 1) "" else "s"} to review",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = if (alertCount == 0) "All clear" else "$alertCount need attention",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -98,7 +104,7 @@ fun VehicleSystemsPanel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 systems.forEach { system ->
                     SystemMetricRow(
@@ -123,17 +129,11 @@ private fun HealthScoreBadge(score: Int) {
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
         label = "health_score_color",
     )
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = color.copy(alpha = 0.16f),
-    ) {
-        Text(
-            text = "$score",
-            style = MaterialTheme.typography.headlineSmall,
-            color = color,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
-    }
+    Text(
+        text = "$score",
+        style = MaterialTheme.typography.headlineMedium,
+        color = color,
+    )
 }
 
 @Composable
@@ -157,50 +157,46 @@ private fun PowerFlowStrip(
         label = "power_flow_color",
     )
 
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.55f))
             .carTouchTarget()
-            .clickable(onClick = onRegenClick),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-        contentColor = MaterialTheme.colorScheme.onSurface,
+            .clickable(onClick = onRegenClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = if (isCharging) "Charging flow" else "Regenerative braking",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = if (isCharging) "AC" else regenLevel.label,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = flowColor,
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                FlowNode(icon = Icons.Default.BatteryChargingFull, active = isCharging, tint = flowColor)
-                FlowConnector(strength = flowStrength, color = flowColor, modifier = Modifier.weight(1f))
-                FlowNode(icon = Icons.Default.ElectricBolt, active = true, tint = flowColor)
-                FlowConnector(strength = flowStrength * 0.85f, color = flowColor, modifier = Modifier.weight(1f))
-                FlowNode(
-                    icon = Icons.AutoMirrored.Filled.TrendingDown,
-                    active = !isCharging && regenLevel != RegenLevel.Off,
-                    tint = flowColor,
-                )
-            }
+            Text(
+                text = if (isCharging) "Charge flow" else "Regen",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = if (isCharging) "AC" else regenLevel.label,
+                style = MaterialTheme.typography.titleSmall,
+                color = flowColor,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FlowNode(icon = Icons.Default.BatteryChargingFull, active = isCharging, tint = flowColor)
+            FlowConnector(strength = flowStrength, color = flowColor, modifier = Modifier.weight(1f))
+            FlowNode(icon = Icons.Default.ElectricBolt, active = true, tint = flowColor)
+            FlowConnector(strength = flowStrength * 0.85f, color = flowColor, modifier = Modifier.weight(1f))
+            FlowNode(
+                icon = Icons.AutoMirrored.Filled.TrendingDown,
+                active = !isCharging && regenLevel != RegenLevel.Off,
+                tint = flowColor,
+            )
         }
     }
 }
@@ -218,9 +214,9 @@ private fun FlowNode(
     )
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(tint.copy(alpha = 0.14f * alpha))
-            .padding(10.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .background(tint.copy(alpha = 0.12f * alpha))
+            .padding(8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -240,9 +236,9 @@ private fun FlowConnector(
     Box(
         modifier = modifier
             .padding(horizontal = 6.dp)
-            .height(4.dp)
+            .height(3.dp)
             .clip(RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f)),
     ) {
         Box(
             modifier = Modifier
@@ -275,28 +271,28 @@ private fun SystemMetricRow(
     )
     val containerColor by animateColorAsState(
         targetValue = if (selected) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
         } else {
-            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+            Color.Transparent
         },
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
         label = "system_row_bg_${system.id}",
     )
+    val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(containerColor)
             .carTouchTarget()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = containerColor,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -304,41 +300,37 @@ private fun SystemMetricRow(
                 contentDescription = null,
                 tint = healthColor,
             )
-            Column(
+            Text(
+                system.label,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        system.label,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        "${system.valuePercent}%",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = healthColor,
-                    )
-                }
-                LinearProgressIndicator(
-                    progress = { animatedProgress },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp)),
-                    color = healthColor,
-                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                )
-                Text(
-                    system.detail,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            )
+            Text(
+                "${system.valuePercent}%",
+                style = MaterialTheme.typography.labelLarge,
+                color = healthColor,
+            )
+        }
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp)),
+            color = healthColor,
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.55f),
+        )
+        AnimatedVisibility(
+            visible = selected,
+            enter = fadeIn(effectsSpec) + expandVertically(),
+            exit = fadeOut(effectsSpec) + shrinkVertically(),
+        ) {
+            Text(
+                system.detail,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

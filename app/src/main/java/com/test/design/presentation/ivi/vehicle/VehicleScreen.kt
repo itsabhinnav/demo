@@ -1,15 +1,11 @@
 package com.test.design.presentation.ivi.vehicle
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -63,7 +58,6 @@ import com.test.design.theme.VehicleCardActiveRadii
 import com.test.design.theme.VehicleCardRestRadii
 import com.test.design.theme.WindowLayoutInfo
 import com.test.design.theme.batteryToFraction
-import com.test.design.theme.glassSurfaceColor
 import com.test.design.theme.rememberVehicleGaugeShape
 import com.test.design.theme.vehicleColorScheme
 
@@ -160,11 +154,6 @@ fun SharedTransitionScope.VehicleScreen(
                                 },
                             )
                         },
-                    )
-
-                    DriveModeLayoutBanner(
-                        driveMode = uiState.driveMode,
-                        layoutLabel = layoutProfile.layoutLabel,
                     )
 
                     VehicleAdaptiveBody(
@@ -288,54 +277,7 @@ private fun SharedTransitionScope.VehicleAdaptiveBody(
     }
 }
 
-@Composable
-private fun DriveModeLayoutBanner(
-    driveMode: DriveMode,
-    layoutLabel: String,
-) {
-    val effectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
-    AnimatedContent(
-        targetState = driveMode,
-        transitionSpec = {
-            fadeIn(animationSpec = effectsSpec) togetherWith fadeOut(animationSpec = effectsSpec)
-        },
-        label = "drive_mode_layout_banner",
-    ) { mode ->
-        Surface(
-            shape = ExpressiveShapes.medium,
-            color = glassSurfaceColor(),
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column {
-                    Text(
-                        mode.label,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        mode.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(
-                    layoutLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-    }
-}
-
-private val DriveSelectorFallbackHeight = 148.dp
+private val DriveSelectorFallbackHeight = 132.dp
 
 @Composable
 private fun CenterDriveColumn(
@@ -446,38 +388,61 @@ private fun VehicleStatsPanel(
     modifier: Modifier = Modifier,
 ) {
     MorphingDetailSurfaceCard(
-        morphExpanded = false,
+        morphExpanded = driveMode == DriveMode.Sport,
         compactRadii = VehicleCardRestRadii,
         expandedRadii = VehicleCardActiveRadii,
         modifier = modifier,
     ) {
         Text(
             "Trip",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            text = "$efficiencyMpkWh mi/kWh",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "$efficiencyMpkWh",
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = "mi/kWh",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column {
-                Text("Odometer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    "Odometer",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 AnimatedStatCounter(
                     value = odometerMiles,
                     suffix = " mi",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
-            Column(horizontalAlignment = Alignment.End) {
-                Text("Trip use", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    "Used",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Text(
                     "$tripEnergyKwh kWh",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }

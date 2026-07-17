@@ -48,19 +48,19 @@ fun MorphingDriveModeSelector(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
             "Drive mode",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.dp)
                 .clip(RoundedCornerShape(32.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f)),
         ) {
             val segmentWidth = maxWidth / modes.size
             val indicatorOffset by animateDpAsState(
@@ -120,7 +120,7 @@ fun MorphingDriveModeSelector(
         }
         Text(
             text = selected.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

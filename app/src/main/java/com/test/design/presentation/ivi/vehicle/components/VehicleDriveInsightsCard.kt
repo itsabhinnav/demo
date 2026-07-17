@@ -28,18 +28,19 @@ fun VehicleDriveInsightsCard(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = ExpressiveShapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.8f),
         contentColor = MaterialTheme.colorScheme.onSurface,
-        shadowElevation = 2.dp,
+        shadowElevation = 0.dp,
+        tonalElevation = 1.dp,
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
                 text = driveMode.insightsTitle(),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -63,7 +64,7 @@ private fun InsightRow(label: String, value: String) {
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -71,7 +72,7 @@ private fun InsightRow(label: String, value: String) {
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -81,7 +82,7 @@ private fun InsightRow(label: String, value: String) {
 
 private fun DriveMode.insightsTitle(): String = when (this) {
     DriveMode.Eco -> "Range coach"
-    DriveMode.Comfort -> "Driver assists"
+    DriveMode.Comfort -> "Assists"
     DriveMode.Sport -> "Performance"
 }
 
@@ -96,7 +97,7 @@ private fun DriveMode.insightRows(
         "Regen" to regenLevel.label,
     )
     DriveMode.Comfort -> listOf(
-        "Cruise" to "Engaged",
+        "Cruise" to "On",
         "Lane keep" to "Ready",
         "Blind spot" to "Clear",
     )
