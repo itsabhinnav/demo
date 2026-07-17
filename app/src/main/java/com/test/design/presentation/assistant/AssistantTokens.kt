@@ -22,6 +22,9 @@ internal object AssistantTokens {
     val OnSurfaceMuted = Color(0xFF80868B)
 
     val Accent = Color(0xFF8AB4F8)
+    val PanelGlow = Color(0x668AB4F8)
+    val PanelGlowSoft = Color(0x448AB4F8)
+    val PanelGlowEdge = Color(0xFF8AB4F8)
     val Scrim = Color.Transparent
 
     const val EnterMs = 400
