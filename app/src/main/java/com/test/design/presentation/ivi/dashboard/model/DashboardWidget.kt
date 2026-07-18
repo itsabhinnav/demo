@@ -59,7 +59,7 @@ enum class DashboardWidget(
     ),
     VirtualAssistant(
         title = "Assistant",
-        subtitle = "Immersive eyes · mood · transcript",
+        subtitle = "Eyes · gaze · lip-sync · drive context",
         icon = Icons.Default.AutoAwesome,
         sharedElementKey = "widget_virtual_assistant",
     ),
