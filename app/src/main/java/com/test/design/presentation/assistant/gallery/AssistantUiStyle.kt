@@ -55,4 +55,8 @@ enum class AssistantUiStyle(
         title = "Ambient pill",
         blurb = "Minimal floating pill HUD",
     ),
+    ImmersiveEyes(
+        title = "Immersive eyes",
+        blurb = "Full-screen gradient · eyes · transcript",
+    ),
 }

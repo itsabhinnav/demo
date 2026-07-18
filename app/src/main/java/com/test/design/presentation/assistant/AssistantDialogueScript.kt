@@ -85,9 +85,33 @@ val DemoDialogueScript: List<DialogueBeat> = listOf(
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Want me to find another spot that’s open later?",
-        mood = AssistantMood.Speaking,
+        text = "Harbor Light Café is open until 10 — exciting backup!",
+        mood = AssistantMood.Excited,
         holdMs = 2600,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.System,
+        text = "Quiet highway stretch…",
+        mood = AssistantMood.Bored,
+        holdMs = 1800,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.System,
+        text = "Late night mode",
+        mood = AssistantMood.Drowsy,
+        holdMs = 1800,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "I've been up a while — I'll keep watch while you drive.",
+        mood = AssistantMood.Tired,
+        holdMs = 2600,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Want me to add Harbor Light as a stop?",
+        mood = AssistantMood.Speaking,
+        holdMs = 2400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
@@ -97,7 +121,7 @@ val DemoDialogueScript: List<DialogueBeat> = listOf(
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Harbor Light Café is open until 10. I’ve updated your route!",
+        text = "Harbor Light Café is set. Safe travels!",
         mood = AssistantMood.Happy,
         holdMs = 3000,
     ),

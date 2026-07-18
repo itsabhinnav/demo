@@ -48,6 +48,30 @@ enum class AssistantMood(
         glowColor = Color(0xFF90CAF9),
         glowIntensity = 0.4f,
     ),
+    Excited(
+        label = "Excited",
+        caption = "Can't wait to help",
+        glowColor = Color(0xFFFFAB40),
+        glowIntensity = 0.95f,
+    ),
+    Bored(
+        label = "Bored",
+        caption = "Waiting for something fun",
+        glowColor = Color(0xFF90A4AE),
+        glowIntensity = 0.3f,
+    ),
+    Drowsy(
+        label = "Drowsy",
+        caption = "Getting sleepy",
+        glowColor = Color(0xFF7986CB),
+        glowIntensity = 0.28f,
+    ),
+    Tired(
+        label = "Tired",
+        caption = "Running low on energy",
+        glowColor = Color(0xFF78909C),
+        glowIntensity = 0.25f,
+    ),
     Reading(
         label = "Reading",
         caption = "Scanning content",

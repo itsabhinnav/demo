@@ -49,8 +49,8 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
- * Transparent NOMI overlay — no panel, no text.
- * Orb appears on hotword (or tap) with a random entrance.
+ * Immersive eyes assistant — full-screen gradient overlay, centered elliptical eyes,
+ * single transcript line. Appears on hotword (or tap).
  */
 @Composable
 fun VirtualAssistantOverlay(
@@ -58,6 +58,26 @@ fun VirtualAssistantOverlay(
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
     /** When true, starts listening / waiting for hotword instead of showing immediately. */
+    awaitHotword: Boolean = true,
+    onRequestHotwordListen: (() -> Unit)? = null,
+) {
+    ImmersiveAssistantOverlay(
+        onDismiss = onDismiss,
+        modifier = modifier,
+        initialMood = initialMood,
+        awaitHotword = awaitHotword,
+        onRequestHotwordListen = onRequestHotwordListen,
+    )
+}
+
+/**
+ * Legacy NOMI orb overlay — peek / bounce / fall entrances (kept for gallery / demos).
+ */
+@Composable
+fun NomiOrbOverlay(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    initialMood: AssistantMood = AssistantMood.Idle,
     awaitHotword: Boolean = true,
     onRequestHotwordListen: (() -> Unit)? = null,
 ) {
@@ -73,7 +93,6 @@ fun VirtualAssistantOverlay(
         visible = true
     }
 
-    // Auto-cycle expressions while visible
     LaunchedEffect(visible, session) {
         if (!visible) return@LaunchedEffect
         delay(900)
@@ -83,7 +102,6 @@ fun VirtualAssistantOverlay(
         }
     }
 
-    // Auto-dismiss after a beat so it feels alive, not sticky
     LaunchedEffect(visible, session) {
         if (!visible) return@LaunchedEffect
         delay(Random.nextLong(5200, 7800))
@@ -104,16 +122,12 @@ fun VirtualAssistantOverlay(
                     if (visible) {
                         visible = false
                     } else {
-                        // Tap fallback when mic / hotword isn't available
                         onRequestHotwordListen?.invoke()
                         summon()
                     }
                 },
             ),
     ) {
-        // Expose summon for Activity hotword callbacks via composition local-less pattern:
-        // Activity drives [awaitHotword] false after detection by recreating — instead we
-        // use a remembered callback holder.
         HotwordSummonBridge(onSummon = { summon() })
 
         AnimatedVisibility(
@@ -341,7 +355,7 @@ fun VirtualAssistantStage(
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        AssistantFace(mood = mood, modifier = Modifier.size(168.dp))
+        ImmersiveEyesFace(mood = mood, modifier = Modifier.size(168.dp))
     }
 }
 
@@ -362,7 +376,7 @@ fun AssistantWidgetPreview(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            AssistantFace(
+            ImmersiveEyesFace(
                 mood = mood,
                 modifier = Modifier.size(64.dp),
             )

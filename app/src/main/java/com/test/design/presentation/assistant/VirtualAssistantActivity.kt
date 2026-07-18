@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.collectLatest
  *   -n com.test.design/.presentation.assistant.VirtualAssistantActivity
  * ```
  *
- * Say “Hey assistant” (or tap) for a random peek / bounce / fall entrance.
+ * Say “Hey assistant” (or tap) for the immersive eyes overlay.
  */
 class VirtualAssistantActivity : ComponentActivity() {
 
@@ -62,7 +62,7 @@ class VirtualAssistantActivity : ComponentActivity() {
                 LaunchedEffect(micGranted) {
                     if (!micGranted) return@LaunchedEffect
                     hotwordDetections(this@VirtualAssistantActivity).collectLatest {
-                        notifyAssistantHotword()
+                        notifyImmersiveAssistantHotword()
                     }
                 }
 

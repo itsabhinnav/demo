@@ -44,6 +44,10 @@ internal fun AssistantMood.toWavePose(): WavePose = when (this) {
     AssistantMood.Searching -> WavePose(amplitude = 0.8f, speed = 1f, thickness = 0.9f, bloom = 0.75f)
     AssistantMood.Happy -> WavePose(amplitude = 0.7f, speed = 0.75f, thickness = 0.85f, bloom = 0.7f)
     AssistantMood.Sad -> WavePose(amplitude = 0.28f, speed = 0.35f, thickness = 0.55f, bloom = 0.3f)
+    AssistantMood.Excited -> WavePose(amplitude = 1.1f, speed = 1.25f, thickness = 1.1f, bloom = 1f)
+    AssistantMood.Bored -> WavePose(amplitude = 0.22f, speed = 0.28f, thickness = 0.5f, bloom = 0.22f)
+    AssistantMood.Drowsy -> WavePose(amplitude = 0.18f, speed = 0.22f, thickness = 0.45f, bloom = 0.18f)
+    AssistantMood.Tired -> WavePose(amplitude = 0.2f, speed = 0.25f, thickness = 0.48f, bloom = 0.2f)
     AssistantMood.Reading -> WavePose(amplitude = 0.4f, speed = 0.5f, thickness = 0.65f, bloom = 0.45f)
     AssistantMood.Idle -> WavePose(amplitude = 0.32f, speed = 0.4f, thickness = 0.6f, bloom = 0.35f)
 }

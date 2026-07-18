@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.test.design.presentation.assistant.AssistantFace
 import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.AssistantPresence
+import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
@@ -74,6 +75,41 @@ fun AssistantUiVariant(
         AssistantUiStyle.CornerBubble -> CornerBubbleUi(mood, prompt, modifier)
         AssistantUiStyle.WaveFaceCombo -> WaveFaceComboUi(mood, prompt, modifier)
         AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, modifier)
+        AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, modifier)
+    }
+}
+
+@Composable
+private fun ImmersiveEyesUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0x44101820),
+                        Color(0xCC0A0C10),
+                        Color(0xF2050608),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ImmersiveEyesFace(
+                mood = mood,
+                modifier = Modifier.size(200.dp),
+            )
+            Spacer(Modifier.height(28.dp))
+            Text(
+                text = prompt,
+                color = Color(0xFFF8F9FA),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+        }
     }
 }
 

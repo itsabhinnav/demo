@@ -73,6 +73,15 @@ internal fun DrawScope.drawMoodProp(
             alpha = visibility,
             life = life,
         )
+        AssistantMood.Excited -> drawSparkles(
+            anchor = center,
+            shell = shell,
+            alpha = visibility,
+            life = life,
+        )
+        AssistantMood.Bored,
+        AssistantMood.Drowsy,
+        AssistantMood.Tired,
         AssistantMood.Idle -> Unit
     }
 }

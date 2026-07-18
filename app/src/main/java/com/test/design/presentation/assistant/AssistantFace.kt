@@ -118,6 +118,48 @@ internal fun AssistantMood.toFacePose(): FacePose = when (this) {
         borderGlow = 0.55f,
         tilt = 5f,
     )
+    AssistantMood.Excited -> FacePose(
+        eyeOpen = 1.25f,
+        eyeWidth = 1.2f,
+        eyeHeight = 1.15f,
+        eyeStyle = 0.2f,
+        mouthCurve = 0.95f,
+        mouthOpen = 0.4f,
+        mouthWidth = 1.15f,
+        borderGlow = 1.1f,
+        blush = 0.4f,
+        tilt = -3f,
+    )
+    AssistantMood.Bored -> FacePose(
+        eyeOpen = 0.55f,
+        eyeWidth = 1.15f,
+        eyeHeight = 0.5f,
+        lookX = 0.35f,
+        eyeStyle = -0.5f,
+        mouthCurve = -0.1f,
+        borderGlow = 0.4f,
+        tilt = 4f,
+    )
+    AssistantMood.Drowsy -> FacePose(
+        eyeOpen = 0.35f,
+        eyeWidth = 1.2f,
+        eyeHeight = 0.4f,
+        lookY = 0.1f,
+        eyeStyle = -0.9f,
+        mouthCurve = 0.05f,
+        borderGlow = 0.35f,
+        tilt = 3f,
+    )
+    AssistantMood.Tired -> FacePose(
+        eyeOpen = 0.45f,
+        eyeWidth = 1.1f,
+        eyeHeight = 0.45f,
+        lookY = 0.15f,
+        eyeStyle = -0.8f,
+        mouthCurve = -0.2f,
+        borderGlow = 0.3f,
+        tilt = 5f,
+    )
     AssistantMood.Reading -> FacePose(
         eyeOpen = 0.95f,
         lookX = 0.3f,

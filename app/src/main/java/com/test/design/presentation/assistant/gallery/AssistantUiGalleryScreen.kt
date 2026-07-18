@@ -132,6 +132,11 @@ fun AssistantUiGalleryScreen(
                 AssistantMood.Speaking,
                 AssistantMood.Thinking,
                 AssistantMood.Happy,
+                AssistantMood.Sad,
+                AssistantMood.Excited,
+                AssistantMood.Bored,
+                AssistantMood.Drowsy,
+                AssistantMood.Tired,
                 AssistantMood.Searching,
             ).forEach { entry ->
                 FilterChip(
@@ -157,6 +162,10 @@ private fun moodPrompt(mood: AssistantMood): String = when (mood) {
     AssistantMood.Thinking -> "Working on it"
     AssistantMood.Happy -> "Glad I could help"
     AssistantMood.Sad -> "Sorry about that"
+    AssistantMood.Excited -> "Great news!"
+    AssistantMood.Bored -> "Anything else?"
+    AssistantMood.Drowsy -> "Getting quiet…"
+    AssistantMood.Tired -> "Still here for you"
     AssistantMood.Reading -> "Scanning…"
     AssistantMood.Searching -> "Looking that up"
 }

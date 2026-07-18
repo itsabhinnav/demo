@@ -17,6 +17,10 @@ class AssistantMoodTest {
                     "Working",
                     "Happy",
                     "Sad",
+                    "Excited",
+                    "Bored",
+                    "Drowsy",
+                    "Tired",
                     "Reading",
                     "Searching",
                 ),
@@ -28,6 +32,7 @@ class AssistantMoodTest {
     fun listeningUsesStrongerGlowThanIdle() {
         assertTrue(AssistantMood.Listening.glowIntensity > AssistantMood.Idle.glowIntensity)
         assertTrue(AssistantMood.Searching.glowIntensity > AssistantMood.Sad.glowIntensity)
+        assertTrue(AssistantMood.Excited.glowIntensity > AssistantMood.Tired.glowIntensity)
     }
 
     @Test
@@ -41,9 +46,9 @@ class AssistantMoodTest {
     fun facePoseKeepsOneCharacterBounds() {
         AssistantMood.entries.forEach { mood ->
             val pose = mood.toFacePose()
-            assertTrue(pose.eyeOpen in 0.4f..1.3f)
+            assertTrue(pose.eyeOpen in 0.3f..1.35f)
             assertTrue(pose.eyeWidth in 0.5f..1.3f)
-            assertTrue(pose.eyeHeight in 0.4f..1.3f)
+            assertTrue(pose.eyeHeight in 0.35f..1.3f)
             assertTrue(pose.borderGlow in 0f..1.2f)
             assertTrue(pose.blush in 0f..1f)
             assertTrue(pose.roundness in 0.5f..1f)
@@ -54,6 +59,25 @@ class AssistantMoodTest {
         }
         assertTrue(AssistantMood.Happy.toFacePose().mouthCurve > AssistantMood.Sad.toFacePose().mouthCurve)
         assertTrue(AssistantMood.Speaking.toFacePose().mouthOpen > AssistantMood.Idle.toFacePose().mouthOpen)
+        assertTrue(AssistantMood.Excited.toFacePose().eyeOpen > AssistantMood.Drowsy.toFacePose().eyeOpen)
+    }
+
+    @Test
+    fun immersiveEyePoseConveysEmotionShapes() {
+        AssistantMood.entries.forEach { mood ->
+            val pose = mood.toImmersiveEyePose()
+            assertTrue(pose.eyeOpen in 0.2f..1.5f)
+            assertTrue(pose.eyeWidth in 0.8f..1.5f)
+            assertTrue(pose.eyeHeight in 0.3f..1.4f)
+            assertTrue(pose.faceGlow in 0f..1.2f)
+            assertTrue(pose.mouthVisible in 0f..1f)
+            assertTrue(pose.blinkSpeed in 0.2f..1.6f)
+        }
+        assertTrue(AssistantMood.Happy.toImmersiveEyePose().eyeStyle > AssistantMood.Sad.toImmersiveEyePose().eyeStyle)
+        assertTrue(AssistantMood.Excited.toImmersiveEyePose().eyeOpen > AssistantMood.Tired.toImmersiveEyePose().eyeOpen)
+        assertTrue(AssistantMood.Drowsy.toImmersiveEyePose().eyeOpen < AssistantMood.Listening.toImmersiveEyePose().eyeOpen)
+        assertTrue(AssistantMood.Speaking.toImmersiveEyePose().mouthVisible > 0.5f)
+        assertTrue(AssistantMood.Bored.toImmersiveEyePose().eyeOpen < AssistantMood.Idle.toImmersiveEyePose().eyeOpen)
     }
 
     @Test
@@ -93,5 +117,29 @@ class AssistantMoodTest {
                 it.speaker == DialogueSpeaker.User && it.text.isNotBlank()
             },
         )
+    }
+
+    @Test
+    fun immersiveScriptShowsOneLinePhasesAndEmotions() {
+        val moods = ImmersiveDialogueScript.map { it.mood }.toSet()
+        assertTrue(
+            moods.containsAll(
+                listOf(
+                    AssistantMood.Listening,
+                    AssistantMood.Thinking,
+                    AssistantMood.Searching,
+                    AssistantMood.Speaking,
+                    AssistantMood.Happy,
+                    AssistantMood.Sad,
+                    AssistantMood.Excited,
+                    AssistantMood.Bored,
+                    AssistantMood.Drowsy,
+                    AssistantMood.Tired,
+                ),
+            ),
+        )
+        assertTrue(ImmersiveDialogueScript.all { it.text.isNotBlank() })
+        assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.User })
+        assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })
     }
 }

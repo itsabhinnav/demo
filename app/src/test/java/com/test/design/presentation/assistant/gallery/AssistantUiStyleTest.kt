@@ -26,6 +26,7 @@ class AssistantUiStyleTest {
         assertTrue(titles.contains("Corner bubble"))
         assertTrue(titles.contains("Wave + face"))
         assertTrue(titles.contains("Ambient pill"))
+        assertTrue(titles.contains("Immersive eyes"))
     }
 
     @Test
