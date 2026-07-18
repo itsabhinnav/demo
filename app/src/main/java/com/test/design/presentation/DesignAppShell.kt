@@ -26,6 +26,9 @@ import com.test.design.core.motion.LocalMotionSchemeUpdater
 import com.test.design.core.motion.MotionSchemeViewModel
 import com.test.design.core.theme.LocalThemeModeUpdater
 import com.test.design.core.theme.ThemeModeViewModel
+import com.test.design.presentation.assistant.AssistantAppearanceViewModel
+import com.test.design.presentation.assistant.LocalAssistantHighContrast
+import com.test.design.presentation.assistant.LocalAssistantHighContrastUpdater
 import com.test.design.presentation.common.ScreenWithBackground
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.dashboard.components.FloatingBottomSystemBar
@@ -57,10 +60,12 @@ fun DesignAppShell(
     val drivingUxViewModel: DrivingUxViewModel = viewModel()
     val motionSchemeViewModel: MotionSchemeViewModel = viewModel()
     val themeModeViewModel: ThemeModeViewModel = viewModel()
+    val assistantAppearanceViewModel: AssistantAppearanceViewModel = viewModel()
     val climateViewModel: ClimateViewModel = activityViewModel()
     val drivingState by drivingUxViewModel.drivingUxState.collectAsStateWithLifecycle()
     val motionScheme by motionSchemeViewModel.motionScheme.collectAsStateWithLifecycle()
     val themeMode by themeModeViewModel.themeMode.collectAsStateWithLifecycle()
+    val assistantHighContrast by assistantAppearanceViewModel.highContrast.collectAsStateWithLifecycle()
     val climateState by climateViewModel.state.collectAsStateWithLifecycle()
 
     var hunVisible by remember { mutableStateOf(false) }
@@ -75,6 +80,8 @@ fun DesignAppShell(
             LocalDrivingUxUpdater provides drivingUxViewModel::update,
             LocalMotionSchemeUpdater provides motionSchemeViewModel::update,
             LocalThemeModeUpdater provides themeModeViewModel::update,
+            LocalAssistantHighContrast provides assistantHighContrast,
+            LocalAssistantHighContrastUpdater provides assistantAppearanceViewModel::update,
         ) {
             val shellModifier = if (applySafeDrawingInsets) {
                 Modifier

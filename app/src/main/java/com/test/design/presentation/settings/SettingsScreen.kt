@@ -17,6 +17,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,6 +36,8 @@ import com.test.design.core.motion.LocalMotionSchemeUpdater
 import com.test.design.core.theme.AppThemeMode
 import com.test.design.core.theme.LocalAppThemeMode
 import com.test.design.core.theme.LocalThemeModeUpdater
+import com.test.design.presentation.assistant.LocalAssistantHighContrast
+import com.test.design.presentation.assistant.LocalAssistantHighContrastUpdater
 import com.test.design.presentation.ivi.common.DetailSurfaceCard
 import com.test.design.presentation.ivi.common.SimulatedBadge
 import com.test.design.presentation.ivi.common.WidgetScreenHeader
@@ -61,6 +64,8 @@ fun SharedTransitionScope.SettingsScreen(
     val onMotionSchemeChange = LocalMotionSchemeUpdater.current
     val selectedThemeMode = LocalAppThemeMode.current
     val onThemeModeChange = LocalThemeModeUpdater.current
+    val assistantHighContrast = LocalAssistantHighContrast.current
+    val onAssistantHighContrastChange = LocalAssistantHighContrastUpdater.current
     val motionLocked = drivingState != DrivingUxState.Parked
     var showMotionStudio by remember { mutableStateOf(false) }
 
@@ -195,6 +200,25 @@ fun SharedTransitionScope.SettingsScreen(
                             )
                         }
                     }
+                    ListItem(
+                        modifier = Modifier.carListItemHeight(),
+                        headlineContent = {
+                            Text("Assistant high contrast", style = MaterialTheme.typography.bodyLarge)
+                        },
+                        supportingContent = {
+                            Text(
+                                "Sunlight-safe eyes · stronger glow",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = assistantHighContrast,
+                                onCheckedChange = onAssistantHighContrastChange,
+                            )
+                        },
+                    )
                     HorizontalDivider()
                     Text(
                         text = "Display",

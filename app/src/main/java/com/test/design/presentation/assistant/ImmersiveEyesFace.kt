@@ -189,17 +189,26 @@ private val PoseSpring = spring<Float>(
     stiffness = Spring.StiffnessMediumLow,
 )
 
-private val EyeFill = Color(0xFFF4F7FB)
-private val FaceAura = Color(0xFF8AB4F8)
-
 /**
  * Centered elliptical eyes with a soft face-shaped glow. Mouth draws when speaking
  * or when the mood asks for a smile / frown.
+ *
+ * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
+ * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
+ * @param brandGlow OEM / Material accent blended into the face aura
+ * @param highContrast sunlight-safe eye fill + stronger glow
+ * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
 fun ImmersiveEyesFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
+    gazeX: Float? = null,
+    gazeY: Float? = null,
+    mouthAmplitude: Float? = null,
+    brandGlow: Color = Color(0xFF8AB4F8),
+    highContrast: Boolean = false,
+    gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
     val eyeOpen = remember { Animatable(target.eyeOpen) }
@@ -215,27 +224,46 @@ fun ImmersiveEyesFace(
     val mouthOpen = remember { Animatable(target.mouthOpen) }
     val mouthVisible = remember { Animatable(target.mouthVisible) }
     val blink = remember { Animatable(1f) }
+    val externalGaze = gazeX != null || gazeY != null
 
-    LaunchedEffect(mood) {
+    LaunchedEffect(mood, highContrast) {
+        val glowBoost = if (highContrast) 1.25f else 1f
         launch { eyeOpen.animateTo(target.eyeOpen, PoseSpring) }
         launch { eyeWidth.animateTo(target.eyeWidth, PoseSpring) }
         launch { eyeHeight.animateTo(target.eyeHeight, PoseSpring) }
         launch { eyeGap.animateTo(target.eyeGap, PoseSpring) }
-        launch { lookY.animateTo(target.lookY, PoseSpring) }
+        launch { lookY.animateTo(gazeY ?: target.lookY, PoseSpring) }
         launch { tilt.animateTo(target.tilt, PoseSpring) }
-        launch { faceGlow.animateTo(target.faceGlow, PoseSpring) }
+        launch { faceGlow.animateTo((target.faceGlow * glowBoost).coerceAtMost(1.2f), PoseSpring) }
         launch { eyeStyle.animateTo(target.eyeStyle, PoseSpring) }
         launch { mouthCurve.animateTo(target.mouthCurve, PoseSpring) }
         launch { mouthVisible.animateTo(target.mouthVisible, PoseSpring) }
-        if (mood != AssistantMood.Speaking && mood != AssistantMood.Excited) {
+        if (mouthAmplitude == null &&
+            mood != AssistantMood.Speaking &&
+            mood != AssistantMood.Excited
+        ) {
             launch { mouthOpen.animateTo(target.mouthOpen, PoseSpring) }
         }
-        if (mood != AssistantMood.Reading && mood != AssistantMood.Searching && mood != AssistantMood.Bored) {
+        if (!externalGaze &&
+            mood != AssistantMood.Reading &&
+            mood != AssistantMood.Searching &&
+            mood != AssistantMood.Bored
+        ) {
             launch { lookX.animateTo(target.lookX, PoseSpring) }
         }
     }
 
-    LaunchedEffect(mood) {
+    LaunchedEffect(gazeX, gazeY) {
+        if (gazeX != null) lookX.animateTo(gazeX, PoseSpring)
+        if (gazeY != null) lookY.animateTo(gazeY, PoseSpring)
+    }
+
+    LaunchedEffect(mouthAmplitude, mood) {
+        if (mouthAmplitude != null) {
+            mouthVisible.animateTo(maxOf(target.mouthVisible, 0.85f), PoseSpring)
+            mouthOpen.snapTo(mouthAmplitude.coerceIn(0f, 1f))
+            return@LaunchedEffect
+        }
         if (mood != AssistantMood.Speaking && mood != AssistantMood.Excited) return@LaunchedEffect
         while (isActive) {
             mouthOpen.animateTo(
@@ -246,6 +274,26 @@ fun ImmersiveEyesFace(
                 Random.nextFloat() * 0.12f + 0.04f,
                 tween(Random.nextInt(55, 100)),
             )
+        }
+    }
+
+    LaunchedEffect(gesture) {
+        when (gesture) {
+            FaceGesture.None -> Unit
+            FaceGesture.Nod -> {
+                repeat(2) {
+                    tilt.animateTo(target.tilt + 10f, tween(120))
+                    tilt.animateTo(target.tilt - 4f, tween(120))
+                }
+                tilt.animateTo(target.tilt, PoseSpring)
+            }
+            FaceGesture.Shake -> {
+                repeat(2) {
+                    lookX.animateTo(0.55f, tween(100))
+                    lookX.animateTo(-0.55f, tween(100))
+                }
+                lookX.animateTo(gazeX ?: target.lookX, PoseSpring)
+            }
         }
     }
 
@@ -297,7 +345,8 @@ fun ImmersiveEyesFace(
         }
     }
 
-    LaunchedEffect(mood) {
+    LaunchedEffect(mood, externalGaze) {
+        if (externalGaze) return@LaunchedEffect
         if (mood != AssistantMood.Reading &&
             mood != AssistantMood.Searching &&
             mood != AssistantMood.Bored
@@ -335,16 +384,18 @@ fun ImmersiveEyesFace(
         val cy = size.height * 0.48f
         val r = side * 0.42f * breath
         val moodTint = mood.glowColor
+        val aura = brandGlow
+        val eyeFill = eyeFillForContrast(highContrast)
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bob = sin(life * 0.5f).toFloat() * r * 0.02f
 
         translate(top = bob) {
-            // Soft face-shaped aura (elliptical bloom)
+            // Soft face-shaped aura (elliptical bloom) — brand + mood tint
             drawOval(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        moodTint.copy(alpha = 0.28f * glow),
-                        FaceAura.copy(alpha = 0.14f * glow),
+                        moodTint.copy(alpha = auraAlphaForContrast(highContrast, 0.28f) * glow),
+                        aura.copy(alpha = auraAlphaForContrast(highContrast, 0.18f) * glow),
                         Color.Transparent,
                     ),
                     center = Offset(cx, cy + r * 0.05f),
@@ -356,7 +407,7 @@ fun ImmersiveEyesFace(
             drawOval(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.06f * glow),
+                        Color.White.copy(alpha = auraAlphaForContrast(highContrast, 0.08f) * glow),
                         Color.Transparent,
                     ),
                     center = Offset(cx, cy),
@@ -376,19 +427,27 @@ fun ImmersiveEyesFace(
                 val gaze = lookX.value * r * 0.08f
                 val left = Offset(cx - gap + gaze, eyeY)
                 val right = Offset(cx + gap + gaze, eyeY)
+                val strokeBoost = if (highContrast) 1.15f else 1f
 
-                drawImmersiveEye(left, eW, eH, eyeStyle.value, EyeFill, moodTint, glow)
-                drawImmersiveEye(right, eW, eH, eyeStyle.value, EyeFill, moodTint, glow)
+                drawImmersiveEye(
+                    left, eW * strokeBoost, eH, eyeStyle.value, eyeFill, moodTint, glow,
+                )
+                drawImmersiveEye(
+                    right, eW * strokeBoost, eH, eyeStyle.value, eyeFill, moodTint, glow,
+                )
 
-                if (mouthVisible.value > 0.08f) {
+                val speaking = mouthAmplitude != null ||
+                    mood == AssistantMood.Speaking ||
+                    mood == AssistantMood.Excited
+                if (mouthVisible.value > 0.08f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
                     drawImmersiveMouth(
                         center = Offset(cx, cy + r * 0.38f),
                         faceR = r,
                         curve = mouthCurve.value,
                         open = mouthOpen.value,
-                        visible = mouthVisible.value,
-                        color = EyeFill,
-                        speaking = mood == AssistantMood.Speaking || mood == AssistantMood.Excited,
+                        visible = maxOf(mouthVisible.value, if (mouthAmplitude != null) 0.9f else 0f),
+                        color = eyeFill,
+                        speaking = speaking,
                         life = life,
                     )
                 }
