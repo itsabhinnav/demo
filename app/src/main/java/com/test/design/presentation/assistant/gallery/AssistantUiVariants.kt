@@ -13,8 +13,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +24,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,10 +50,13 @@ import androidx.compose.ui.unit.sp
 import com.test.design.presentation.assistant.AssistantFace
 import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.AssistantPresence
+import com.test.design.presentation.assistant.DroidAssistantFace
+import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
+import com.test.design.presentation.assistant.toDroidFaceGlyph
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -76,6 +85,62 @@ fun AssistantUiVariant(
         AssistantUiStyle.WaveFaceCombo -> WaveFaceComboUi(mood, prompt, modifier)
         AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, modifier)
         AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, modifier)
+        AssistantUiStyle.DroidFace -> DroidFaceUi(mood, modifier)
+    }
+}
+
+@Composable
+private fun DroidFaceUi(mood: AssistantMood, modifier: Modifier) {
+    val selected = mood.toDroidFaceGlyph()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.height(56.dp))
+        DroidAssistantFace(
+            glyph = selected,
+            modifier = Modifier.size(120.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(6),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            contentPadding = PaddingValues(bottom = 72.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(DroidFaceGlyph.entries) { glyph ->
+                val isSelected = glyph == selected
+                Box(
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .then(
+                            if (isSelected) {
+                                Modifier
+                                    .border(
+                                        width = 2.dp,
+                                        color = Color(0xFFA4C639),
+                                        shape = RoundedCornerShape(12.dp),
+                                    )
+                                    .padding(2.dp)
+                            } else {
+                                Modifier
+                            },
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    DroidAssistantFace(
+                        glyph = glyph,
+                        modifier = Modifier.fillMaxSize(0.92f),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -163,7 +228,7 @@ private fun FaceOnlyUi(mood: AssistantMood, modifier: Modifier) {
             modifier = Modifier
                 .size(200.dp)
                 .clip(CircleShape)
-                .background(AssistantUiChrome.Glass.copy(alpha = 0.45f)),
+                .background(AssistantUiChrome.Glass),
             contentAlignment = Alignment.Center,
         ) {
             AssistantPresence(mood = mood, modifier = Modifier.fillMaxSize())
@@ -342,7 +407,7 @@ private fun ListeningRingsUi(mood: AssistantMood, modifier: Modifier) {
             modifier = Modifier
                 .size(220.dp)
                 .clip(CircleShape)
-                .background(AssistantUiChrome.Glass.copy(alpha = 0.5f)),
+                .background(AssistantUiChrome.Glass),
             contentAlignment = Alignment.Center,
         ) {
             ListeningRingsCanvas(mood = mood, modifier = Modifier.fillMaxSize())

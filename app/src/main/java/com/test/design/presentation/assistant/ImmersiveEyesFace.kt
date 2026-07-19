@@ -37,14 +37,14 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Eyes-only immersive persona — elliptical eyes + soft face glow, no solid orb body.
- * Mouth appears when speaking or when the mood strongly implies expression.
+ * NIO NOMI–style glyphs: floating white eyes/mouth that blend into the backdrop — no orb frame.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
-    val eyeWidth: Float = 1.15f,
-    val eyeHeight: Float = 0.85f,
-    val eyeGap: Float = 1f,
+    val eyeWidth: Float = 1f,
+    val eyeHeight: Float = 1f,
+    /** Half-distance scale — higher = wider set (Nomi-cute). */
+    val eyeGap: Float = 1.45f,
     val lookX: Float = 0f,
     val lookY: Float = 0f,
     val tilt: Float = 0f,
@@ -54,132 +54,156 @@ internal data class ImmersiveEyePose(
     val mouthOpen: Float = 0f,
     val mouthVisible: Float = 0f,
     val blinkSpeed: Float = 1f,
+    /** Soft cheek glow 0..1 */
+    val blush: Float = 0f,
 )
 
 internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) {
     AssistantMood.Idle -> ImmersiveEyePose(
         eyeOpen = 1f,
-        eyeWidth = 1.2f,
-        eyeHeight = 0.9f,
-        faceGlow = 0.55f,
-        mouthVisible = 0f,
-        tilt = 1.5f,
+        eyeWidth = 0.95f,
+        eyeHeight = 1.05f,
+        eyeGap = 1.5f,
+        eyeStyle = 0.15f,
+        faceGlow = 0.65f,
+        mouthCurve = 0.25f,
+        mouthVisible = 0.2f,
+        blush = 0.12f,
+        tilt = 0f,
     )
     AssistantMood.Listening -> ImmersiveEyePose(
-        eyeOpen = 1.2f,
-        eyeWidth = 1.25f,
-        eyeHeight = 1.05f,
+        eyeOpen = 1.15f,
+        eyeWidth = 1f,
+        eyeHeight = 1.15f,
+        eyeGap = 1.55f,
         faceGlow = 1f,
         mouthVisible = 0f,
-        lookY = -0.05f,
+        blush = 0.18f,
+        lookY = -0.04f,
     )
     AssistantMood.Speaking -> ImmersiveEyePose(
         eyeOpen = 1.05f,
-        eyeWidth = 1.15f,
-        eyeHeight = 0.95f,
-        faceGlow = 0.9f,
-        mouthCurve = 0.35f,
-        mouthOpen = 0.55f,
+        eyeWidth = 0.95f,
+        eyeHeight = 1.05f,
+        eyeGap = 1.5f,
+        eyeStyle = 0.2f,
+        faceGlow = 0.95f,
+        mouthCurve = 0.45f,
+        mouthOpen = 0.5f,
         mouthVisible = 1f,
-        tilt = 2f,
+        blush = 0.15f,
+        tilt = 1f,
     )
     AssistantMood.Thinking -> ImmersiveEyePose(
-        eyeOpen = 0.9f,
-        eyeWidth = 1.1f,
-        eyeHeight = 0.75f,
-        lookX = 0.35f,
-        lookY = -0.12f,
-        eyeStyle = -0.2f,
-        faceGlow = 0.7f,
+        eyeOpen = 0.95f,
+        eyeWidth = 0.95f,
+        eyeHeight = 0.9f,
+        eyeGap = 1.45f,
+        lookX = 0.28f,
+        lookY = -0.08f,
+        eyeStyle = 0f,
+        faceGlow = 0.75f,
         mouthVisible = 0f,
-        tilt = 8f,
+        tilt = 5f,
     )
     AssistantMood.Happy -> ImmersiveEyePose(
-        eyeOpen = 0.95f,
-        eyeWidth = 1.3f,
-        eyeHeight = 0.85f,
+        eyeOpen = 1f,
+        eyeWidth = 1.15f,
+        eyeHeight = 0.9f,
+        eyeGap = 1.55f,
         eyeStyle = 1f,
-        faceGlow = 0.95f,
-        mouthCurve = 0.85f,
-        mouthOpen = 0.06f,
-        mouthVisible = 0.85f,
+        faceGlow = 1f,
+        mouthCurve = 0.9f,
+        mouthOpen = 0.05f,
+        mouthVisible = 0.9f,
+        blush = 0.55f,
         tilt = -2f,
     )
     AssistantMood.Sad -> ImmersiveEyePose(
-        eyeOpen = 0.7f,
-        eyeWidth = 1.15f,
-        eyeHeight = 0.65f,
-        lookY = 0.22f,
-        eyeStyle = -0.65f,
+        eyeOpen = 0.75f,
+        eyeWidth = 1f,
+        eyeHeight = 0.7f,
+        eyeGap = 1.4f,
+        lookY = 0.15f,
+        eyeStyle = -0.55f,
         faceGlow = 0.4f,
-        mouthCurve = -0.75f,
+        mouthCurve = -0.65f,
         mouthOpen = 0.02f,
-        mouthVisible = 0.7f,
-        tilt = 6f,
+        mouthVisible = 0.65f,
+        tilt = 4f,
         blinkSpeed = 0.7f,
     )
     AssistantMood.Excited -> ImmersiveEyePose(
-        eyeOpen = 1.35f,
-        eyeWidth = 1.35f,
+        eyeOpen = 1.25f,
+        eyeWidth = 1.1f,
         eyeHeight = 1.2f,
+        eyeGap = 1.6f,
+        eyeStyle = 0.85f,
         faceGlow = 1.1f,
         mouthCurve = 0.95f,
-        mouthOpen = 0.35f,
+        mouthOpen = 0.3f,
         mouthVisible = 1f,
-        tilt = -4f,
+        blush = 0.4f,
+        tilt = -3f,
         blinkSpeed = 1.4f,
     )
     AssistantMood.Bored -> ImmersiveEyePose(
-        eyeOpen = 0.55f,
-        eyeWidth = 1.25f,
-        eyeHeight = 0.55f,
-        lookX = 0.4f,
-        lookY = 0.08f,
-        eyeStyle = -0.45f,
-        faceGlow = 0.35f,
-        mouthCurve = -0.15f,
-        mouthVisible = 0.35f,
-        tilt = 4f,
+        eyeOpen = 0.6f,
+        eyeWidth = 1.05f,
+        eyeHeight = 0.6f,
+        eyeGap = 1.45f,
+        lookX = 0.35f,
+        lookY = 0.06f,
+        eyeStyle = -0.35f,
+        faceGlow = 0.4f,
+        mouthCurve = -0.1f,
+        mouthVisible = 0.3f,
+        tilt = 3f,
         blinkSpeed = 0.55f,
     )
     AssistantMood.Drowsy -> ImmersiveEyePose(
-        eyeOpen = 0.35f,
-        eyeWidth = 1.3f,
-        eyeHeight = 0.4f,
-        lookY = 0.12f,
-        eyeStyle = -0.85f,
-        faceGlow = 0.3f,
+        eyeOpen = 0.45f,
+        eyeWidth = 1.1f,
+        eyeHeight = 0.5f,
+        eyeGap = 1.45f,
+        lookY = 0.1f,
+        eyeStyle = -0.55f,
+        faceGlow = 0.35f,
         mouthVisible = 0f,
-        tilt = 3f,
+        tilt = 2f,
         blinkSpeed = 0.4f,
     )
     AssistantMood.Tired -> ImmersiveEyePose(
-        eyeOpen = 0.45f,
-        eyeWidth = 1.2f,
-        eyeHeight = 0.5f,
-        lookY = 0.18f,
-        eyeStyle = -0.75f,
-        faceGlow = 0.28f,
-        mouthCurve = -0.25f,
+        eyeOpen = 0.5f,
+        eyeWidth = 1.05f,
+        eyeHeight = 0.55f,
+        eyeGap = 1.4f,
+        lookY = 0.14f,
+        eyeStyle = -0.5f,
+        faceGlow = 0.3f,
+        mouthCurve = -0.2f,
         mouthVisible = 0.25f,
-        tilt = 5f,
+        tilt = 3f,
         blinkSpeed = 0.35f,
     )
     AssistantMood.Reading -> ImmersiveEyePose(
-        eyeOpen = 0.95f,
-        eyeWidth = 1.15f,
-        eyeHeight = 0.85f,
-        lookX = 0.3f,
-        faceGlow = 0.65f,
+        eyeOpen = 1f,
+        eyeWidth = 0.95f,
+        eyeHeight = 1f,
+        eyeGap = 1.5f,
+        lookX = 0.28f,
+        faceGlow = 0.7f,
         mouthVisible = 0f,
     )
     AssistantMood.Searching -> ImmersiveEyePose(
         eyeOpen = 1.15f,
-        eyeWidth = 1.2f,
-        eyeHeight = 1f,
+        eyeWidth = 1f,
+        eyeHeight = 1.1f,
+        eyeGap = 1.55f,
         faceGlow = 0.95f,
         mouthVisible = 0f,
-        tilt = 2f,
+        blush = 0.1f,
+        tilt = 1f,
         blinkSpeed = 1.2f,
     )
 }
@@ -190,13 +214,12 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Centered elliptical eyes with a soft face-shaped glow. Mouth draws when speaking
- * or when the mood asks for a smile / frown.
+ * Floating Nomi glyphs (no circular housing) — eyes/mouth sit in a soft brand aura.
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
- * @param brandGlow OEM / Material accent blended into the face aura
- * @param highContrast sunlight-safe eye fill + stronger glow
+ * @param brandGlow OEM / Material accent for the soft under-glow
+ * @param highContrast sunlight-safe glyph + stronger glow
  * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
@@ -223,6 +246,7 @@ fun ImmersiveEyesFace(
     val mouthCurve = remember { Animatable(target.mouthCurve) }
     val mouthOpen = remember { Animatable(target.mouthOpen) }
     val mouthVisible = remember { Animatable(target.mouthVisible) }
+    val blush = remember { Animatable(target.blush) }
     val blink = remember { Animatable(1f) }
     val externalGaze = gazeX != null || gazeY != null
 
@@ -238,6 +262,7 @@ fun ImmersiveEyesFace(
         launch { eyeStyle.animateTo(target.eyeStyle, PoseSpring) }
         launch { mouthCurve.animateTo(target.mouthCurve, PoseSpring) }
         launch { mouthVisible.animateTo(target.mouthVisible, PoseSpring) }
+        launch { blush.animateTo(target.blush, PoseSpring) }
         if (mouthAmplitude == null &&
             mood != AssistantMood.Speaking &&
             mood != AssistantMood.Excited
@@ -378,75 +403,73 @@ fun ImmersiveEyesFace(
         }
     }
 
-    Canvas(modifier = modifier.aspectRatio(1.15f)) {
+    Canvas(modifier = modifier.aspectRatio(1f)) {
         val side = minOf(size.width, size.height)
         val cx = size.width * 0.5f
-        val cy = size.height * 0.48f
-        val r = side * 0.42f * breath
-        val moodTint = mood.glowColor
-        val aura = brandGlow
-        val eyeFill = eyeFillForContrast(highContrast)
+        val cy = size.height * 0.5f
+        // Feature scale only — no drawn shell / black disk.
+        val faceR = side * 0.36f * breath
+        val glyph = eyeFillForContrast(highContrast)
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
-        val bob = sin(life * 0.5f).toFloat() * r * 0.02f
+        val bob = sin(life * 0.45f).toFloat() * faceR * 0.025f
 
         translate(top = bob) {
-            // Soft face-shaped aura (elliptical bloom) — brand + mood tint
-            drawOval(
+            // Soft diffuse aura so glyphs blend into the blurred stage
+            val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
+            drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        moodTint.copy(alpha = auraAlphaForContrast(highContrast, 0.28f) * glow),
-                        aura.copy(alpha = auraAlphaForContrast(highContrast, 0.18f) * glow),
-                        Color.Transparent,
-                    ),
-                    center = Offset(cx, cy + r * 0.05f),
-                    radius = r * 1.45f,
-                ),
-                topLeft = Offset(cx - r * 1.15f, cy - r * 1.05f),
-                size = Size(r * 2.3f, r * 2.2f),
-            )
-            drawOval(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = auraAlphaForContrast(highContrast, 0.08f) * glow),
+                        brandGlow.copy(alpha = auraA * 0.55f),
+                        brandGlow.copy(alpha = auraA * 0.12f),
                         Color.Transparent,
                     ),
                     center = Offset(cx, cy),
-                    radius = r * 0.95f,
+                    radius = faceR * 1.65f,
                 ),
-                topLeft = Offset(cx - r * 0.85f, cy - r * 0.75f),
-                size = Size(r * 1.7f, r * 1.55f),
+                radius = faceR * 1.65f,
+                center = Offset(cx, cy),
             )
 
-            val liveTilt = tilt.value + 0.5f * sin(life * 0.32f).toFloat()
+            val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
             rotate(liveTilt, pivot = Offset(cx, cy)) {
                 val open = (eyeOpen.value * blink.value).coerceIn(0.05f, 1.4f)
-                val eW = r * 0.14f * eyeWidth.value
-                val eH = r * 0.2f * eyeHeight.value * open
-                val gap = r * 0.28f * eyeGap.value
-                val eyeY = cy - r * 0.06f + lookY.value * r * 0.14f
-                val gaze = lookX.value * r * 0.08f
+                val gap = faceR * 0.34f * eyeGap.value.coerceIn(1f, 1.8f)
+                val eyeY = cy - faceR * 0.06f + lookY.value * faceR * 0.1f
+                val gaze = lookX.value * faceR * 0.06f
+                val barW = faceR * 0.075f * eyeWidth.value.coerceIn(0.8f, 1.25f)
+                val barH = faceR * 0.2f * eyeHeight.value * open
                 val left = Offset(cx - gap + gaze, eyeY)
                 val right = Offset(cx + gap + gaze, eyeY)
-                val strokeBoost = if (highContrast) 1.15f else 1f
 
-                drawImmersiveEye(
-                    left, eW * strokeBoost, eH, eyeStyle.value, eyeFill, moodTint, glow,
-                )
-                drawImmersiveEye(
-                    right, eW * strokeBoost, eH, eyeStyle.value, eyeFill, moodTint, glow,
-                )
+                if (blush.value > 0.04f) {
+                    val blushA = 0.2f * blush.value
+                    val bx = gap * 0.95f
+                    drawCircle(
+                        Color(0xFFFF9BB0).copy(alpha = blushA),
+                        faceR * 0.1f,
+                        Offset(cx - bx, cy + faceR * 0.22f),
+                    )
+                    drawCircle(
+                        Color(0xFFFF9BB0).copy(alpha = blushA),
+                        faceR * 0.1f,
+                        Offset(cx + bx, cy + faceR * 0.22f),
+                    )
+                }
+
+                drawNomiGlyphEye(left, barW, barH, eyeStyle.value, glyph)
+                drawNomiGlyphEye(right, barW, barH, eyeStyle.value, glyph)
 
                 val speaking = mouthAmplitude != null ||
                     mood == AssistantMood.Speaking ||
                     mood == AssistantMood.Excited
                 if (mouthVisible.value > 0.08f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
-                    drawImmersiveMouth(
-                        center = Offset(cx, cy + r * 0.38f),
-                        faceR = r,
+                    drawNomiGlyphMouth(
+                        center = Offset(cx, cy + faceR * 0.38f),
+                        faceR = faceR,
                         curve = mouthCurve.value,
                         open = mouthOpen.value,
                         visible = maxOf(mouthVisible.value, if (mouthAmplitude != null) 0.9f else 0f),
-                        color = eyeFill,
+                        color = glyph,
                         speaking = speaking,
                         life = life,
                     )
@@ -456,77 +479,73 @@ fun ImmersiveEyesFace(
     }
 }
 
-private fun DrawScope.drawImmersiveEye(
+private fun DrawScope.drawNomiGlyphEye(
     center: Offset,
     width: Float,
     height: Float,
     style: Float,
     color: Color,
-    glowColor: Color,
-    glow: Float,
 ) {
-    // Soft per-eye bloom
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                glowColor.copy(alpha = 0.35f * glow),
-                Color.Transparent,
-            ),
-            center = center,
-            radius = maxOf(width, height) * 2.4f,
-        ),
-        topLeft = Offset(center.x - width * 2.2f, center.y - height * 2.2f),
-        size = Size(width * 4.4f, height * 4.4f),
-    )
-
+    val w = width.coerceAtLeast(1.5f)
+    val h = height.coerceAtLeast(w * 1.05f)
     when {
-        style > 0.35f -> {
+        style > 0.28f -> {
+            // Cute ^ happy arcs (icon-pack Nomi)
             val path = Path().apply {
-                moveTo(center.x - width * 1.2f, center.y + height * 0.2f)
+                moveTo(center.x - w * 1.85f, center.y + h * 0.25f)
                 quadraticTo(
                     center.x,
-                    center.y - height * (0.5f + 0.5f * style),
-                    center.x + width * 1.2f,
-                    center.y + height * 0.2f,
+                    center.y - h * (0.65f + 0.45f * style),
+                    center.x + w * 1.85f,
+                    center.y + h * 0.25f,
                 )
             }
-            drawPath(
-                path,
-                color,
-                style = Stroke(width = width * 0.75f, cap = StrokeCap.Round),
-            )
+            drawPath(path, color, style = Stroke(width = w * 1.45f, cap = StrokeCap.Round))
         }
         style < -0.25f -> {
+            // Soft sleepy dashes — still two distinct eyes, not one bar
             val flatten = (-style).coerceIn(0.25f, 1f)
-            val w = width * 1.45f
-            val h = (height * (1f - 0.7f * flatten)).coerceAtLeast(width * 0.28f)
+            val dashW = w * (1.6f + 0.5f * flatten)
+            val dashH = (h * (1f - 0.55f * flatten)).coerceAtLeast(w * 0.95f)
             drawRoundRect(
                 color = color,
-                topLeft = Offset(center.x - w, center.y - h * 0.5f),
-                size = Size(w * 2f, h),
-                cornerRadius = CornerRadius(h, h),
+                topLeft = Offset(center.x - dashW, center.y - dashH * 0.5f),
+                size = Size(dashW * 2f, dashH),
+                cornerRadius = CornerRadius(dashH, dashH),
             )
         }
         else -> {
-            // Elliptical eyes (wider than tall — not perfect circles)
-            val w = width * 1.15f
-            val h = height.coerceAtLeast(w * 0.55f)
+            // Soft glowing capsules
+            val bloomR = maxOf(w, h) * 2.6f
             drawOval(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        color.copy(alpha = 0.4f),
+                        Color.Transparent,
+                    ),
+                    center = center,
+                    radius = bloomR,
+                ),
+                topLeft = Offset(center.x - bloomR, center.y - bloomR),
+                size = Size(bloomR * 2f, bloomR * 2f),
+            )
+            drawRoundRect(
                 color = color,
                 topLeft = Offset(center.x - w, center.y - h),
                 size = Size(w * 2f, h * 2f),
+                cornerRadius = CornerRadius(w, w),
             )
-            // Specular highlight
-            drawOval(
-                color = Color.White.copy(alpha = 0.35f),
-                topLeft = Offset(center.x - w * 0.55f, center.y - h * 0.75f),
-                size = Size(w * 0.7f, h * 0.45f),
+            drawRoundRect(
+                color = Color.White.copy(alpha = 0.4f),
+                topLeft = Offset(center.x - w * 0.45f, center.y - h * 0.72f),
+                size = Size(w * 0.65f, h * 0.42f),
+                cornerRadius = CornerRadius(w * 0.4f, w * 0.4f),
             )
         }
     }
 }
 
-private fun DrawScope.drawImmersiveMouth(
+private fun DrawScope.drawNomiGlyphMouth(
     center: Offset,
     faceR: Float,
     curve: Float,
@@ -537,15 +556,15 @@ private fun DrawScope.drawImmersiveMouth(
     life: Float,
 ) {
     val alpha = visible.coerceIn(0f, 1f)
-    val halfW = faceR * 0.18f
-    val smile = faceR * 0.08f * curve
-    val openH = faceR * 0.075f * open.coerceIn(0f, 1f)
-    val wobble = if (speaking) sin(life * 3.4f).toFloat() * faceR * 0.012f else 0f
+    val halfW = faceR * 0.15f
+    val smile = faceR * 0.065f * curve
+    val openH = faceR * 0.06f * open.coerceIn(0f, 1f)
+    val wobble = if (speaking) sin(life * 3.4f).toFloat() * faceR * 0.01f else 0f
     val tint = color.copy(alpha = 0.95f * alpha)
 
-    if (openH > faceR * 0.018f) {
-        val w = halfW * 1.15f
-        val h = openH * 1.4f
+    if (openH > faceR * 0.014f) {
+        val w = halfW * 1.1f
+        val h = openH * 1.3f
         drawRoundRect(
             color = tint,
             topLeft = Offset(center.x - w * 0.5f, center.y - h * 0.3f + wobble),
@@ -558,10 +577,6 @@ private fun DrawScope.drawImmersiveMouth(
             moveTo(center.x - halfW, y0)
             quadraticTo(center.x, y0 + smile, center.x + halfW, y0)
         }
-        drawPath(
-            path,
-            tint,
-            style = Stroke(width = faceR * 0.038f, cap = StrokeCap.Round),
-        )
+        drawPath(path, tint, style = Stroke(width = faceR * 0.034f, cap = StrokeCap.Round))
     }
 }

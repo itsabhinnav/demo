@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Home
@@ -203,6 +204,7 @@ fun FloatingBottomSystemBar(
     onOpenApps: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenHome: () -> Unit,
+    onOpenAssistant: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val driverTemp = climateState.temperatureCelsius
@@ -269,6 +271,12 @@ fun FloatingBottomSystemBar(
                     onClick = onOpenHome,
                 )
                 DockIcon(
+                    icon = Icons.Default.AutoAwesome,
+                    contentDescription = "Assistant",
+                    container = Color(0xFF5B4CDB),
+                    onClick = onOpenAssistant,
+                )
+                DockIcon(
                     icon = Icons.Default.Phone,
                     contentDescription = "Phone",
                     container = Color(0xFF1B7F4A),
@@ -306,7 +314,7 @@ fun FloatingBottomSystemBar(
                 BarIconButton(
                     icon = Icons.Default.Mic,
                     contentDescription = "Voice assistant",
-                    onClick = onOpenApps,
+                    onClick = onOpenAssistant,
                 )
             }
         }

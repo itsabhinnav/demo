@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -136,12 +137,20 @@ fun NomiOrbOverlay(
             exit = fadeOut(tween(280)),
             modifier = Modifier.fillMaxSize(),
         ) {
-            NomiOrbStage(
-                mood = mood,
-                entrance = entrance,
-                session = session,
-                modifier = Modifier.fillMaxSize(),
-            )
+            Box(Modifier.fillMaxSize()) {
+                // Dim busy IVI chrome so the orb reads clearly.
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(AssistantTokens.Scrim),
+                )
+                NomiOrbStage(
+                    mood = mood,
+                    entrance = entrance,
+                    session = session,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }

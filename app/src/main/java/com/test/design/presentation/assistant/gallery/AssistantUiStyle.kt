@@ -59,4 +59,8 @@ enum class AssistantUiStyle(
         title = "Immersive eyes",
         blurb = "Full-screen gradient · eyes · transcript",
     ),
+    DroidFace(
+        title = "Droid face",
+        blurb = "Bugdroid icon pack · 36 glyphs",
+    ),
 }

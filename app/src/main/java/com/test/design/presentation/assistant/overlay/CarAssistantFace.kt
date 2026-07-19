@@ -55,7 +55,8 @@ internal object CarAssistantGeometry {
 
 /** Sunlight-safe high-contrast palette. */
 internal object CarAssistantColors {
-    val CapsuleBackground = Color(0xEC1A1C1E)
+    /** Blackish glass capsule — mostly solid so eyes/mouth stay crisp. */
+    val CapsuleBackground = Color(0xE6121418)
     val Idle = Color(0xFFE0E0E0)
     val Listening = Color(0xFF4DADFF)
     val Thinking = Color(0xFFB388FF)

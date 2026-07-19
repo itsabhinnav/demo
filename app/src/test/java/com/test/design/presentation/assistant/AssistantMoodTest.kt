@@ -1,5 +1,6 @@
 package com.test.design.presentation.assistant
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -78,6 +79,20 @@ class AssistantMoodTest {
         assertTrue(AssistantMood.Drowsy.toImmersiveEyePose().eyeOpen < AssistantMood.Listening.toImmersiveEyePose().eyeOpen)
         assertTrue(AssistantMood.Speaking.toImmersiveEyePose().mouthVisible > 0.5f)
         assertTrue(AssistantMood.Bored.toImmersiveEyePose().eyeOpen < AssistantMood.Idle.toImmersiveEyePose().eyeOpen)
+    }
+
+    @Test
+    fun droidFacePoseMapsMoodToGlyph() {
+        AssistantMood.entries.forEach { mood ->
+            val pose = mood.toDroidFacePose()
+            assertTrue(pose.glyph == mood.toDroidFaceGlyph())
+        }
+        assertTrue(AssistantMood.Happy.toDroidFaceGlyph() == DroidFaceGlyph.SquintSmile)
+        assertTrue(AssistantMood.Sad.toDroidFaceGlyph() == DroidFaceGlyph.Sad)
+        assertTrue(AssistantMood.Excited.toDroidFaceGlyph() == DroidFaceGlyph.StarEyes)
+        assertTrue(AssistantMood.Drowsy.toDroidFaceGlyph() == DroidFaceGlyph.Sleeping)
+        assertTrue(AssistantMood.Searching.toDroidFaceGlyph() == DroidFaceGlyph.Search)
+        assertEquals(36, DroidFaceGlyph.entries.size)
     }
 
     @Test

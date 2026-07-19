@@ -89,18 +89,20 @@
                 android:value="true" />
         </activity>
 
+        <!-- Standalone assistant task — not stacked on MainActivity / home. -->
         <activity
             android:name=".presentation.assistant.VirtualAssistantActivity"
             android:exported="true"
             android:label="@string/assistant_activity_name"
             android:icon="@mipmap/ic_launcher"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:taskAffinity="com.test.design.main"
-            android:launchMode="singleTop"
-            android:excludeFromRecents="true"
+            android:taskAffinity="com.test.design.assistant"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="false"
+            android:allowTaskReparenting="false"
             android:resizeableActivity="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
-            android:theme="@style/Theme.Design.AssistantOverlay"
+            android:theme="@style/Theme.Design.AssistantStandalone"
             android:windowSoftInputMode="adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

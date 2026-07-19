@@ -25,14 +25,18 @@ try {
         (Join-Path $Root "framework-scalable-rro\build\outputs\apk\debug\framework-scalable-rro-debug.apk") `
         (Join-Path $Prebuilt "DesignFrameworkScalableUiRRO.apk")
 
-    # Keep Dewd bridge APKs alongside product RROs when present
-    $DewdDesign = Join-Path $Root "scalable-ui-rro\prebuilt\DewdDynamicAospRRO-design.apk"
-    if (Test-Path $DewdDesign) {
-        Copy-Item -Force $DewdDesign (Join-Path $Prebuilt "DewdDynamicAospRRO-design.apk")
-    }
+    # Rebuild + platform-sign Dewd interim bridge (unsigned patch is rejected at boot)
     $DewdOrig = Join-Path $Root "scalable-ui-rro\prebuilt\DewdDynamicAospRRO.orig.apk"
+    $DewdDesign = Join-Path $Root "scalable-ui-rro\prebuilt\DewdDynamicAospRRO-design.apk"
     if (Test-Path $DewdOrig) {
+        $env:PYTHONIOENCODING = "utf-8"
+        & python (Join-Path $Root "scalable-ui-rro\scripts\patch_dewd_fullpower.py") `
+            --input $DewdOrig --output $DewdDesign
+        if ($LASTEXITCODE -ne 0) { throw "Dewd patch failed (exit $LASTEXITCODE)" }
+        & (Join-Path $Root "scalable-ui-rro\scripts\sign_dewd_rro.ps1") `
+            -InputApk $DewdDesign -OutputApk $DewdDesign
         Copy-Item -Force $DewdOrig (Join-Path $Prebuilt "DewdDynamicAospRRO.orig.apk")
+        Copy-Item -Force $DewdDesign (Join-Path $Prebuilt "DewdDynamicAospRRO-design.apk")
     }
 
     @"

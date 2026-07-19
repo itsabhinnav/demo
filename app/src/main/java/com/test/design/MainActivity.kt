@@ -69,6 +69,17 @@ class MainActivity : ComponentActivity() {
                         launchSingleTop = true
                     }
                 },
+                onOpenAssistant = {
+                    dashboardViewModel.onEvent(
+                        DashboardEvent.WidgetTapped(DashboardWidget.VirtualAssistant),
+                    )
+                    val route = navController.currentBackStackEntry?.destination?.route
+                    if (route == AppDestination.Dashboard) return@DesignAppShell
+                    navController.navigate(AppDestination.DrivingHome) {
+                        popUpTo(AppDestination.DrivingHome) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
             ) {
                 AppNavHost(
                     navController = navController,

@@ -2,9 +2,10 @@ package com.test.design.presentation.assistant
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,13 +17,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,22 +44,30 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.presentation.activityViewModel
+import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
 import com.test.design.presentation.ivi.glanceables.DrivingStatusGlanceActivity
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+/** Blur radius applied to host UI under the assistant overlay (face/text stay sharp). */
+val AssistantBackdropBlur = 36.dp
 
 /**
- * Full-screen immersive assistant: bottom→up black gradient, centered elliptical eyes,
- * single current transcript line, subtle brand border glow. Fades in on hotword or tap.
+ * Full-screen immersive assistant: blurred + translucent host content, centered ring face,
+ * single transcript line, hairline edge glow. Fades in on hotword or tap.
  *
  * Features: gaze-to-speaker, STT streaming, TTS lip-sync, drive-context prompts,
  * cluster hand-off, OEM brand tint, high-contrast eyes, wake haptic/chime, nod/shake.
@@ -249,28 +261,76 @@ fun ImmersiveAssistantOverlay(
 
         if (visible) {
             delay(500)
+            // Exit animation + host teardown happen in the visibility effect below.
             visible = false
-            delay(360)
+        }
+    }
+
+    val overlayAlpha = remember { Animatable(0f) }
+    val faceRise = remember { Animatable(1f) } // 1 = below screen, 0 = settled
+    val faceScale = remember { Animatable(0.88f) }
+    val faceAlpha = remember { Animatable(0f) }
+    val transcriptAlpha = remember { Animatable(0f) }
+    // Avoid calling onDismiss on first composition when awaitHotword keeps us hidden.
+    var hasPresented by remember { mutableStateOf(false) }
+
+    LaunchedEffect(visible, session) {
+        if (visible) {
+            hasPresented = true
+            // Soft translucent stage in, then face rises from bottom.
+            faceRise.snapTo(1f)
+            faceScale.snapTo(0.86f)
+            faceAlpha.snapTo(0f)
+            transcriptAlpha.snapTo(0f)
+            overlayAlpha.snapTo(0f)
+
+            launch {
+                overlayAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
+            }
+            delay(60)
+            launch {
+                faceAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
+            }
+            launch {
+                faceScale.animateTo(
+                    1f,
+                    spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
+                )
+            }
+            faceRise.animateTo(
+                0f,
+                spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
+            )
+            delay(120)
+            transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+        } else if (hasPresented) {
+            launch {
+                transcriptAlpha.animateTo(0f, tween(180))
+            }
+            launch {
+                faceAlpha.animateTo(0f, tween(280, easing = FastOutSlowInEasing))
+            }
+            launch {
+                faceRise.animateTo(
+                    0.35f,
+                    tween(320, easing = FastOutSlowInEasing),
+                )
+            }
+            overlayAlpha.animateTo(0f, tween(360, easing = FastOutSlowInEasing))
+            faceRise.snapTo(1f)
+            faceScale.snapTo(0.88f)
+            // Collapse host (clears Modifier.blur) after tap dismiss or session end.
             onDismiss()
         }
     }
 
-    val overlayAlpha = remember { Animatable(if (visible) 1f else 0f) }
-    LaunchedEffect(visible) {
-        overlayAlpha.animateTo(
-            if (visible) 1f else 0f,
-            tween(if (visible) 520 else 360, easing = FastOutSlowInEasing),
-        )
-    }
-
     val brandGlow = rememberAssistantBrandGlow(mood, brandAccent)
     val faceSize = if (clusterHandOff) 168.dp else 280.dp
+    val showOverlay = visible || overlayAlpha.value > 0.02f
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -284,12 +344,9 @@ fun ImmersiveAssistantOverlay(
                 },
             ),
     ) {
-        AnimatedVisibility(
-            visible = visible || overlayAlpha.value > 0.02f,
-            enter = fadeIn(tween(480, easing = FastOutSlowInEasing)),
-            exit = fadeOut(tween(340)),
-            modifier = Modifier.fillMaxSize(),
-        ) {
+        if (showOverlay) {
+            // Translucent scrim + thin edge glow over blurred host UI.
+            // Face + transcript stay in a sharp layer above (not blurred).
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -297,11 +354,24 @@ fun ImmersiveAssistantOverlay(
             ) {
                 ImmersiveBackdrop()
                 ImmersiveBorderGlow(glowColor = brandGlow)
+            }
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    // Clear floating top/bottom system bars drawn above this overlay.
+                    .floatingSystemChromePadding()
+                    .padding(horizontal = 48.dp, vertical = 32.dp)
+                    .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
+            ) {
+                val density = LocalDensity.current
+                val risePx = with(density) {
+                    (maxHeight * 0.55f).toPx().coerceAtLeast(220.dp.toPx())
+                }
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 48.dp, vertical = 32.dp),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     if (clusterHandOff) {
@@ -322,7 +392,20 @@ fun ImmersiveAssistantOverlay(
                     ) {
                         ImmersiveEyesFace(
                             mood = mood,
-                            modifier = Modifier.size(faceSize),
+                            modifier = Modifier
+                                .size(faceSize)
+                                .offset {
+                                    IntOffset(
+                                        0,
+                                        (faceRise.value * risePx).roundToInt(),
+                                    )
+                                }
+                                .graphicsLayer {
+                                    val s = faceScale.value
+                                    scaleX = s
+                                    scaleY = s
+                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                },
                             gazeX = gazeX,
                             gazeY = gazeY,
                             mouthAmplitude = mouthAmplitude,
@@ -337,7 +420,10 @@ fun ImmersiveAssistantOverlay(
                         speaker = speaker,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 28.dp),
+                            .graphicsLayer {
+                                alpha = transcriptAlpha.value.coerceIn(0f, 1f)
+                            }
+                            .padding(bottom = 36.dp),
                     )
                 }
             }
@@ -345,6 +431,7 @@ fun ImmersiveAssistantOverlay(
     }
 }
 
+/** Semi-transparent tint so blurred host content reads through. */
 @Composable
 private fun ImmersiveBackdrop() {
     Box(
@@ -353,87 +440,89 @@ private fun ImmersiveBackdrop() {
             .background(
                 Brush.verticalGradient(
                     colorStops = arrayOf(
-                        0.0f to Color(0x33101820),
-                        0.35f to Color(0x88101820),
-                        0.65f to Color(0xCC0A0C10),
-                        1.0f to Color(0xF2050608),
+                        0.0f to Color(0xA610141C),
+                        0.4f to Color(0xB80A0C10),
+                        0.75f to Color(0xCC050608),
+                        1.0f to Color(0xD9000000),
                     ),
                 ),
             ),
     )
 }
 
+/** Hairline edge glow that soft-blends into the blurred backdrop. */
 @Composable
 private fun ImmersiveBorderGlow(glowColor: Color = Color(0xFF8AB4F8)) {
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val stroke = 3.dp.toPx()
-        val inset = 10.dp.toPx()
+        val stroke = 1.dp.toPx()
+        val inset = 6.dp.toPx()
         val w = size.width
         val h = size.height
         val blue = glowColor
+        val edge = 28.dp.toPx()
         drawRect(
             brush = Brush.verticalGradient(
                 colors = listOf(
-                    blue.copy(alpha = 0.08f),
+                    blue.copy(alpha = 0.04f),
                     Color.Transparent,
-                    blue.copy(alpha = 0.12f),
+                    blue.copy(alpha = 0.05f),
                 ),
             ),
             size = size,
         )
         drawRect(
             brush = Brush.verticalGradient(
-                colors = listOf(blue.copy(alpha = 0.45f), Color.Transparent),
+                colors = listOf(blue.copy(alpha = 0.18f), Color.Transparent),
                 startY = inset,
-                endY = inset + 48.dp.toPx(),
+                endY = inset + edge,
             ),
             topLeft = Offset(inset, inset),
-            size = Size(w - inset * 2f, 48.dp.toPx()),
+            size = Size(w - inset * 2f, edge),
         )
         drawRect(
             brush = Brush.verticalGradient(
-                colors = listOf(Color.Transparent, blue.copy(alpha = 0.55f)),
-                startY = h - inset - 64.dp.toPx(),
+                colors = listOf(Color.Transparent, blue.copy(alpha = 0.22f)),
+                startY = h - inset - edge,
                 endY = h - inset,
             ),
-            topLeft = Offset(inset, h - inset - 64.dp.toPx()),
-            size = Size(w - inset * 2f, 64.dp.toPx()),
+            topLeft = Offset(inset, h - inset - edge),
+            size = Size(w - inset * 2f, edge),
         )
         drawRect(
             brush = Brush.horizontalGradient(
-                colors = listOf(blue.copy(alpha = 0.4f), Color.Transparent),
+                colors = listOf(blue.copy(alpha = 0.14f), Color.Transparent),
                 startX = inset,
-                endX = inset + 40.dp.toPx(),
+                endX = inset + edge,
             ),
             topLeft = Offset(inset, inset),
-            size = Size(40.dp.toPx(), h - inset * 2f),
+            size = Size(edge, h - inset * 2f),
         )
         drawRect(
             brush = Brush.horizontalGradient(
-                colors = listOf(Color.Transparent, blue.copy(alpha = 0.4f)),
-                startX = w - inset - 40.dp.toPx(),
+                colors = listOf(Color.Transparent, blue.copy(alpha = 0.14f)),
+                startX = w - inset - edge,
                 endX = w - inset,
             ),
-            topLeft = Offset(w - inset - 40.dp.toPx(), inset),
-            size = Size(40.dp.toPx(), h - inset * 2f),
+            topLeft = Offset(w - inset - edge, inset),
+            size = Size(edge, h - inset * 2f),
         )
         drawRect(
-            color = blue.copy(alpha = 0.35f),
+            color = blue.copy(alpha = 0.16f),
             topLeft = Offset(inset, inset),
             size = Size(w - inset * 2f, stroke),
         )
         drawRect(
-            color = blue.copy(alpha = 0.45f),
+            color = blue.copy(alpha = 0.2f),
             topLeft = Offset(inset, h - inset - stroke),
             size = Size(w - inset * 2f, stroke),
         )
         drawRect(
-            color = blue.copy(alpha = 0.3f),
+            color = blue.copy(alpha = 0.12f),
             topLeft = Offset(inset, inset),
             size = Size(stroke, h - inset * 2f),
         )
         drawRect(
-            color = blue.copy(alpha = 0.3f),
+            color = blue.copy(alpha = 0.12f),
             topLeft = Offset(w - inset - stroke, inset),
             size = Size(stroke, h - inset * 2f),
         )

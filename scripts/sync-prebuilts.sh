@@ -21,9 +21,12 @@ cp -f "$ROOT/framework-scalable-rro/build/outputs/apk/debug/framework-scalable-r
 DEWD_ORIG="$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO.orig.apk"
 DEWD_DESIGN="$ROOT/scalable-ui-rro/prebuilt/DewdDynamicAospRRO-design.apk"
 if [[ -f "$DEWD_ORIG" ]]; then
+  # Unsigned rebuild is rejected by PackageManager — always platform-sign.
   python3 "$ROOT/scalable-ui-rro/scripts/patch_dewd_fullpower.py" \
     --input "$DEWD_ORIG" \
     --output "$DEWD_DESIGN"
+  chmod +x "$ROOT/scalable-ui-rro/scripts/sign_dewd_rro.sh"
+  "$ROOT/scalable-ui-rro/scripts/sign_dewd_rro.sh" "$DEWD_DESIGN" "$DEWD_DESIGN"
   cp -f "$DEWD_ORIG" "$PREBUILT/DewdDynamicAospRRO.orig.apk"
   cp -f "$DEWD_DESIGN" "$PREBUILT/DewdDynamicAospRRO-design.apk"
 fi

@@ -11,17 +11,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.assistant.AssistantTokens
 
 /** Shared semi-transparent surfaces for every gallery variant. */
 internal object AssistantUiChrome {
-    val Glass = Color(0xB3141820)
-    val GlassLight = Color(0x991C222C)
-    val GlassEdge = Color.White.copy(alpha = 0.14f)
-    val Scrim = Color.Black.copy(alpha = 0.22f)
-    val Accent = Color(0xFF8AB4F8)
-    val AccentSoft = Color(0x668AB4F8)
-    val OnGlass = Color(0xFFF1F3F4)
-    val OnGlassMuted = Color(0xFF9AA0A6)
+    /** Blackish glass — high enough opacity that glyphs stay crisp. */
+    val Glass = AssistantTokens.Surface
+    val GlassLight = AssistantTokens.SurfaceTop
+    val GlassEdge = Color.White.copy(alpha = 0.16f)
+    /** Dims the world behind so chrome / face are the focus. */
+    val Scrim = AssistantTokens.Scrim
+    val Accent = AssistantTokens.Accent
+    val AccentSoft = AssistantTokens.PanelGlow
+    val OnGlass = AssistantTokens.OnSurface
+    val OnGlassMuted = AssistantTokens.OnSurfaceVariant
 }
 
 @Composable
@@ -34,9 +37,14 @@ internal fun GlassSurface(
     Box(
         modifier = modifier
             .clip(shape)
+            // Solid blackish base first, then a slight vertical wash.
+            .background(AssistantUiChrome.Glass, shape)
             .background(
                 Brush.verticalGradient(
-                    listOf(AssistantUiChrome.GlassLight, AssistantUiChrome.Glass),
+                    listOf(
+                        AssistantUiChrome.GlassLight.copy(alpha = 0.55f),
+                        Color.Transparent,
+                    ),
                 ),
             )
             .border(1.dp, AssistantUiChrome.GlassEdge, shape),

@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -92,7 +93,7 @@ fun AssistantSidePanel(
                 shape = PanelShape,
             ),
         shape = PanelShape,
-        color = AssistantTokens.Surface,
+        color = Color.Transparent,
         shadowElevation = 0.dp,
         tonalElevation = 0.dp,
     ) {
@@ -104,11 +105,12 @@ fun AssistantSidePanel(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(AssistantTokens.Surface)
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                AssistantTokens.SurfaceTop,
-                                AssistantTokens.SurfaceBottom,
+                                AssistantTokens.SurfaceTop.copy(alpha = 0.55f),
+                                Color.Transparent,
                             ),
                         ),
                     ),

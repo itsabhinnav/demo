@@ -14,9 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.activityViewModel
+import com.test.design.presentation.assistant.AssistantBackdropBlur
+import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.adaptivespace.AdaptiveSpaceScreen
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
@@ -34,7 +37,6 @@ import com.test.design.presentation.ivi.navigation.NavigationScreen
 import com.test.design.presentation.ivi.navigation.NavigationViewModel
 import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
-import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.material.CustomizedMaterialComponentsScreen
 import com.test.design.presentation.material.MaterialComponentsScreen
 import com.test.design.presentation.settings.SettingsScreen
@@ -42,6 +44,9 @@ import com.test.design.presentation.settings.SettingsScreen
 /**
  * Tesla-like map-first driving home — start destination.
  * Opens the original widget-list dashboard via [onOpenWidgetDashboard].
+ *
+ * Virtual Assistant overlays the driving home (does not replace it) so the
+ * map / chrome stay visible under a light blackish scrim.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -70,6 +75,12 @@ fun DrivingHomeScreen(
 
     IviExpressiveTheme {
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
+        val assistantOpen = dashboardState.expandedWidget == DashboardWidget.VirtualAssistant
+        // Keep home / other sheets under the assistant overlay.
+        val pageWidget = dashboardState.expandedWidget.takeUnless {
+            it == DashboardWidget.VirtualAssistant
+        }
+
         BackHandler(enabled = dashboardState.expandedWidget != null, onBack = collapseWidget)
         BackHandler(
             enabled = onOpenMain != null && dashboardState.expandedWidget == null,
@@ -85,92 +96,103 @@ fun DrivingHomeScreen(
         }
 
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
-            AnimatedContent(
-                targetState = dashboardState.expandedWidget,
-                modifier = Modifier.fillMaxSize(),
-                transitionSpec = {
-                    EnterTransition.None togetherWith ExitTransition.None
-                },
-                label = "driving_home_container_transform",
-            ) { expandedWidget ->
-                when (expandedWidget) {
-                    null -> DrivingDashboardLayout(
-                        vehicleState = vehicleState,
-                        navigationState = navigationState,
-                        mediaState = mediaState,
-                        climateState = climateState,
-                        climateTemperature = climateViewModel.activeTemperature(),
-                        onEvent = dashboardViewModel::onEvent,
-                        onMediaEvent = mediaViewModel::onEvent,
-                        onClimateEvent = climateViewModel::onEvent,
-                        onOpenWidgetDashboard = onOpenWidgetDashboard,
-                        animatedVisibilityScope = this@AnimatedContent,
-                        mapCenter = mapLaunchConfig.center,
-                        initialMapZoom = mapLaunchConfig.zoom,
-                        showMapRoute = mapLaunchConfig.showRoute,
-                        onOpenMain = onOpenMain,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    else -> Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .floatingSystemChromePadding(),
-                    ) {
-                        when (expandedWidget) {
-                            DashboardWidget.AdaptiveSpace -> AdaptiveSpaceScreen(
-                                mediaState = mediaState,
-                                onMediaEvent = mediaViewModel::onEvent,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.DualZone -> DualZoneScreen(
-                                mediaState = mediaState,
-                                onMediaEvent = mediaViewModel::onEvent,
-                                navigationState = navigationState,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.Climate -> ClimateControlScreen(
-                                uiState = climateState,
-                                activeTemperature = climateViewModel.activeTemperature(),
-                                onEvent = climateViewModel::onEvent,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.Media -> MediaPlayerScreen(
-                                uiState = mediaState,
-                                onEvent = mediaViewModel::onEvent,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.Navigation -> NavigationScreen(
-                                uiState = navigationState,
-                                onEvent = navigationViewModel::onEvent,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.Vehicle -> VehicleScreen(
-                                uiState = vehicleState,
-                                onEvent = vehicleViewModel::onEvent,
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.VirtualAssistant -> VirtualAssistantScreen(
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
-                            DashboardWidget.MaterialComponents -> MaterialComponentsScreen(
-                                onBack = collapseWidget,
-                            )
-                            DashboardWidget.CustomizedMaterial -> CustomizedMaterialComponentsScreen(
-                                onBack = collapseWidget,
-                            )
-                            DashboardWidget.Settings -> SettingsScreen(
-                                onBack = collapseWidget,
-                                animatedVisibilityScope = this@AnimatedContent,
-                            )
+            Box(Modifier.fillMaxSize()) {
+                AnimatedContent(
+                    targetState = pageWidget,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (assistantOpen) Modifier.blur(AssistantBackdropBlur) else Modifier,
+                        ),
+                    transitionSpec = {
+                        EnterTransition.None togetherWith ExitTransition.None
+                    },
+                    label = "driving_home_container_transform",
+                ) { expandedWidget ->
+                    when (expandedWidget) {
+                        null -> DrivingDashboardLayout(
+                            vehicleState = vehicleState,
+                            navigationState = navigationState,
+                            mediaState = mediaState,
+                            climateState = climateState,
+                            climateTemperature = climateViewModel.activeTemperature(),
+                            onEvent = dashboardViewModel::onEvent,
+                            onMediaEvent = mediaViewModel::onEvent,
+                            onClimateEvent = climateViewModel::onEvent,
+                            onOpenWidgetDashboard = onOpenWidgetDashboard,
+                            animatedVisibilityScope = this@AnimatedContent,
+                            mapCenter = mapLaunchConfig.center,
+                            initialMapZoom = mapLaunchConfig.zoom,
+                            showMapRoute = mapLaunchConfig.showRoute,
+                            onOpenMain = onOpenMain,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        else -> Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .floatingSystemChromePadding(),
+                        ) {
+                            when (expandedWidget) {
+                                DashboardWidget.AdaptiveSpace -> AdaptiveSpaceScreen(
+                                    mediaState = mediaState,
+                                    onMediaEvent = mediaViewModel::onEvent,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.DualZone -> DualZoneScreen(
+                                    mediaState = mediaState,
+                                    onMediaEvent = mediaViewModel::onEvent,
+                                    navigationState = navigationState,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.Climate -> ClimateControlScreen(
+                                    uiState = climateState,
+                                    activeTemperature = climateViewModel.activeTemperature(),
+                                    onEvent = climateViewModel::onEvent,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.Media -> MediaPlayerScreen(
+                                    uiState = mediaState,
+                                    onEvent = mediaViewModel::onEvent,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.Navigation -> NavigationScreen(
+                                    uiState = navigationState,
+                                    onEvent = navigationViewModel::onEvent,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.Vehicle -> VehicleScreen(
+                                    uiState = vehicleState,
+                                    onEvent = vehicleViewModel::onEvent,
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.MaterialComponents -> MaterialComponentsScreen(
+                                    onBack = collapseWidget,
+                                )
+                                DashboardWidget.CustomizedMaterial ->
+                                    CustomizedMaterialComponentsScreen(
+                                        onBack = collapseWidget,
+                                    )
+                                DashboardWidget.Settings -> SettingsScreen(
+                                    onBack = collapseWidget,
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                )
+                                DashboardWidget.VirtualAssistant -> Unit
+                            }
                         }
                     }
+                }
+
+                if (assistantOpen) {
+                    VirtualAssistantScreen(
+                        onBack = collapseWidget,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
             }
         }

@@ -107,8 +107,11 @@ adb shell cmd statusbar carsysui-dispatch-event _Design_OpenMediaOverlay
 
 ## Dewd `aosp_tangorpro_car` (interim)
 
-Do **not** rely on installing this RRO alone on stock Dewd (idmap cannot add
-Dewd-only XML names). Use the in-place patch bridge:
+Do **not** enable `com.test.design.systemui.scalableui` on stock Dewd — idmap
+cannot add Dewd-only XML names, so `map_panel` stays empty (black) while the
+left `widget_panel` rail still launches. Use the in-place patch bridge instead
+(`sync-prebuilts` patches **and platform-signs** the APK; an unsigned rebuild is
+rejected at boot and Dewd Dynamic disappears from `cmd overlay list`):
 
 ```bash
 ./scripts/sync-prebuilts.sh

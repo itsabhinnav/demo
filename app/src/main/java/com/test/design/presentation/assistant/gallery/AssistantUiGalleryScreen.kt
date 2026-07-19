@@ -28,7 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.assistant.AssistantMood
 
@@ -106,7 +105,7 @@ fun AssistantUiGalleryScreen(
                         onClick = { style = entry },
                         label = { Text(entry.title) },
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = Color(0x99141820),
+                            containerColor = AssistantUiChrome.Glass,
                             labelColor = AssistantUiChrome.OnGlassMuted,
                             selectedContainerColor = AssistantUiChrome.Accent.copy(alpha = 0.28f),
                             selectedLabelColor = AssistantUiChrome.OnGlass,
@@ -144,7 +143,7 @@ fun AssistantUiGalleryScreen(
                     onClick = { mood = entry },
                     label = { Text(entry.label) },
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = Color(0x99141820),
+                        containerColor = AssistantUiChrome.Glass,
                         labelColor = AssistantUiChrome.OnGlassMuted,
                         selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
                         selectedLabelColor = AssistantUiChrome.OnGlass,

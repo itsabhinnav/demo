@@ -55,6 +55,7 @@ fun DesignAppShell(
     onOpenApps: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenHome: () -> Unit = {},
+    onOpenAssistant: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val drivingUxViewModel: DrivingUxViewModel = viewModel()
@@ -135,6 +136,7 @@ fun DesignAppShell(
                             onOpenApps = onOpenApps,
                             onOpenSettings = onOpenSettings,
                             onOpenHome = onOpenHome,
+                            onOpenAssistant = onOpenAssistant,
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(

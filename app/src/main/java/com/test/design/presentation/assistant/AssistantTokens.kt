@@ -5,6 +5,9 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Production tokens for the assistant panel — restrained Google-like surfaces.
+ *
+ * Glass stays blackish and mostly solid so the face/glyphs stay readable over
+ * busy map / dashboard UI, while a soft stage scrim dims the world behind.
  */
 internal object AssistantTokens {
     val PanelWidth = 400.dp
@@ -12,10 +15,11 @@ internal object AssistantTokens {
     val PanelInset = 12.dp
     val ContentPadding = 28.dp
 
-    val Surface = Color(0xF2141820)
-    val SurfaceTop = Color(0xF01C222C)
-    val SurfaceBottom = Color(0xF00E1116)
-    val Hairline = Color.White.copy(alpha = 0.08f)
+    /** Blackish glass plates (~88% opacity). */
+    val Surface = Color(0xE0121418)
+    val SurfaceTop = Color(0xE61A1C20)
+    val SurfaceBottom = Color(0xD90C0E12)
+    val Hairline = Color.White.copy(alpha = 0.14f)
 
     val OnSurface = Color(0xFFF1F3F4)
     val OnSurfaceVariant = Color(0xFF9AA0A6)
@@ -25,7 +29,9 @@ internal object AssistantTokens {
     val PanelGlow = Color(0x668AB4F8)
     val PanelGlowSoft = Color(0x448AB4F8)
     val PanelGlowEdge = Color(0xFF8AB4F8)
-    val Scrim = Color.Transparent
+
+    /** Soft blackish stage dim — underlying UI stays visible. */
+    val Scrim = Color(0x59101014)
 
     const val EnterMs = 400
     const val ExitMs = 280

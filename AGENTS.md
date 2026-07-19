@@ -61,6 +61,15 @@ Cloud agent setup is defined in:
 - The cloud VM has **no KVM** (it is itself a KVM/Firecracker guest with no nested virtualization and no `/dev/kvm`), so the emulator runs software-only (`-accel off -gpu swiftshader_indirect`). Cold boot takes several minutes, and the starved SystemUI process often shows recurring "System UI isn't responding" ANR dialogs — the demo app itself renders fine behind them. Run `adb shell settings put global hide_error_dialogs 1` and be patient; tap **Wait** to dismiss. Confirm the app is up via `adb shell dumpsys activity activities | grep topResumedActivity` (expect `com.test.design/.MainActivity`).
 - Two AVDs are provisioned (`.cursor/Dockerfile`): **`cloud_avd`** (Android 14 / API 34) and **`android17_avd`** (Android 17 / API 37). Only `cloud_avd` boots in the cloud — the Android 17 x86_64 image requires **AVX/F16C** CPU instructions that QEMU's software (TCG) engine cannot emulate (log shows `TCG doesn't support requested feature: CPUID.01H:ECX.avx`), so `android17_avd` hangs at boot without KVM. Use `android17_avd` only on a host that exposes `/dev/kvm` (local machine or a KVM-enabled runner); the default `.cursor/scripts/start-emulator.sh` targets `cloud_avd`, override with `ANDROID_AVD_NAME=android17_avd`.
 
+### Device safety (agents)
+
+**Never brick the device or reboot into recovery/bootloader.** See `.cursor/rules/device-safety.mdc`.
+
+- Only `adb reboot` (normal Android). Never `reboot recovery|bootloader|fastboot|sideload`.
+- Never wipe/factory-reset or `fastboot flash/erase`.
+- Overlay installs must use `scripts/lib/device-safety.*` (backup → signed push → boot wait → auto-rollback).
+- On Dewd (`car.dewd.config=dynamic`) use `install-prebuilts.* --dewd` / `-Dewd` only.
+
 ### Git workflow (agents)
 
 **Push directly to `main` by default.** Do not create feature branches or PRs unless the user explicitly asks for one.
