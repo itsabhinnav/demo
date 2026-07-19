@@ -22,19 +22,21 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-/** Classic Bugdroid green from the icon pack. */
-val DroidGreen = Color(0xFFA4C639)
-private val GlyphWhite = Color(0xFFFFFFFF)
+/** Dark Bugdroid shell + neon glyph (icon pack). */
+val DroidShell = Color(0xFF0B1F33)
+val DroidGlyph = Color(0xFFB8F818)
+/** @deprecated Prefer [DroidShell] / [DroidGlyph]. Kept for call sites. */
+val DroidGreen = DroidGlyph
 
 /**
- * Flat Android Bugdroid head — exact shell + white glyph from the icon pack.
+ * Flat Android Bugdroid head — dark dome + neon glyph from the icon pack.
  */
 @Composable
 fun DroidAssistantFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
-    bodyColor: Color = DroidGreen,
-    glyphColor: Color = GlyphWhite,
+    bodyColor: Color = DroidShell,
+    glyphColor: Color = DroidGlyph,
 ) {
     DroidAssistantFace(
         glyph = mood.toDroidFaceGlyph(),
@@ -48,21 +50,22 @@ fun DroidAssistantFace(
 fun DroidAssistantFace(
     glyph: DroidFaceGlyph,
     modifier: Modifier = Modifier,
-    bodyColor: Color = DroidGreen,
-    glyphColor: Color = GlyphWhite,
+    bodyColor: Color = DroidShell,
+    glyphColor: Color = DroidGlyph,
 ) {
-    Canvas(modifier = modifier.aspectRatio(1f)) {
-        val side = min(size.width, size.height)
+    // Slightly tall so antennae + full dome + chin margin fit without clipping mouths.
+    Canvas(modifier = modifier.aspectRatio(0.92f)) {
+        val side = min(size.width, size.height * 0.92f)
         val cx = size.width * 0.5f
-        // Head sits slightly low so antennae have room
-        val cy = size.height * 0.58f
-        val headR = side * 0.40f
+        val headR = side * 0.42f
+        // Flat chin near bottom — leave padding so stroke mouths stay inside the dome.
+        val chinY = size.height * 0.90f
 
-        drawDroidShell(cx = cx, cy = cy, headR = headR, color = bodyColor)
+        drawDroidShell(cx = cx, chinY = chinY, headR = headR, color = bodyColor)
         drawDroidGlyph(
             glyph = glyph,
             cx = cx,
-            cy = cy,
+            chinY = chinY,
             headR = headR,
             color = glyphColor,
             knockout = bodyColor,
