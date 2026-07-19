@@ -52,6 +52,7 @@ import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.AssistantPresence
 import com.test.design.presentation.assistant.DroidAssistantFace
 import com.test.design.presentation.assistant.DroidFaceGlyph
+import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
@@ -124,7 +125,7 @@ private fun DroidFaceUi(mood: AssistantMood, modifier: Modifier) {
                                 Modifier
                                     .border(
                                         width = 2.dp,
-                                        color = Color(0xFFA4C639),
+                                        color = DroidGlyph,
                                         shape = RoundedCornerShape(12.dp),
                                     )
                                     .padding(2.dp)

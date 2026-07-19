@@ -25,7 +25,6 @@ import kotlin.math.sin
 /** Dark Bugdroid shell + neon glyph (icon pack). */
 val DroidShell = Color(0xFF0B1F33)
 val DroidGlyph = Color(0xFFB8F818)
-/** @deprecated Prefer [DroidShell] / [DroidGlyph]. Kept for call sites. */
 val DroidGreen = DroidGlyph
 
 /**
@@ -83,40 +82,44 @@ internal fun AssistantMood.toDroidFacePose(): DroidFacePose =
 
 private fun DrawScope.drawDroidShell(
     cx: Float,
-    cy: Float,
+    chinY: Float,
     headR: Float,
     color: Color,
 ) {
-    // Antennae — short rounded capsules, ~32° from vertical
-    val antLen = headR * 0.30f
-    val antW = headR * 0.095f
-    val antBaseY = cy - headR * 0.78f
-    val antSpread = headR * 0.28f
-    val antAngle = 32f
+    // Antennae — thin stems + round tips, ~28° from vertical
+    val antLen = headR * 0.26f
+    val antW = headR * 0.06f
+    val tipR = headR * 0.055f
+    val antBaseY = chinY - headR * 0.82f
+    val antSpread = headR * 0.30f
+    val antAngle = 28f
 
     fun antenna(sign: Float) {
         val pivot = Offset(cx + sign * antSpread, antBaseY)
         rotate(degrees = sign * antAngle, pivot = pivot) {
-            drawRoundRect(
+            val tip = Offset(pivot.x, pivot.y - antLen)
+            drawLine(
                 color = color,
-                topLeft = Offset(pivot.x - antW * 0.5f, pivot.y - antLen),
-                size = Size(antW, antLen + antW * 0.35f),
-                cornerRadius = CornerRadius(antW * 0.5f, antW * 0.5f),
+                start = pivot,
+                end = tip,
+                strokeWidth = antW,
+                cap = StrokeCap.Round,
             )
+            drawCircle(color = color, radius = tipR, center = tip)
         }
     }
     antenna(-1f)
     antenna(1f)
 
-    // Dome — perfect semicircle, flat chin
+    // Dome — perfect semicircle, flat chin at chinY
     val headPath = Path().apply {
         addArc(
-            oval = Rect(cx - headR, cy - headR, cx + headR, cy + headR),
+            oval = Rect(cx - headR, chinY - headR, cx + headR, chinY + headR),
             startAngleDegrees = 180f,
             sweepAngleDegrees = 180f,
         )
-        lineTo(cx + headR, cy)
-        lineTo(cx - headR, cy)
+        lineTo(cx + headR, chinY)
+        lineTo(cx - headR, chinY)
         close()
     }
     drawPath(headPath, color)
@@ -125,52 +128,55 @@ private fun DrawScope.drawDroidShell(
 private fun DrawScope.drawDroidGlyph(
     glyph: DroidFaceGlyph,
     cx: Float,
-    cy: Float,
+    chinY: Float,
     headR: Float,
     color: Color,
     knockout: Color,
 ) {
-    // Face content sits in upper half of the dome
-    val faceCy = cy - headR * 0.28f
-    val eyeGap = headR * 0.34f
-    val eyeR = headR * 0.105f
+    // Eyes high in the dome; mouth well above chin so strokes never clip.
+    val faceCy = chinY - headR * 0.48f
+    val eyeGap = headR * 0.32f
+    val eyeR = headR * 0.095f
     val left = Offset(cx - eyeGap, faceCy)
     val right = Offset(cx + eyeGap, faceCy)
-    val mouthY = cy - headR * 0.02f
-    val stroke = headR * 0.07f
+    val mouthY = chinY - headR * 0.20f
+    val stroke = headR * 0.065f
+    val contentCy = chinY - headR * 0.38f
 
     when (glyph) {
         DroidFaceGlyph.Happy -> {
             drawCircle(color, eyeR, left)
             drawCircle(color, eyeR, right)
-            drawSmile(cx, mouthY, headR * 0.22f, headR * 0.12f, stroke, color)
+            drawSmile(cx, mouthY, headR * 0.20f, headR * 0.10f, stroke, color)
         }
         DroidFaceGlyph.Wink -> {
             drawCircle(color, eyeR, left)
             drawHappyArc(right, eyeR * 1.15f, stroke * 0.95f, color)
-            drawSmile(cx, mouthY, headR * 0.22f, headR * 0.12f, stroke, color)
+            drawSmile(cx, mouthY, headR * 0.20f, headR * 0.10f, stroke, color)
         }
         DroidFaceGlyph.SquintSmile -> {
             drawHappyArc(left, eyeR * 1.2f, stroke * 0.95f, color)
             drawHappyArc(right, eyeR * 1.2f, stroke * 0.95f, color)
-            drawSmile(cx, mouthY, headR * 0.22f, headR * 0.12f, stroke, color)
+            drawSmile(cx, mouthY, headR * 0.20f, headR * 0.10f, stroke, color)
         }
         DroidFaceGlyph.Surprised -> {
             drawCircle(color, eyeR, left)
             drawCircle(color, eyeR, right)
-            drawCircle(color, headR * 0.09f, Offset(cx, mouthY + headR * 0.02f))
+            drawCircle(color, headR * 0.08f, Offset(cx, mouthY))
         }
         DroidFaceGlyph.Laughing -> {
             drawHappyArc(left, eyeR * 1.15f, stroke * 0.95f, color)
             drawHappyArc(right, eyeR * 1.15f, stroke * 0.95f, color)
-            // Open laugh mouth
+            // Open laugh mouth — fully above chin
+            val mw = headR * 0.48f
+            val mh = headR * 0.22f
             drawArc(
                 color = color,
                 startAngle = 0f,
                 sweepAngle = 180f,
                 useCenter = true,
-                topLeft = Offset(cx - headR * 0.28f, mouthY - headR * 0.06f),
-                size = Size(headR * 0.56f, headR * 0.36f),
+                topLeft = Offset(cx - mw * 0.5f, mouthY - mh * 0.15f),
+                size = Size(mw, mh),
             )
         }
         DroidFaceGlyph.Cool -> {
@@ -189,8 +195,8 @@ private fun DrawScope.drawDroidGlyph(
             drawX(right, eyeR * 1.05f, stroke * 0.9f, color)
             drawLine(
                 color,
-                Offset(cx - headR * 0.18f, mouthY),
-                Offset(cx + headR * 0.18f, mouthY),
+                Offset(cx - headR * 0.16f, mouthY),
+                Offset(cx + headR * 0.16f, mouthY),
                 strokeWidth = stroke,
                 cap = StrokeCap.Round,
             )
@@ -200,8 +206,8 @@ private fun DrawScope.drawDroidGlyph(
             drawCircle(color, eyeR, right)
             drawLine(
                 color,
-                Offset(cx - headR * 0.18f, mouthY),
-                Offset(cx + headR * 0.18f, mouthY),
+                Offset(cx - headR * 0.16f, mouthY),
+                Offset(cx + headR * 0.16f, mouthY),
                 strokeWidth = stroke,
                 cap = StrokeCap.Round,
             )
@@ -213,55 +219,55 @@ private fun DrawScope.drawDroidGlyph(
         DroidFaceGlyph.Sad -> {
             drawCircle(color, eyeR, left)
             drawCircle(color, eyeR, right)
-            drawSmile(cx, mouthY + headR * 0.04f, headR * 0.22f, -headR * 0.12f, stroke, color)
+            // Frown curves upward toward chin — keep tip above chin pad
+            drawSmile(cx, mouthY - headR * 0.02f, headR * 0.20f, -headR * 0.10f, stroke, color)
         }
-        DroidFaceGlyph.Success -> drawCheck(cx, faceCy + headR * 0.08f, headR * 0.42f, stroke * 1.35f, color)
-        DroidFaceGlyph.Error -> drawX(Offset(cx, faceCy + headR * 0.06f), headR * 0.32f, stroke * 1.35f, color)
-        DroidFaceGlyph.Alert -> drawExclamation(cx, faceCy + headR * 0.05f, headR, color)
-        DroidFaceGlyph.Help -> drawQuestion(cx, faceCy + headR * 0.05f, headR, color)
+        DroidFaceGlyph.Success -> drawCheck(cx, contentCy, headR * 0.42f, stroke * 1.35f, color)
+        DroidFaceGlyph.Error -> drawX(Offset(cx, contentCy), headR * 0.32f, stroke * 1.35f, color)
+        DroidFaceGlyph.Alert -> drawExclamation(cx, contentCy, headR, color)
+        DroidFaceGlyph.Help -> drawQuestion(cx, contentCy, headR, color)
         DroidFaceGlyph.Ring -> {
             drawCircle(
                 color = color,
                 radius = headR * 0.28f,
-                center = Offset(cx, faceCy + headR * 0.08f),
+                center = Offset(cx, contentCy),
                 style = Stroke(width = stroke * 1.2f),
             )
         }
-        DroidFaceGlyph.Search -> drawSearch(cx, faceCy + headR * 0.06f, headR, color)
-        DroidFaceGlyph.ArrowUp -> drawArrow(cx, faceCy + headR * 0.08f, headR * 0.38f, 0f, color)
-        DroidFaceGlyph.ArrowRight -> drawArrow(cx, faceCy + headR * 0.08f, headR * 0.38f, 90f, color)
-        DroidFaceGlyph.ArrowDown -> drawArrow(cx, faceCy + headR * 0.08f, headR * 0.38f, 180f, color)
-        DroidFaceGlyph.ArrowLeft -> drawArrow(cx, faceCy + headR * 0.08f, headR * 0.38f, 270f, color)
-        DroidFaceGlyph.ThumbsUp -> drawThumbs(cx, faceCy + headR * 0.05f, headR, upright = true, color = color)
-        DroidFaceGlyph.ThumbsDown -> drawThumbs(cx, faceCy + headR * 0.05f, headR, upright = false, color = color)
+        DroidFaceGlyph.Search -> drawSearch(cx, contentCy, headR, color)
+        DroidFaceGlyph.ArrowUp -> drawArrow(cx, contentCy, headR * 0.38f, 0f, color)
+        DroidFaceGlyph.ArrowRight -> drawArrow(cx, contentCy, headR * 0.38f, 90f, color)
+        DroidFaceGlyph.ArrowDown -> drawArrow(cx, contentCy, headR * 0.38f, 180f, color)
+        DroidFaceGlyph.ArrowLeft -> drawArrow(cx, contentCy, headR * 0.38f, 270f, color)
+        DroidFaceGlyph.ThumbsUp -> drawThumbs(cx, contentCy, headR, upright = true, color = color)
+        DroidFaceGlyph.ThumbsDown -> drawThumbs(cx, contentCy, headR, upright = false, color = color)
         DroidFaceGlyph.Play -> {
             val s = headR * 0.38f
             val path = Path().apply {
-                moveTo(cx - s * 0.35f, faceCy + headR * 0.08f - s * 0.55f)
-                lineTo(cx + s * 0.55f, faceCy + headR * 0.08f)
-                lineTo(cx - s * 0.35f, faceCy + headR * 0.08f + s * 0.55f)
+                moveTo(cx - s * 0.35f, contentCy - s * 0.55f)
+                lineTo(cx + s * 0.55f, contentCy)
+                lineTo(cx - s * 0.35f, contentCy + s * 0.55f)
                 close()
             }
             drawPath(path, color)
         }
-        DroidFaceGlyph.Chat -> drawChat(cx, faceCy + headR * 0.05f, headR, color)
-        DroidFaceGlyph.User -> drawUser(cx, faceCy + headR * 0.02f, headR, color)
-        DroidFaceGlyph.Warning -> drawWarning(cx, faceCy + headR * 0.08f, headR, color)
-        DroidFaceGlyph.Lock -> drawLock(cx, faceCy + headR * 0.05f, headR, color)
-        DroidFaceGlyph.Shield -> drawShield(cx, faceCy + headR * 0.05f, headR, color, knockout)
-        DroidFaceGlyph.Waveform -> drawWaveform(cx, faceCy + headR * 0.08f, headR, color)
-        DroidFaceGlyph.Settings -> drawGear(cx, faceCy + headR * 0.08f, headR * 0.34f, color, knockout)
-        DroidFaceGlyph.Signal -> drawSignal(cx, faceCy + headR * 0.08f, headR, color)
-        DroidFaceGlyph.Dollar -> drawDollar(cx, faceCy + headR * 0.06f, headR, color)
+        DroidFaceGlyph.Chat -> drawChat(cx, contentCy, headR, color)
+        DroidFaceGlyph.User -> drawUser(cx, contentCy, headR, color)
+        DroidFaceGlyph.Warning -> drawWarning(cx, contentCy, headR, color)
+        DroidFaceGlyph.Lock -> drawLock(cx, contentCy, headR, color)
+        DroidFaceGlyph.Shield -> drawShield(cx, contentCy, headR, color, knockout)
+        DroidFaceGlyph.Waveform -> drawWaveform(cx, contentCy, headR, color)
+        DroidFaceGlyph.Settings -> drawGear(cx, contentCy, headR * 0.34f, color, knockout)
+        DroidFaceGlyph.Signal -> drawSignal(cx, contentCy, headR, color)
+        DroidFaceGlyph.Dollar -> drawDollar(cx, contentCy, headR, color)
         DroidFaceGlyph.Ellipsis -> {
-            val y = faceCy + headR * 0.08f
             val r = headR * 0.08f
             val g = headR * 0.22f
-            drawCircle(color, r, Offset(cx - g, y))
-            drawCircle(color, r, Offset(cx, y))
-            drawCircle(color, r, Offset(cx + g, y))
+            drawCircle(color, r, Offset(cx - g, contentCy))
+            drawCircle(color, r, Offset(cx, contentCy))
+            drawCircle(color, r, Offset(cx + g, contentCy))
         }
-        DroidFaceGlyph.Hi -> drawHi(cx, faceCy + headR * 0.08f, headR, color)
+        DroidFaceGlyph.Hi -> drawHi(cx, contentCy, headR, color)
     }
 }
 
