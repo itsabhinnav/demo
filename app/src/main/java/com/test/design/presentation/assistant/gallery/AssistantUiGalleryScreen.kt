@@ -1,6 +1,5 @@
 package com.test.design.presentation.assistant.gallery
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -23,17 +22,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.assistant.AssistantMood
+import com.test.design.presentation.assistant.ImmersiveBackdrop
+import com.test.design.presentation.assistant.ImmersiveBorderGlow
 
 /**
  * Semi-transparent assistant UI gallery — pick a chrome style and mood.
- * Preview sits over a soft scrim so glass surfaces read clearly.
+ * Uses the same radial stage + edge glow as [ImmersiveAssistantOverlay].
  */
 @Composable
 fun AssistantUiGalleryScreen(
@@ -44,111 +44,115 @@ fun AssistantUiGalleryScreen(
     var style by rememberSaveable { mutableStateOf(initialStyle) }
     var mood by rememberSaveable { mutableStateOf(AssistantMood.Listening) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AssistantUiChrome.Scrim)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-    ) {
-        // Live preview fills the stage
-        AssistantUiVariant(
-            style = style,
-            mood = mood,
-            modifier = Modifier.fillMaxSize(),
-            prompt = moodPrompt(mood),
-        )
+    Box(modifier = modifier.fillMaxSize()) {
+        ImmersiveBackdrop()
+        ImmersiveBorderGlow()
 
-        // Top chrome: style picker
-        Column(
+        Box(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .padding(top = 8.dp),
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         ) {
-            Row(
+            // Live preview fills the stage
+            AssistantUiVariant(
+                style = style,
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+                prompt = moodPrompt(mood),
+            )
+
+            // Top chrome: style picker
+            Column(
                 modifier = Modifier
+                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(top = 8.dp),
             ) {
-                Column(Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = style.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = AssistantUiChrome.OnGlass,
+                        )
+                        Text(
+                            text = style.blurb,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = AssistantUiChrome.OnGlassMuted,
+                        )
+                    }
                     Text(
-                        text = style.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = AssistantUiChrome.OnGlass,
-                    )
-                    Text(
-                        text = style.blurb,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = AssistantUiChrome.OnGlassMuted,
+                        text = "Close",
+                        color = AssistantUiChrome.Accent,
+                        modifier = Modifier
+                            .clickable(onClick = onClose)
+                            .padding(8.dp),
                     )
                 }
-                Text(
-                    text = "Close",
-                    color = AssistantUiChrome.Accent,
+                Spacer(Modifier.height(8.dp))
+                Row(
                     modifier = Modifier
-                        .clickable(onClick = onClose)
-                        .padding(8.dp),
-                )
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    AssistantUiStyle.entries.forEach { entry ->
+                        FilterChip(
+                            selected = style == entry,
+                            onClick = { style = entry },
+                            label = { Text(entry.title) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = AssistantUiChrome.Glass,
+                                labelColor = AssistantUiChrome.OnGlassMuted,
+                                selectedContainerColor = AssistantUiChrome.Accent.copy(alpha = 0.28f),
+                                selectedLabelColor = AssistantUiChrome.OnGlass,
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                        )
+                    }
+                }
             }
-            Spacer(Modifier.height(8.dp))
+
+            // Bottom mood chips
             Row(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AssistantUiStyle.entries.forEach { entry ->
+                listOf(
+                    AssistantMood.Idle,
+                    AssistantMood.Listening,
+                    AssistantMood.Speaking,
+                    AssistantMood.Thinking,
+                    AssistantMood.Happy,
+                    AssistantMood.Sad,
+                    AssistantMood.Excited,
+                    AssistantMood.Bored,
+                    AssistantMood.Drowsy,
+                    AssistantMood.Tired,
+                    AssistantMood.Searching,
+                ).forEach { entry ->
                     FilterChip(
-                        selected = style == entry,
-                        onClick = { style = entry },
-                        label = { Text(entry.title) },
+                        selected = mood == entry,
+                        onClick = { mood = entry },
+                        label = { Text(entry.label) },
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = AssistantUiChrome.Glass,
                             labelColor = AssistantUiChrome.OnGlassMuted,
-                            selectedContainerColor = AssistantUiChrome.Accent.copy(alpha = 0.28f),
+                            selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
                             selectedLabelColor = AssistantUiChrome.OnGlass,
                         ),
-                        shape = RoundedCornerShape(20.dp),
                     )
                 }
-            }
-        }
-
-        // Bottom mood chips
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            listOf(
-                AssistantMood.Idle,
-                AssistantMood.Listening,
-                AssistantMood.Speaking,
-                AssistantMood.Thinking,
-                AssistantMood.Happy,
-                AssistantMood.Sad,
-                AssistantMood.Excited,
-                AssistantMood.Bored,
-                AssistantMood.Drowsy,
-                AssistantMood.Tired,
-                AssistantMood.Searching,
-            ).forEach { entry ->
-                FilterChip(
-                    selected = mood == entry,
-                    onClick = { mood = entry },
-                    label = { Text(entry.label) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = AssistantUiChrome.Glass,
-                        labelColor = AssistantUiChrome.OnGlassMuted,
-                        selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
-                        selectedLabelColor = AssistantUiChrome.OnGlass,
-                    ),
-                )
             }
         }
     }

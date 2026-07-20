@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.assistant.AssistantBackdropBlur
 import com.test.design.presentation.assistant.VirtualAssistantScreen
+import com.test.design.presentation.assistant.gallery.AssistantUiGalleryScreen
 import com.test.design.presentation.ivi.IviExpressiveTheme
 import com.test.design.presentation.ivi.adaptivespace.AdaptiveSpaceScreen
 import com.test.design.presentation.ivi.climate.ClimateControlScreen
@@ -76,9 +77,11 @@ fun DrivingHomeScreen(
     IviExpressiveTheme {
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
         val assistantOpen = dashboardState.expandedWidget == DashboardWidget.VirtualAssistant
+        val galleryOpen = dashboardState.expandedWidget == DashboardWidget.AssistantGallery
+        val overlayOpen = assistantOpen || galleryOpen
         // Keep home / other sheets under the assistant overlay.
         val pageWidget = dashboardState.expandedWidget.takeUnless {
-            it == DashboardWidget.VirtualAssistant
+            it == DashboardWidget.VirtualAssistant || it == DashboardWidget.AssistantGallery
         }
 
         BackHandler(enabled = dashboardState.expandedWidget != null, onBack = collapseWidget)
@@ -102,7 +105,7 @@ fun DrivingHomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
-                            if (assistantOpen) Modifier.blur(AssistantBackdropBlur) else Modifier,
+                            if (overlayOpen) Modifier.blur(AssistantBackdropBlur) else Modifier,
                         ),
                     transitionSpec = {
                         EnterTransition.None togetherWith ExitTransition.None
@@ -182,7 +185,8 @@ fun DrivingHomeScreen(
                                     onBack = collapseWidget,
                                     animatedVisibilityScope = this@AnimatedContent,
                                 )
-                                DashboardWidget.VirtualAssistant -> Unit
+                                DashboardWidget.VirtualAssistant,
+                                DashboardWidget.AssistantGallery -> Unit
                             }
                         }
                     }
@@ -191,6 +195,12 @@ fun DrivingHomeScreen(
                 if (assistantOpen) {
                     VirtualAssistantScreen(
                         onBack = collapseWidget,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                if (galleryOpen) {
+                    AssistantUiGalleryScreen(
+                        onClose = collapseWidget,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }

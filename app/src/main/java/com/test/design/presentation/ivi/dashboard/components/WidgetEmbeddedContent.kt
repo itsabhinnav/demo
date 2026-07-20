@@ -140,6 +140,11 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         )
+        DashboardWidget.AssistantGallery -> AssistantGalleryWidgetEmbedded(
+            contentColor = contentColor,
+            animatedVisibilityScope = animatedVisibilityScope,
+            modifier = modifier,
+        )
         DashboardWidget.Settings -> SettingsWidgetEmbedded(
             contentColor = contentColor,
             animatedVisibilityScope = animatedVisibilityScope,
@@ -648,6 +653,38 @@ private fun SharedTransitionScope.AssistantWidgetEmbedded(
             mood = AssistantMood.Idle,
             modifier = widgetControlsSharedElement(
                 widget = DashboardWidget.VirtualAssistant,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SharedTransitionScope.AssistantGalleryWidgetEmbedded(
+    contentColor: Color,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = "Styles · Voice plate",
+            style = MaterialTheme.typography.titleMedium,
+            color = contentColor,
+            modifier = widgetContentSharedElement(
+                widget = DashboardWidget.AssistantGallery,
+                animatedVisibilityScope = animatedVisibilityScope,
+                modifier = Modifier.fillMaxWidth(),
+            ),
+        )
+        AssistantWidgetPreview(
+            mood = AssistantMood.Listening,
+            modifier = widgetControlsSharedElement(
+                widget = DashboardWidget.AssistantGallery,
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier.fillMaxWidth(),
             ),

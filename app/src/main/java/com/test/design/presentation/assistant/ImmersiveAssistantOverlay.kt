@@ -520,9 +520,9 @@ fun ImmersiveAssistantOverlay(
 
 /** Radial stage: darkest at center, fades to transparent toward the edges. */
 @Composable
-private fun ImmersiveBackdrop() {
+fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(
                 Brush.radialGradient(
@@ -539,8 +539,11 @@ private fun ImmersiveBackdrop() {
 
 /** Hairline edge glow that soft-blends into the blurred backdrop. */
 @Composable
-private fun ImmersiveBorderGlow(glowColor: Color = Color(0xFF8AB4F8)) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
+fun ImmersiveBorderGlow(
+    modifier: Modifier = Modifier,
+    glowColor: Color = Color(0xFF8AB4F8),
+) {
+    Canvas(modifier = modifier.fillMaxSize()) {
         val stroke = 1.dp.toPx()
         val inset = 6.dp.toPx()
         val w = size.width

@@ -2,6 +2,7 @@ package com.test.design.presentation.ivi.dashboard.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AcUnit
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Layers
@@ -62,6 +63,12 @@ enum class DashboardWidget(
         subtitle = "Eyes · gaze · lip-sync · drive context",
         icon = Icons.Default.AutoAwesome,
         sharedElementKey = "widget_virtual_assistant",
+    ),
+    AssistantGallery(
+        title = "Assistant Gallery",
+        subtitle = "Chrome styles · moods · glass previews",
+        icon = Icons.Default.Apps,
+        sharedElementKey = "widget_assistant_gallery",
     ),
     MaterialComponents(
         title = "Material",
