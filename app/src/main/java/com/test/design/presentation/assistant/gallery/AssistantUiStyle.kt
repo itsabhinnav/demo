@@ -63,4 +63,8 @@ enum class AssistantUiStyle(
         title = "Droid face",
         blurb = "Expressive shell morph · Bugdroid glyphs",
     ),
+    EporoFace(
+        title = "EPORO",
+        blurb = "Canvas shell · Bézier visor · glow eyes · LED bar",
+    ),
 }

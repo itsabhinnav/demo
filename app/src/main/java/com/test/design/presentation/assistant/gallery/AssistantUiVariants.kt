@@ -53,6 +53,7 @@ import com.test.design.presentation.assistant.AssistantPresence
 import com.test.design.presentation.assistant.DroidAssistantFace
 import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.DroidGlyph
+import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
@@ -87,6 +88,46 @@ fun AssistantUiVariant(
         AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, modifier)
         AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, modifier)
         AssistantUiStyle.DroidFace -> DroidFaceUi(mood, modifier)
+        AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, modifier)
+    }
+}
+
+@Composable
+private fun EporoFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1A1C22),
+                        Color(0xFF0B0C10),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            EporoAssistantFace(
+                mood = mood,
+                modifier = Modifier.width(148.dp),
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = mood.label,
+                color = mood.glowColor,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = prompt,
+                color = Color(0xFFF1F3F4),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 28.dp),
+            )
+        }
     }
 }
 
