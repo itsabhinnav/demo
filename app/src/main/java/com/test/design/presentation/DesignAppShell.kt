@@ -1,6 +1,5 @@
 package com.test.design.presentation
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +14,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.core.driving.DrivingUxViewModel
 import com.test.design.core.driving.LocalDrivingUxUpdater
@@ -39,11 +38,13 @@ import com.test.design.presentation.ivi.hun.DemoHunNotifications
 import com.test.design.presentation.ivi.hun.HeadsUpNotificationHost
 import com.test.design.theme.AppTheme
 
-/** Activity-scoped ViewModel shared across NavHost destinations (e.g. climate for floating bars). */
+/** Host-scoped ViewModel (Activity or overlay Service ViewModelStoreOwner). */
 @Composable
 inline fun <reified VM : ViewModel> activityViewModel(): VM {
-    val activity = LocalContext.current as ComponentActivity
-    return viewModel(viewModelStoreOwner = activity)
+    val owner = checkNotNull(LocalViewModelStoreOwner.current) {
+        "No ViewModelStoreOwner provided for activityViewModel<${VM::class.java.simpleName}>()"
+    }
+    return viewModel(viewModelStoreOwner = owner)
 }
 
 @Composable

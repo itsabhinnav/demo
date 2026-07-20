@@ -164,6 +164,12 @@
             android:exported="true"
             android:enabled="true" />
 
+        <!-- Translucent immersive assistant over any app (standalone launch path). -->
+        <service
+            android:name=".presentation.assistant.ImmersiveAssistantOverlayService"
+            android:exported="false"
+            android:enabled="true" />
+
         <!-- Dewd widget_panel host (left rail) -->
         <activity
             android:name=".presentation.ivi.glanceables.DrivingRailActivity"

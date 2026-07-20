@@ -58,159 +58,79 @@ internal data class ImmersiveEyePose(
     val blush: Float = 0f,
 )
 
+/**
+ * One calm persona — moods only nudge gaze / mouth slightly so the face reads as
+ * a single presence instead of flipping between cartoon expressions.
+ */
+private val PersonaBase = ImmersiveEyePose(
+    eyeOpen = 1f,
+    eyeWidth = 0.92f,
+    eyeHeight = 1.02f,
+    eyeGap = 1.42f,
+    eyeStyle = 0.08f,
+    faceGlow = 0.42f,
+    mouthCurve = 0.18f,
+    mouthOpen = 0f,
+    mouthVisible = 0.35f,
+    blush = 0.06f,
+    tilt = 0f,
+    blinkSpeed = 0.85f,
+)
+
 internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) {
-    AssistantMood.Idle -> ImmersiveEyePose(
-        eyeOpen = 1f,
-        eyeWidth = 0.95f,
-        eyeHeight = 1.05f,
-        eyeGap = 1.5f,
-        eyeStyle = 0.15f,
-        faceGlow = 0.65f,
-        mouthCurve = 0.25f,
+    AssistantMood.Idle -> PersonaBase
+    AssistantMood.Listening -> PersonaBase.copy(
+        eyeOpen = 1.06f,
+        faceGlow = 0.5f,
         mouthVisible = 0.2f,
-        blush = 0.12f,
-        tilt = 0f,
+        lookY = -0.03f,
     )
-    AssistantMood.Listening -> ImmersiveEyePose(
-        eyeOpen = 1.15f,
-        eyeWidth = 1f,
-        eyeHeight = 1.15f,
-        eyeGap = 1.55f,
-        faceGlow = 1f,
-        mouthVisible = 0f,
-        blush = 0.18f,
+    AssistantMood.Speaking -> PersonaBase.copy(
+        mouthCurve = 0.28f,
+        mouthOpen = 0.28f,
+        mouthVisible = 0.85f,
+        faceGlow = 0.48f,
+    )
+    AssistantMood.Thinking,
+    AssistantMood.Reading,
+    AssistantMood.Searching,
+    -> PersonaBase.copy(
+        lookX = 0.12f,
         lookY = -0.04f,
+        mouthVisible = 0.15f,
+        tilt = 1.5f,
     )
-    AssistantMood.Speaking -> ImmersiveEyePose(
-        eyeOpen = 1.05f,
-        eyeWidth = 0.95f,
-        eyeHeight = 1.05f,
-        eyeGap = 1.5f,
-        eyeStyle = 0.2f,
-        faceGlow = 0.95f,
-        mouthCurve = 0.45f,
-        mouthOpen = 0.5f,
-        mouthVisible = 1f,
-        blush = 0.15f,
-        tilt = 1f,
+    AssistantMood.Happy,
+    AssistantMood.Excited,
+    -> PersonaBase.copy(
+        mouthCurve = 0.38f,
+        mouthVisible = 0.55f,
+        blush = 0.14f,
+        faceGlow = 0.5f,
     )
-    AssistantMood.Thinking -> ImmersiveEyePose(
-        eyeOpen = 0.95f,
-        eyeWidth = 0.95f,
-        eyeHeight = 0.9f,
-        eyeGap = 1.45f,
-        lookX = 0.28f,
-        lookY = -0.08f,
-        eyeStyle = 0f,
-        faceGlow = 0.75f,
-        mouthVisible = 0f,
-        tilt = 5f,
-    )
-    AssistantMood.Happy -> ImmersiveEyePose(
-        eyeOpen = 1f,
-        eyeWidth = 1.15f,
-        eyeHeight = 0.9f,
-        eyeGap = 1.55f,
-        eyeStyle = 1f,
-        faceGlow = 1f,
-        mouthCurve = 0.9f,
-        mouthOpen = 0.05f,
-        mouthVisible = 0.9f,
-        blush = 0.55f,
-        tilt = -2f,
-    )
-    AssistantMood.Sad -> ImmersiveEyePose(
-        eyeOpen = 0.75f,
-        eyeWidth = 1f,
-        eyeHeight = 0.7f,
-        eyeGap = 1.4f,
-        lookY = 0.15f,
-        eyeStyle = -0.55f,
-        faceGlow = 0.4f,
-        mouthCurve = -0.65f,
-        mouthOpen = 0.02f,
-        mouthVisible = 0.65f,
-        tilt = 4f,
+    AssistantMood.Sad,
+    AssistantMood.Tired,
+    -> PersonaBase.copy(
+        lookY = 0.05f,
+        mouthCurve = 0.05f,
+        mouthVisible = 0.4f,
+        faceGlow = 0.36f,
         blinkSpeed = 0.7f,
     )
-    AssistantMood.Excited -> ImmersiveEyePose(
-        eyeOpen = 1.25f,
-        eyeWidth = 1.1f,
-        eyeHeight = 1.2f,
-        eyeGap = 1.6f,
-        eyeStyle = 0.85f,
-        faceGlow = 1.1f,
-        mouthCurve = 0.95f,
-        mouthOpen = 0.3f,
-        mouthVisible = 1f,
-        blush = 0.4f,
-        tilt = -3f,
-        blinkSpeed = 1.4f,
-    )
-    AssistantMood.Bored -> ImmersiveEyePose(
-        eyeOpen = 0.6f,
-        eyeWidth = 1.05f,
-        eyeHeight = 0.6f,
-        eyeGap = 1.45f,
-        lookX = 0.35f,
-        lookY = 0.06f,
-        eyeStyle = -0.35f,
-        faceGlow = 0.4f,
-        mouthCurve = -0.1f,
-        mouthVisible = 0.3f,
-        tilt = 3f,
-        blinkSpeed = 0.55f,
-    )
-    AssistantMood.Drowsy -> ImmersiveEyePose(
-        eyeOpen = 0.45f,
-        eyeWidth = 1.1f,
-        eyeHeight = 0.5f,
-        eyeGap = 1.45f,
-        lookY = 0.1f,
-        eyeStyle = -0.55f,
-        faceGlow = 0.35f,
-        mouthVisible = 0f,
-        tilt = 2f,
-        blinkSpeed = 0.4f,
-    )
-    AssistantMood.Tired -> ImmersiveEyePose(
-        eyeOpen = 0.5f,
-        eyeWidth = 1.05f,
-        eyeHeight = 0.55f,
-        eyeGap = 1.4f,
-        lookY = 0.14f,
-        eyeStyle = -0.5f,
-        faceGlow = 0.3f,
-        mouthCurve = -0.2f,
+    AssistantMood.Bored,
+    AssistantMood.Drowsy,
+    -> PersonaBase.copy(
+        eyeOpen = 0.92f,
+        lookX = 0.1f,
         mouthVisible = 0.25f,
-        tilt = 3f,
-        blinkSpeed = 0.35f,
-    )
-    AssistantMood.Reading -> ImmersiveEyePose(
-        eyeOpen = 1f,
-        eyeWidth = 0.95f,
-        eyeHeight = 1f,
-        eyeGap = 1.5f,
-        lookX = 0.28f,
-        faceGlow = 0.7f,
-        mouthVisible = 0f,
-    )
-    AssistantMood.Searching -> ImmersiveEyePose(
-        eyeOpen = 1.15f,
-        eyeWidth = 1f,
-        eyeHeight = 1.1f,
-        eyeGap = 1.55f,
-        faceGlow = 0.95f,
-        mouthVisible = 0f,
-        blush = 0.1f,
-        tilt = 1f,
-        blinkSpeed = 1.2f,
+        faceGlow = 0.34f,
+        blinkSpeed = 0.65f,
     )
 }
 
 private val PoseSpring = spring<Float>(
-    dampingRatio = 0.78f,
-    stiffness = Spring.StiffnessMediumLow,
+    dampingRatio = 0.92f,
+    stiffness = Spring.StiffnessVeryLow,
 )
 
 /**
@@ -515,12 +435,12 @@ private fun DrawScope.drawNomiGlyphEye(
             )
         }
         else -> {
-            // Soft glowing capsules
-            val bloomR = maxOf(w, h) * 2.6f
+            // Soft capsules — restrained bloom so eyes read as one calm face
+            val bloomR = maxOf(w, h) * 1.85f
             drawOval(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        color.copy(alpha = 0.4f),
+                        color.copy(alpha = 0.18f),
                         Color.Transparent,
                     ),
                     center = center,
@@ -530,13 +450,13 @@ private fun DrawScope.drawNomiGlyphEye(
                 size = Size(bloomR * 2f, bloomR * 2f),
             )
             drawRoundRect(
-                color = color,
+                color = color.copy(alpha = 0.88f),
                 topLeft = Offset(center.x - w, center.y - h),
                 size = Size(w * 2f, h * 2f),
                 cornerRadius = CornerRadius(w, w),
             )
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.4f),
+                color = Color.White.copy(alpha = 0.22f),
                 topLeft = Offset(center.x - w * 0.45f, center.y - h * 0.72f),
                 size = Size(w * 0.65f, h * 0.42f),
                 cornerRadius = CornerRadius(w * 0.4f, w * 0.4f),

@@ -11,7 +11,7 @@ function build {
 
     .\gradlew.bat assembleDebug --refresh-dependencies
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Build failed (exit $LASTEXITCODE) — skip install"
+        Write-Host "Build failed (exit $LASTEXITCODE) - skip install"
         return
     }
 
@@ -23,9 +23,13 @@ function build {
 
     adb install -r -t -d $apk
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Install failed (exit $LASTEXITCODE) — skip launch"
+        Write-Host "Install failed (exit $LASTEXITCODE) - skip launch"
         return
     }
+
+    # Overlay cannot be runtime-granted by the app; allow by default for demos.
+    adb shell appops set com.test.design SYSTEM_ALERT_WINDOW allow | Out-Null
+    adb shell pm grant com.test.design android.permission.RECORD_AUDIO | Out-Null
 
     if ($SkipLaunch) {
         return
@@ -34,7 +38,7 @@ function build {
     # Bring MainActivity to the foreground (works for user 10 AAOS as well).
     adb shell am start -n $Activity
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Launch failed — try: adb shell am start --user 10 -n $Activity"
+        Write-Host "Launch failed - try: adb shell am start --user 10 -n $Activity"
     }
 }
 

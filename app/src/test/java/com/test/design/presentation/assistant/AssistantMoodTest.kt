@@ -74,11 +74,20 @@ class AssistantMoodTest {
             assertTrue(pose.mouthVisible in 0f..1f)
             assertTrue(pose.blinkSpeed in 0.2f..1.6f)
         }
-        assertTrue(AssistantMood.Happy.toImmersiveEyePose().eyeStyle > AssistantMood.Sad.toImmersiveEyePose().eyeStyle)
-        assertTrue(AssistantMood.Excited.toImmersiveEyePose().eyeOpen > AssistantMood.Tired.toImmersiveEyePose().eyeOpen)
-        assertTrue(AssistantMood.Drowsy.toImmersiveEyePose().eyeOpen < AssistantMood.Listening.toImmersiveEyePose().eyeOpen)
+        // Subtle single persona — moods only nudge mouth / openness slightly
+        assertTrue(
+            AssistantMood.Happy.toImmersiveEyePose().mouthCurve >
+                AssistantMood.Sad.toImmersiveEyePose().mouthCurve,
+        )
+        assertTrue(
+            AssistantMood.Listening.toImmersiveEyePose().eyeOpen >=
+                AssistantMood.Drowsy.toImmersiveEyePose().eyeOpen,
+        )
         assertTrue(AssistantMood.Speaking.toImmersiveEyePose().mouthVisible > 0.5f)
-        assertTrue(AssistantMood.Bored.toImmersiveEyePose().eyeOpen < AssistantMood.Idle.toImmersiveEyePose().eyeOpen)
+        assertTrue(
+            AssistantMood.Bored.toImmersiveEyePose().eyeOpen <=
+                AssistantMood.Idle.toImmersiveEyePose().eyeOpen,
+        )
     }
 
     @Test
@@ -137,22 +146,11 @@ class AssistantMoodTest {
     @Test
     fun immersiveScriptShowsOneLinePhasesAndEmotions() {
         val moods = ImmersiveDialogueScript.map { it.mood }.toSet()
-        assertTrue(
-            moods.containsAll(
-                listOf(
-                    AssistantMood.Listening,
-                    AssistantMood.Thinking,
-                    AssistantMood.Searching,
-                    AssistantMood.Speaking,
-                    AssistantMood.Happy,
-                    AssistantMood.Sad,
-                    AssistantMood.Excited,
-                    AssistantMood.Bored,
-                    AssistantMood.Drowsy,
-                    AssistantMood.Tired,
-                ),
-            ),
-        )
+        assertTrue(moods.contains(AssistantMood.Listening))
+        assertTrue(moods.contains(AssistantMood.Thinking))
+        assertTrue(moods.contains(AssistantMood.Speaking))
+        // Single-persona script — no emotion carousel
+        assertTrue(moods.none { it == AssistantMood.Excited || it == AssistantMood.Bored })
         assertTrue(ImmersiveDialogueScript.all { it.text.isNotBlank() })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.User })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })

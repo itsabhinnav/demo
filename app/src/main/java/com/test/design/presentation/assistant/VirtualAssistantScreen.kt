@@ -86,6 +86,7 @@ fun NomiOrbOverlay(
     var entrance by remember { mutableStateOf(OrbEntrance.random()) }
     var mood by rememberSaveable { mutableStateOf(initialMood) }
     var session by remember { mutableStateOf(0) }
+    val wake = rememberAssistantWakeFeedback()
 
     fun summon(nextMood: AssistantMood = randomSummonMood()) {
         entrance = OrbEntrance.random()
@@ -96,6 +97,7 @@ fun NomiOrbOverlay(
 
     LaunchedEffect(visible, session) {
         if (!visible) return@LaunchedEffect
+        wake.play()
         delay(900)
         while (isActive && visible) {
             mood = randomSummonMood()
@@ -107,6 +109,7 @@ fun NomiOrbOverlay(
         if (!visible) return@LaunchedEffect
         delay(Random.nextLong(5200, 7800))
         visible = false
+        wake.playDismiss()
         delay(420)
         onDismiss()
     }

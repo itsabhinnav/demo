@@ -13,4 +13,7 @@ fi
 
 adb wait-for-device
 adb install -r "${APK_PATH}"
-echo "Installed ${APK_PATH}"
+# SYSTEM_ALERT_WINDOW cannot be runtime-granted by the app; allow by default for demo installs.
+adb shell appops set com.test.design SYSTEM_ALERT_WINDOW allow || true
+adb shell pm grant com.test.design android.permission.RECORD_AUDIO || true
+echo "Installed ${APK_PATH} (overlay + mic pre-granted)"

@@ -61,4 +61,44 @@ class AssistantFeaturesTest {
         assertTrue(eyeFillForContrast(true).red >= eyeFillForContrast(false).red)
         assertTrue(auraAlphaForContrast(true, 0.2f) > auraAlphaForContrast(false, 0.2f))
     }
+
+    @Test
+    fun assistantLinesAreSpokenIncludingThinking() {
+        assertTrue(
+            shouldSpeakBeat(
+                DialogueBeat(
+                    speaker = DialogueSpeaker.Assistant,
+                    text = "On it — thinking…",
+                    mood = AssistantMood.Thinking,
+                ),
+            ),
+        )
+        assertTrue(
+            shouldSpeakBeat(
+                DialogueBeat(
+                    speaker = DialogueSpeaker.Assistant,
+                    text = "Bluebird is nearby.",
+                    mood = AssistantMood.Speaking,
+                ),
+            ),
+        )
+        assertFalse(
+            shouldSpeakBeat(
+                DialogueBeat(
+                    speaker = DialogueSpeaker.User,
+                    text = "Hey assistant",
+                    mood = AssistantMood.Listening,
+                ),
+            ),
+        )
+        assertFalse(
+            shouldSpeakBeat(
+                DialogueBeat(
+                    speaker = DialogueSpeaker.System,
+                    text = "Listening…",
+                    mood = AssistantMood.Listening,
+                ),
+            ),
+        )
+    }
 }

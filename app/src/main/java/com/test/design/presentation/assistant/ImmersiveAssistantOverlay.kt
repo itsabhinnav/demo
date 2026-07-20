@@ -118,7 +118,6 @@ fun ImmersiveAssistantOverlay(
         gazeX = gaze.first
         gazeY = gaze.second
         visible = true
-        wake.play()
     }
 
     ImmersiveHotwordBridge(onSummon = { summon() })
@@ -216,26 +215,19 @@ fun ImmersiveAssistantOverlay(
                     delay((beat.holdMs / beat.text.length.coerceAtLeast(1)).coerceIn(18L, 55L))
                 }
                 delay(200)
-            } else if (
-                beat.speaker == DialogueSpeaker.Assistant &&
-                (beat.mood == AssistantMood.Speaking ||
-                    beat.mood == AssistantMood.Happy ||
-                    beat.mood == AssistantMood.Excited ||
-                    beat.mood == AssistantMood.Sad ||
-                    beat.mood == AssistantMood.Tired)
-            ) {
+            } else if (shouldSpeakBeat(beat)) {
                 transcript = beat.text
+                // Speak every assistant line; mouth lip-sync tracks TTS when enabled.
                 if (enableTts) {
                     assistantUtteranceLipSync(context, beat.text, beat.holdMs).collect { amp ->
                         mouthAmplitude = amp
                     }
-                    mouthAmplitude = null
                 } else {
                     simulatedLipSync(beat.holdMs).collect { amp ->
                         mouthAmplitude = amp
                     }
-                    mouthAmplitude = null
                 }
+                mouthAmplitude = null
             } else {
                 transcript = beat.text
                 delay(beat.holdMs)
@@ -277,6 +269,7 @@ fun ImmersiveAssistantOverlay(
     LaunchedEffect(visible, session) {
         if (visible) {
             hasPresented = true
+            wake.play()
             // Soft translucent stage in, then face rises from bottom.
             faceRise.snapTo(1f)
             faceScale.snapTo(0.86f)
@@ -304,6 +297,7 @@ fun ImmersiveAssistantOverlay(
             delay(120)
             transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
         } else if (hasPresented) {
+            wake.playDismiss()
             launch {
                 transcriptAlpha.animateTo(0f, tween(180))
             }
@@ -324,8 +318,8 @@ fun ImmersiveAssistantOverlay(
         }
     }
 
-    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent)
-    val faceSize = if (clusterHandOff) 168.dp else 280.dp
+    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
+    val faceSize = if (clusterHandOff) 140.dp else 220.dp
     val showOverlay = visible || overlayAlpha.value > 0.02f
 
     Box(
@@ -609,81 +603,51 @@ fun notifyImmersiveAssistantHotword() {
 }
 
 /**
- * Conversation script for the immersive eyes UI — listen → think → search → speak,
- * plus emotion beats (happy / sad / excited / bored / drowsy / tired).
+ * Calm single-persona conversation — listen → think → answer → confirm.
+ * Moods stay near Listening / Thinking / Speaking so the face doesn't flip characters.
  */
 val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
     DialogueBeat(
         speaker = DialogueSpeaker.System,
         text = "Listening…",
         mood = AssistantMood.Listening,
-        holdMs = 1600,
+        holdMs = 1400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Hey — find a coffee stop nearby",
         mood = AssistantMood.Listening,
-        holdMs = 2600,
-    ),
-    DialogueBeat(
-        speaker = DialogueSpeaker.Assistant,
-        text = "On it — thinking through nearby options…",
-        mood = AssistantMood.Thinking,
         holdMs = 2400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Searching cafés along your route…",
-        mood = AssistantMood.Searching,
+        text = "Sure — looking for cafés along your route.",
+        mood = AssistantMood.Thinking,
         holdMs = 2600,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Bluebird Roasters is 6 minutes away. Want that stop?",
         mood = AssistantMood.Speaking,
-        holdMs = 3000,
+        holdMs = 3200,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Yes!",
         mood = AssistantMood.Listening,
-        holdMs = 1400,
+        holdMs = 1200,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Done — stop added. You're going to love their cold brew!",
-        mood = AssistantMood.Happy,
+        text = "Done — stop added. You're all set.",
+        mood = AssistantMood.Speaking,
         holdMs = 2800,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Oh wait — they close in ten minutes. Sorry about that.",
-        mood = AssistantMood.Sad,
-        holdMs = 2800,
-    ),
-    DialogueBeat(
-        speaker = DialogueSpeaker.Assistant,
-        text = "Harbor Light is open late — I've got a better option!",
-        mood = AssistantMood.Excited,
-        holdMs = 2800,
-    ),
-    DialogueBeat(
-        speaker = DialogueSpeaker.System,
-        text = "Quiet stretch ahead…",
-        mood = AssistantMood.Bored,
-        holdMs = 2000,
-    ),
-    DialogueBeat(
-        speaker = DialogueSpeaker.System,
-        text = "Late night mode",
-        mood = AssistantMood.Drowsy,
-        holdMs = 2000,
-    ),
-    DialogueBeat(
-        speaker = DialogueSpeaker.Assistant,
-        text = "I'll keep watch while you drive. Rest when you can.",
-        mood = AssistantMood.Tired,
-        holdMs = 2800,
+        text = "They close in about ten minutes — Harbor Light stays open later if you prefer.",
+        mood = AssistantMood.Speaking,
+        holdMs = 3400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,

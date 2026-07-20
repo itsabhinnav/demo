@@ -69,6 +69,9 @@ if ! adb install -r -t -d "$APP_APK"; then
   adb uninstall com.test.design || true
   adb install -r -t -d "$APP_APK"
 fi
+# Overlay cannot be runtime-granted by the app; allow by default for demos.
+adb shell appops set com.test.design SYSTEM_ALERT_WINDOW allow || true
+adb shell pm grant com.test.design android.permission.RECORD_AUDIO || true
 echo "Installed app → $APP_APK"
 
 adb root

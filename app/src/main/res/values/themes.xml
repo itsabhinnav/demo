@@ -41,18 +41,15 @@
         <item name="android:windowBlurBehindRadius">48px</item>
     </style>
 
-    <!-- Standalone VirtualAssistantActivity — own task; translucent + blur of content behind. -->
-    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design.Panel">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowIsFloating">false</item>
+    <!--
+      Standalone trampoline only (permission gate). Must be opaque so AAOS shows it.
+      Immersive translucent UI lives on ImmersiveAssistantOverlayService.
+    -->
+    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design">
+        <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:enforceStatusBarContrast">false</item>
-        <item name="android:enforceNavigationBarContrast">false</item>
-        <item name="android:windowBackgroundBlurRadius">48px</item>
-        <item name="android:windowBlurBehindEnabled">true</item>
-        <item name="android:windowBlurBehindRadius">48px</item>
     </style>
 </resources>
