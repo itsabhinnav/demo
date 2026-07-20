@@ -26,7 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -37,6 +41,7 @@ import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.assistant.AssistantBackdropBlur
+import com.test.design.presentation.assistant.AssistantPresentation
 import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.assistant.gallery.AssistantUiGalleryScreen
 import com.test.design.presentation.ivi.IviExpressiveTheme
@@ -84,7 +89,16 @@ fun IviDemoScreen(
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
         val assistantOpen = dashboardState.expandedWidget == DashboardWidget.VirtualAssistant
         val galleryOpen = dashboardState.expandedWidget == DashboardWidget.AssistantGallery
-        val overlayOpen = assistantOpen || galleryOpen
+        var assistantPresentation by remember {
+            mutableStateOf(AssistantPresentation.Compact)
+        }
+        LaunchedEffect(assistantOpen) {
+            if (!assistantOpen) {
+                assistantPresentation = AssistantPresentation.Compact
+            }
+        }
+        val hostBlurred = galleryOpen ||
+            (assistantOpen && assistantPresentation == AssistantPresentation.Immersive)
         val pageWidget = dashboardState.expandedWidget.takeUnless {
             it == DashboardWidget.VirtualAssistant || it == DashboardWidget.AssistantGallery
         }
@@ -119,7 +133,7 @@ fun IviDemoScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
-                            if (overlayOpen) Modifier.blur(AssistantBackdropBlur) else Modifier,
+                            if (hostBlurred) Modifier.blur(AssistantBackdropBlur) else Modifier,
                         ),
                     transitionSpec = {
                         EnterTransition.None togetherWith ExitTransition.None
@@ -199,6 +213,7 @@ fun IviDemoScreen(
                     VirtualAssistantScreen(
                         onBack = collapseWidget,
                         modifier = Modifier.fillMaxSize(),
+                        onPresentationChanged = { assistantPresentation = it },
                     )
                 }
                 if (galleryOpen) {

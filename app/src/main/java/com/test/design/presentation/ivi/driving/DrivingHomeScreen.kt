@@ -13,12 +13,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.assistant.AssistantBackdropBlur
+import com.test.design.presentation.assistant.AssistantPresentation
 import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.assistant.gallery.AssistantUiGalleryScreen
 import com.test.design.presentation.ivi.IviExpressiveTheme
@@ -78,7 +82,16 @@ fun DrivingHomeScreen(
         val collapseWidget = { dashboardViewModel.onEvent(DashboardEvent.CollapseWidget) }
         val assistantOpen = dashboardState.expandedWidget == DashboardWidget.VirtualAssistant
         val galleryOpen = dashboardState.expandedWidget == DashboardWidget.AssistantGallery
-        val overlayOpen = assistantOpen || galleryOpen
+        var assistantPresentation by remember {
+            mutableStateOf(AssistantPresentation.Compact)
+        }
+        LaunchedEffect(assistantOpen) {
+            if (!assistantOpen) {
+                assistantPresentation = AssistantPresentation.Compact
+            }
+        }
+        val hostBlurred = galleryOpen ||
+            (assistantOpen && assistantPresentation == AssistantPresentation.Immersive)
         // Keep home / other sheets under the assistant overlay.
         val pageWidget = dashboardState.expandedWidget.takeUnless {
             it == DashboardWidget.VirtualAssistant || it == DashboardWidget.AssistantGallery
@@ -105,7 +118,7 @@ fun DrivingHomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .then(
-                            if (overlayOpen) Modifier.blur(AssistantBackdropBlur) else Modifier,
+                            if (hostBlurred) Modifier.blur(AssistantBackdropBlur) else Modifier,
                         ),
                     transitionSpec = {
                         EnterTransition.None togetherWith ExitTransition.None
@@ -196,6 +209,7 @@ fun DrivingHomeScreen(
                     VirtualAssistantScreen(
                         onBack = collapseWidget,
                         modifier = Modifier.fillMaxSize(),
+                        onPresentationChanged = { assistantPresentation = it },
                     )
                 }
                 if (galleryOpen) {

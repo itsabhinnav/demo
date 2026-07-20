@@ -9,6 +9,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -79,8 +81,8 @@ import kotlin.math.roundToInt
 val AssistantBackdropBlur = 36.dp
 
 /**
- * Full-screen immersive assistant: blurred + translucent host content, centered ring face,
- * single transcript line, hairline edge glow. Fades in on hotword or tap.
+ * Immersive assistant: starts as a non-blocking corner bubble while listening, then morphs
+ * to a full-screen translucent stage (centered ring face + transcript) when ready to respond.
  *
  * Features: gaze-to-speaker, STT streaming, TTS lip-sync, drive-context prompts,
  * cluster hand-off, OEM brand tint, high-contrast eyes, wake haptic/chime, nod/shake.
@@ -96,6 +98,8 @@ fun ImmersiveAssistantOverlay(
     enableLiveSpeech: Boolean = true,
     enableTts: Boolean = true,
     onFeedback: (Boolean) -> Unit = {},
+    onPresentationChanged: (AssistantPresentation) -> Unit = {},
+    onBubbleBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val wake = rememberAssistantWakeFeedback()
@@ -106,8 +110,11 @@ fun ImmersiveAssistantOverlay(
     val brandAccent = MaterialTheme.colorScheme.primary
 
     var visible by remember { mutableStateOf(!awaitHotword) }
-    var session by remember { mutableIntStateOf(0) }
-    var mood by remember { mutableStateOf(initialMood) }
+    var session by remember { mutableIntStateOf(if (!awaitHotword) 1 else 0) }
+    var presentation by remember { mutableStateOf(AssistantPresentation.Compact) }
+    var mood by remember {
+        mutableStateOf(if (!awaitHotword) AssistantMood.Listening else initialMood)
+    }
     var transcript by remember { mutableStateOf("") }
     var speaker by remember { mutableStateOf(DialogueSpeaker.System) }
     var gazeX by remember { mutableStateOf<Float?>(-0.42f) }
@@ -123,6 +130,7 @@ fun ImmersiveAssistantOverlay(
 
     fun summon() {
         session += 1
+        presentation = AssistantPresentation.Compact
         mood = AssistantMood.Listening
         transcript = ""
         speaker = DialogueSpeaker.System
@@ -137,6 +145,14 @@ fun ImmersiveAssistantOverlay(
         gazeX = gaze.first
         gazeY = gaze.second
         visible = true
+    }
+
+    LaunchedEffect(presentation, visible) {
+        if (visible) {
+            onPresentationChanged(presentation)
+        } else {
+            onPresentationChanged(AssistantPresentation.Compact)
+        }
     }
 
     ImmersiveHotwordBridge(onSummon = { summon() })
@@ -194,6 +210,14 @@ fun ImmersiveAssistantOverlay(
 
         for (beat in sessionScript) {
             if (!isActive || !visible) break
+
+            if (shouldExpandToImmersive(beat) &&
+                presentation != AssistantPresentation.Immersive
+            ) {
+                presentation = AssistantPresentation.Immersive
+                // Let the morph settle before speaking / showing immersive chrome.
+                delay(420)
+            }
 
             // If live STT already captured a user line matching this beat, skip typed replay.
             if (beat.speaker == DialogueSpeaker.User &&
@@ -336,37 +360,14 @@ fun ImmersiveAssistantOverlay(
     val transcriptAlpha = remember { Animatable(0f) }
     // Avoid calling onDismiss on first composition when awaitHotword keeps us hidden.
     var hasPresented by remember { mutableStateOf(false) }
+    var immersiveEnteredSession by remember { mutableIntStateOf(-1) }
 
     LaunchedEffect(visible, session) {
         if (visible) {
             hasPresented = true
             wake.play()
-            // Soft translucent stage in, then face rises from bottom.
-            faceRise.snapTo(1f)
-            faceScale.snapTo(0.86f)
-            faceAlpha.snapTo(0f)
-            transcriptAlpha.snapTo(0f)
             overlayAlpha.snapTo(0f)
-
-            launch {
-                overlayAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
-            }
-            delay(60)
-            launch {
-                faceAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
-            }
-            launch {
-                faceScale.animateTo(
-                    1f,
-                    spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
-                )
-            }
-            faceRise.animateTo(
-                0f,
-                spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
-            )
-            delay(120)
-            transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+            overlayAlpha.animateTo(1f, tween(320, easing = FastOutSlowInEasing))
         } else if (hasPresented) {
             wake.playDismiss()
             launch {
@@ -384,134 +385,210 @@ fun ImmersiveAssistantOverlay(
             overlayAlpha.animateTo(0f, tween(360, easing = FastOutSlowInEasing))
             faceRise.snapTo(1f)
             faceScale.snapTo(0.88f)
+            faceAlpha.snapTo(0f)
+            transcriptAlpha.snapTo(0f)
+            immersiveEnteredSession = -1
             // Collapse host (clears Modifier.blur) after tap dismiss or session end.
             onDismiss()
         }
     }
 
+    // Immersive face entrance — once per session when expanding from the corner bubble.
+    LaunchedEffect(visible, session, presentation) {
+        if (!visible || presentation != AssistantPresentation.Immersive) return@LaunchedEffect
+        if (immersiveEnteredSession == session) return@LaunchedEffect
+        immersiveEnteredSession = session
+        faceRise.snapTo(1f)
+        faceScale.snapTo(0.86f)
+        faceAlpha.snapTo(0f)
+        transcriptAlpha.snapTo(0f)
+        launch {
+            faceAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
+        }
+        launch {
+            faceScale.animateTo(
+                1f,
+                spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
+            )
+        }
+        faceRise.animateTo(
+            0f,
+            spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
+        )
+        delay(120)
+        transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+    }
+
     val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
     val faceSize = if (clusterHandOff) 168.dp else 300.dp
     val showOverlay = visible || overlayAlpha.value > 0.02f
+    val isImmersive = presentation == AssistantPresentation.Immersive
+    val bubblePrompt = when {
+        transcript.isNotBlank() -> transcript
+        mood == AssistantMood.Listening -> "Listening…"
+        else -> "How can I help?"
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {
-                    if (visible) {
-                        visible = false
-                    } else {
-                        onRequestHotwordListen?.invoke()
-                        summon()
-                    }
+            .then(
+                if (!visible) {
+                    // Hidden / awaiting hotword — tap anywhere to summon.
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {
+                            onRequestHotwordListen?.invoke()
+                            summon()
+                        },
+                    )
+                } else if (isImmersive) {
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { visible = false },
+                    )
+                } else {
+                    // Compact: pass-through — only the bubble handles taps.
+                    Modifier
                 },
             ),
     ) {
         if (showOverlay) {
-            // Translucent scrim + thin edge glow over blurred host UI.
-            // Face + transcript stay in a sharp layer above (not blurred).
-            Box(
+            AnimatedContent(
+                targetState = presentation,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
-            ) {
-                ImmersiveBackdrop()
-                WeatherAmbientOverlay(
-                    kind = weatherAmbient,
-                    modifier = Modifier.fillMaxSize(),
-                    tint = Color(0xFFB3E5FC),
-                )
-                ImmersiveBorderGlow(glowColor = brandGlow)
-            }
-
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    // Clear floating top/bottom system bars drawn above this overlay.
-                    .floatingSystemChromePadding()
-                    .padding(horizontal = 48.dp, vertical = 32.dp)
-                    .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
-            ) {
-                val density = LocalDensity.current
-                val risePx = with(density) {
-                    (maxHeight * 0.55f).toPx().coerceAtLeast(220.dp.toPx())
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if (clusterHandOff) {
-                        Text(
-                            text = "Cluster hand-off",
-                            color = brandGlow.copy(alpha = 0.95f),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+                transitionSpec = {
+                    (
+                        fadeIn(tween(420, easing = FastOutSlowInEasing)) +
+                            scaleIn(
+                                initialScale = 0.92f,
+                                animationSpec = tween(460, easing = FastOutSlowInEasing),
+                            )
+                        ) togetherWith (
+                        fadeOut(tween(280, easing = FastOutSlowInEasing)) +
+                            scaleOut(
+                                targetScale = 0.94f,
+                                animationSpec = tween(280, easing = FastOutSlowInEasing),
+                            )
+                        )
+                },
+                label = "assistant_presentation",
+            ) { phase ->
+                when (phase) {
+                    AssistantPresentation.Compact -> {
+                        AssistantCornerBubble(
+                            mood = mood,
+                            prompt = bubblePrompt,
+                            modifier = Modifier.fillMaxSize(),
+                            onClick = { visible = false },
+                            onBoundsInRoot = onBubbleBoundsInRoot,
                         )
                     }
+                    AssistantPresentation.Immersive -> {
+                        Box(Modifier.fillMaxSize()) {
+                            // Translucent scrim + thin edge glow over blurred host UI.
+                            Box(Modifier.fillMaxSize()) {
+                                ImmersiveBackdrop()
+                                WeatherAmbientOverlay(
+                                    kind = weatherAmbient,
+                                    modifier = Modifier.fillMaxSize(),
+                                    tint = Color(0xFFB3E5FC),
+                                )
+                                ImmersiveBorderGlow(glowColor = brandGlow)
+                            }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        ImmersiveEyesFace(
-                            mood = mood,
-                            modifier = Modifier
-                                .size(faceSize)
-                                .offset {
-                                    IntOffset(
-                                        0,
-                                        (faceRise.value * risePx).roundToInt(),
+                            BoxWithConstraints(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                                    .floatingSystemChromePadding()
+                                    .padding(horizontal = 48.dp, vertical = 32.dp),
+                            ) {
+                                val density = LocalDensity.current
+                                val risePx = with(density) {
+                                    (maxHeight * 0.55f).toPx().coerceAtLeast(220.dp.toPx())
+                                }
+
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    if (clusterHandOff) {
+                                        Text(
+                                            text = "Cluster hand-off",
+                                            color = brandGlow.copy(alpha = 0.95f),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+                                        )
+                                    }
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxWidth(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        ImmersiveEyesFace(
+                                            mood = mood,
+                                            modifier = Modifier
+                                                .size(faceSize)
+                                                .offset {
+                                                    IntOffset(
+                                                        0,
+                                                        (faceRise.value * risePx).roundToInt(),
+                                                    )
+                                                }
+                                                .graphicsLayer {
+                                                    val s = faceScale.value
+                                                    scaleX = s
+                                                    scaleY = s
+                                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                                },
+                                            gazeX = gazeX,
+                                            gazeY = gazeY,
+                                            mouthAmplitude = mouthAmplitude,
+                                            brandGlow = brandGlow,
+                                            highContrast = highContrast,
+                                            gesture = gesture,
+                                        )
+                                    }
+
+                                    ImmersiveTranscript(
+                                        text = transcript,
+                                        speaker = speaker,
+                                        mood = mood,
+                                        showThumbs = showThumbs && !clusterHandOff,
+                                        onThumbsUp = {
+                                            onFeedback(true)
+                                            gesture = FaceGesture.Nod
+                                            showThumbs = false
+                                            transcript = "Thanks"
+                                            speaker = DialogueSpeaker.System
+                                        },
+                                        onThumbsDown = {
+                                            onFeedback(false)
+                                            mood = AssistantMood.Sad
+                                            gesture = FaceGesture.None
+                                            showThumbs = false
+                                            transcript = "Thanks"
+                                            speaker = DialogueSpeaker.System
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .graphicsLayer {
+                                                alpha = transcriptAlpha.value.coerceIn(0f, 1f)
+                                            }
+                                            .padding(bottom = 36.dp),
                                     )
                                 }
-                                .graphicsLayer {
-                                    val s = faceScale.value
-                                    scaleX = s
-                                    scaleY = s
-                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                },
-                            gazeX = gazeX,
-                            gazeY = gazeY,
-                            mouthAmplitude = mouthAmplitude,
-                            brandGlow = brandGlow,
-                            highContrast = highContrast,
-                            gesture = gesture,
-                        )
-                    }
-
-                    ImmersiveTranscript(
-                        text = transcript,
-                        speaker = speaker,
-                        mood = mood,
-                        showThumbs = showThumbs && !clusterHandOff,
-                        onThumbsUp = {
-                            onFeedback(true)
-                            gesture = FaceGesture.Nod
-                            showThumbs = false
-                            transcript = "Thanks"
-                            speaker = DialogueSpeaker.System
-                        },
-                        onThumbsDown = {
-                            onFeedback(false)
-                            mood = AssistantMood.Sad
-                            gesture = FaceGesture.None
-                            showThumbs = false
-                            transcript = "Thanks"
-                            speaker = DialogueSpeaker.System
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .graphicsLayer {
-                                alpha = transcriptAlpha.value.coerceIn(0f, 1f)
                             }
-                            .padding(bottom = 36.dp),
-                    )
+                        }
+                    }
                 }
             }
         }
