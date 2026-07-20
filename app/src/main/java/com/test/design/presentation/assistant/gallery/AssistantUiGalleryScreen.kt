@@ -117,41 +117,38 @@ fun AssistantUiGalleryScreen(
                         )
                     }
                 }
-            }
-
-            // Bottom mood chips
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                listOf(
-                    AssistantMood.Idle,
-                    AssistantMood.Listening,
-                    AssistantMood.Speaking,
-                    AssistantMood.Thinking,
-                    AssistantMood.Happy,
-                    AssistantMood.Sad,
-                    AssistantMood.Excited,
-                    AssistantMood.Bored,
-                    AssistantMood.Drowsy,
-                    AssistantMood.Tired,
-                    AssistantMood.Searching,
-                ).forEach { entry ->
-                    FilterChip(
-                        selected = mood == entry,
-                        onClick = { mood = entry },
-                        label = { Text(entry.label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = AssistantUiChrome.Glass,
-                            labelColor = AssistantUiChrome.OnGlassMuted,
-                            selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
-                            selectedLabelColor = AssistantUiChrome.OnGlass,
-                        ),
-                    )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    listOf(
+                        AssistantMood.Idle,
+                        AssistantMood.Listening,
+                        AssistantMood.Speaking,
+                        AssistantMood.Thinking,
+                        AssistantMood.Happy,
+                        AssistantMood.Sad,
+                        AssistantMood.Excited,
+                        AssistantMood.Bored,
+                        AssistantMood.Drowsy,
+                        AssistantMood.Tired,
+                        AssistantMood.Searching,
+                    ).forEach { entry ->
+                        FilterChip(
+                            selected = mood == entry,
+                            onClick = { mood = entry },
+                            label = { Text(entry.label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = AssistantUiChrome.Glass,
+                                labelColor = AssistantUiChrome.OnGlassMuted,
+                                selectedContainerColor = entry.glowColor.copy(alpha = 0.28f),
+                                selectedLabelColor = AssistantUiChrome.OnGlass,
+                            ),
+                        )
+                    }
                 }
             }
         }
