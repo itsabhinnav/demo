@@ -17,11 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.presentation.activityViewModel
-import com.test.design.presentation.assistant.AssistantBackdropBlur
+import com.test.design.presentation.assistant.AssistantGradientBlurHost
 import com.test.design.presentation.assistant.AssistantPresentation
 import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.assistant.gallery.AssistantUiGalleryScreen
@@ -113,18 +112,15 @@ fun DrivingHomeScreen(
 
         SharedTransitionLayout(modifier = modifier.fillMaxSize()) {
             Box(Modifier.fillMaxSize()) {
-                AnimatedContent(
-                    targetState = pageWidget,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(
-                            if (hostBlurred) Modifier.blur(AssistantBackdropBlur) else Modifier,
-                        ),
-                    transitionSpec = {
-                        EnterTransition.None togetherWith ExitTransition.None
-                    },
-                    label = "driving_home_container_transform",
-                ) { expandedWidget ->
+                AssistantGradientBlurHost(blurred = hostBlurred) {
+                    AnimatedContent(
+                        targetState = pageWidget,
+                        modifier = Modifier.fillMaxSize(),
+                        transitionSpec = {
+                            EnterTransition.None togetherWith ExitTransition.None
+                        },
+                        label = "driving_home_container_transform",
+                    ) { expandedWidget ->
                     when (expandedWidget) {
                         null -> DrivingDashboardLayout(
                             vehicleState = vehicleState,
@@ -202,6 +198,7 @@ fun DrivingHomeScreen(
                                 DashboardWidget.AssistantGallery -> Unit
                             }
                         }
+                    }
                     }
                 }
 

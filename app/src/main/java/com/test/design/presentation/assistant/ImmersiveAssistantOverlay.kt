@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,12 +32,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbDown
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -61,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,9 +69,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-
-/** Blur radius applied to host UI under the assistant overlay (face/text stay sharp). */
-val AssistantBackdropBlur = 36.dp
 
 /**
  * Immersive assistant: starts as a non-blocking corner bubble while listening, then morphs
@@ -423,7 +413,6 @@ fun ImmersiveAssistantOverlay(
     }
 
     val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
-    val faceSize = if (clusterHandOff) 168.dp else 300.dp
     val showOverlay = visible || overlayAlpha.value > 0.02f
     val isImmersive = presentation == AssistantPresentation.Immersive
     val bubblePrompt = when {
@@ -494,7 +483,7 @@ fun ImmersiveAssistantOverlay(
                     }
                     AssistantPresentation.Immersive -> {
                         Box(Modifier.fillMaxSize()) {
-                            // Translucent scrim + thin edge glow over blurred host UI.
+                            // Transparent top → very dark bottom; glow only along bottom edge.
                             Box(Modifier.fillMaxSize()) {
                                 ImmersiveBackdrop()
                                 WeatherAmbientOverlay(
@@ -510,84 +499,56 @@ fun ImmersiveAssistantOverlay(
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.safeDrawing)
                                     .floatingSystemChromePadding()
-                                    .padding(horizontal = 48.dp, vertical = 32.dp),
+                                    .padding(horizontal = 32.dp, vertical = 16.dp),
                             ) {
+                                // Assistant chrome occupies ~1/4 of available height at the bottom.
+                                val bandHeight = maxHeight * 0.25f
+                                val faceSize = (bandHeight * 0.55f).coerceIn(72.dp, 120.dp)
                                 val density = LocalDensity.current
                                 val risePx = with(density) {
-                                    (maxHeight * 0.55f).toPx().coerceAtLeast(220.dp.toPx())
+                                    (faceSize * 0.35f).toPx()
                                 }
 
                                 Column(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .fillMaxWidth()
+                                        .height(bandHeight),
                                     horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Bottom,
                                 ) {
-                                    if (clusterHandOff) {
-                                        Text(
-                                            text = "Cluster hand-off",
-                                            color = brandGlow.copy(alpha = 0.95f),
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-                                        )
-                                    }
-
-                                    Box(
+                                    ImmersiveEyesFace(
+                                        mood = mood,
                                         modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxWidth(),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        ImmersiveEyesFace(
-                                            mood = mood,
-                                            modifier = Modifier
-                                                .size(faceSize)
-                                                .offset {
-                                                    IntOffset(
-                                                        0,
-                                                        (faceRise.value * risePx).roundToInt(),
-                                                    )
-                                                }
-                                                .graphicsLayer {
-                                                    val s = faceScale.value
-                                                    scaleX = s
-                                                    scaleY = s
-                                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                                },
-                                            gazeX = gazeX,
-                                            gazeY = gazeY,
-                                            mouthAmplitude = mouthAmplitude,
-                                            brandGlow = brandGlow,
-                                            highContrast = highContrast,
-                                            gesture = gesture,
-                                        )
-                                    }
-
+                                            .size(faceSize)
+                                            .offset {
+                                                IntOffset(
+                                                    0,
+                                                    (faceRise.value * risePx).roundToInt(),
+                                                )
+                                            }
+                                            .graphicsLayer {
+                                                val s = faceScale.value
+                                                scaleX = s
+                                                scaleY = s
+                                                alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                            },
+                                        gazeX = gazeX,
+                                        gazeY = gazeY,
+                                        mouthAmplitude = mouthAmplitude,
+                                        brandGlow = brandGlow,
+                                        highContrast = highContrast,
+                                        gesture = gesture,
+                                    )
                                     ImmersiveTranscript(
                                         text = transcript,
                                         speaker = speaker,
-                                        mood = mood,
-                                        showThumbs = showThumbs && !clusterHandOff,
-                                        onThumbsUp = {
-                                            onFeedback(true)
-                                            gesture = FaceGesture.Nod
-                                            showThumbs = false
-                                            transcript = "Thanks"
-                                            speaker = DialogueSpeaker.System
-                                        },
-                                        onThumbsDown = {
-                                            onFeedback(false)
-                                            mood = AssistantMood.Sad
-                                            gesture = FaceGesture.None
-                                            showThumbs = false
-                                            transcript = "Thanks"
-                                            speaker = DialogueSpeaker.System
-                                        },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .graphicsLayer {
                                                 alpha = transcriptAlpha.value.coerceIn(0f, 1f)
                                             }
-                                            .padding(bottom = 36.dp),
+                                            .padding(top = 28.dp, bottom = 12.dp),
                                     )
                                 }
                             }
@@ -599,103 +560,89 @@ fun ImmersiveAssistantOverlay(
     }
 }
 
-/** Radial stage: darkest at center, fades to transparent toward the edges. */
+/** Vertical stage: transparent top → dark bottom, with a deeper pool behind face/text. */
 @Composable
 fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color(0xE6050608),
-                        0.35f to Color(0xB80A0C10),
-                        0.65f to Color(0x6610141C),
-                        1.0f to Color(0x00000000),
+    Box(modifier = modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color(0x00000000),
+                            0.48f to Color(0x00000000),
+                            0.66f to Color(0x6610141C),
+                            0.80f to Color(0xCC0A0C10),
+                            1.0f to Color(0xF2050608),
+                        ),
                     ),
                 ),
-            ),
-    )
+        )
+        // Extra darken where face + transcript sit (bottom-center).
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            drawRect(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(
+                        0.0f to Color(0xF2000000),
+                        0.40f to Color(0xB3000000),
+                        0.72f to Color(0x66000000),
+                        1.0f to Color.Transparent,
+                    ),
+                    center = Offset(w * 0.5f, h * 0.86f),
+                    radius = minOf(w * 0.48f, h * 0.42f),
+                ),
+            )
+        }
+    }
 }
 
-/** Hairline edge glow that soft-blends into the blurred backdrop. */
+/**
+ * Soft bottom bloom only — no hard edge.
+ * Peaks at bottom-center, fades to 0 left/right and upward.
+ */
 @Composable
 fun ImmersiveBorderGlow(
     modifier: Modifier = Modifier,
     glowColor: Color = Color(0xFF8AB4F8),
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
-        val stroke = 1.dp.toPx()
-        val inset = 6.dp.toPx()
         val w = size.width
         val h = size.height
+        val cx = w * 0.5f
         val blue = glowColor
-        val edge = 28.dp.toPx()
-        drawRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    blue.copy(alpha = 0.04f),
-                    Color.Transparent,
-                    blue.copy(alpha = 0.05f),
+        // Tall soft oval sitting on the bottom edge so the hard diameter is off-screen.
+        val glowW = w * 0.72f
+        val glowH = 56.dp.toPx()
+        drawOval(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to blue.copy(alpha = 0.45f),
+                    0.35f to blue.copy(alpha = 0.18f),
+                    0.70f to blue.copy(alpha = 0.05f),
+                    1.0f to Color.Transparent,
                 ),
+                center = Offset(cx, h),
+                radius = glowW * 0.55f,
             ),
-            size = size,
+            topLeft = Offset(cx - glowW * 0.5f, h - glowH),
+            size = Size(glowW, glowH * 2f),
         )
-        drawRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(blue.copy(alpha = 0.18f), Color.Transparent),
-                startY = inset,
-                endY = inset + edge,
+        // Wider, fainter halo for side fade.
+        drawOval(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to blue.copy(alpha = 0.16f),
+                    0.55f to blue.copy(alpha = 0.04f),
+                    1.0f to Color.Transparent,
+                ),
+                center = Offset(cx, h + 4.dp.toPx()),
+                radius = w * 0.42f,
             ),
-            topLeft = Offset(inset, inset),
-            size = Size(w - inset * 2f, edge),
-        )
-        drawRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(Color.Transparent, blue.copy(alpha = 0.22f)),
-                startY = h - inset - edge,
-                endY = h - inset,
-            ),
-            topLeft = Offset(inset, h - inset - edge),
-            size = Size(w - inset * 2f, edge),
-        )
-        drawRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(blue.copy(alpha = 0.14f), Color.Transparent),
-                startX = inset,
-                endX = inset + edge,
-            ),
-            topLeft = Offset(inset, inset),
-            size = Size(edge, h - inset * 2f),
-        )
-        drawRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(Color.Transparent, blue.copy(alpha = 0.14f)),
-                startX = w - inset - edge,
-                endX = w - inset,
-            ),
-            topLeft = Offset(w - inset - edge, inset),
-            size = Size(edge, h - inset * 2f),
-        )
-        drawRect(
-            color = blue.copy(alpha = 0.16f),
-            topLeft = Offset(inset, inset),
-            size = Size(w - inset * 2f, stroke),
-        )
-        drawRect(
-            color = blue.copy(alpha = 0.2f),
-            topLeft = Offset(inset, h - inset - stroke),
-            size = Size(w - inset * 2f, stroke),
-        )
-        drawRect(
-            color = blue.copy(alpha = 0.12f),
-            topLeft = Offset(inset, inset),
-            size = Size(stroke, h - inset * 2f),
-        )
-        drawRect(
-            color = blue.copy(alpha = 0.12f),
-            topLeft = Offset(w - inset - stroke, inset),
-            size = Size(stroke, h - inset * 2f),
+            topLeft = Offset(w * 0.05f, h - glowH * 1.35f),
+            size = Size(w * 0.90f, glowH * 2.4f),
         )
     }
 }
@@ -704,136 +651,37 @@ fun ImmersiveBorderGlow(
 private fun ImmersiveTranscript(
     text: String,
     speaker: DialogueSpeaker,
-    mood: AssistantMood,
-    showThumbs: Boolean,
-    onThumbsUp: () -> Unit,
-    onThumbsDown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val status = mood.microStatus()
-    Column(
+    AnimatedContent(
+        targetState = text to speaker,
+        transitionSpec = {
+            (fadeIn(tween(280)) + slideInVertically(tween(320)) { it / 4 }) togetherWith
+                (fadeOut(tween(180)) + slideOutVertically(tween(220)) { -it / 5 })
+        },
+        label = "immersive_transcript",
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        AnimatedContent(
-            targetState = Triple(text, speaker, status),
-            transitionSpec = {
-                (fadeIn(tween(280)) + slideInVertically(tween(320)) { it / 4 }) togetherWith
-                    (fadeOut(tween(180)) + slideOutVertically(tween(220)) { -it / 5 })
-            },
-            label = "immersive_transcript",
-        ) { (line, who, statusLine) ->
-            if (line.isBlank()) {
-                Box(modifier = Modifier.padding(8.dp))
-            } else {
-                val whoLabel = when (who) {
-                    DialogueSpeaker.User -> "You"
-                    DialogueSpeaker.Assistant -> "Assistant"
-                    DialogueSpeaker.System -> " "
-                }
-                val whoLabelColor = when (who) {
-                    DialogueSpeaker.User -> Color(0xFF90CAF9)
-                    DialogueSpeaker.Assistant -> Color(0xFFE8EAED)
-                    DialogueSpeaker.System -> Color(0xFF9AA0A6)
-                }
-                val whoBodyColor = when (who) {
-                    DialogueSpeaker.User -> Color(0xFFD2E3FC)
-                    DialogueSpeaker.Assistant -> Color(0xFFF8F9FA)
-                    DialogueSpeaker.System -> Color(0xFFBDC1C6)
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = whoLabel,
-                        color = whoLabelColor.copy(alpha = 0.85f),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.8.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    if (!statusLine.isNullOrBlank()) {
-                        Text(
-                            text = statusLine,
-                            color = Color(0xFF9AA0A6).copy(alpha = 0.9f),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = 0.4.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(bottom = 8.dp),
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-                    Text(
-                        text = line,
-                        color = whoBodyColor,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 40.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
-                    )
-                }
-            }
-        }
-
-        ImmersiveThumbsRow(
-            visible = showThumbs,
-            onThumbsUp = onThumbsUp,
-            onThumbsDown = onThumbsDown,
-            modifier = Modifier.padding(top = 16.dp),
-        )
-    }
-}
-
-@Composable
-private fun ImmersiveThumbsRow(
-    visible: Boolean,
-    onThumbsUp: () -> Unit,
-    onThumbsDown: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val alpha = remember { Animatable(0f) }
-    LaunchedEffect(visible) {
-        if (visible) {
-            alpha.animateTo(1f, tween(320, easing = FastOutSlowInEasing))
+    ) { (line, who) ->
+        if (line.isBlank()) {
+            Box(modifier = Modifier.height(28.dp))
         } else {
-            alpha.animateTo(0f, tween(220))
-        }
-    }
-    if (!visible && alpha.value < 0.02f) return
-
-    Row(
-        modifier = modifier.graphicsLayer { this.alpha = alpha.value.coerceIn(0f, 1f) },
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(
-            onClick = onThumbsUp,
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ThumbUp,
-                contentDescription = "Helpful",
-                tint = Color(0xFFE8EAED).copy(alpha = 0.4f),
-                modifier = Modifier.size(22.dp),
-            )
-        }
-        IconButton(
-            onClick = onThumbsDown,
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ThumbDown,
-                contentDescription = "Not helpful",
-                tint = Color(0xFFE8EAED).copy(alpha = 0.4f),
-                modifier = Modifier.size(22.dp),
+            val bodyColor = when (who) {
+                DialogueSpeaker.User -> Color(0xFFD2E3FC)
+                DialogueSpeaker.Assistant -> Color(0xFFF8F9FA)
+                DialogueSpeaker.System -> Color(0xFFBDC1C6)
+            }
+            Text(
+                text = line,
+                color = bodyColor,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             )
         }
     }

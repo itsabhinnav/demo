@@ -33,14 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.presentation.activityViewModel
-import com.test.design.presentation.assistant.AssistantBackdropBlur
+import com.test.design.presentation.assistant.AssistantGradientBlurHost
 import com.test.design.presentation.assistant.AssistantPresentation
 import com.test.design.presentation.assistant.VirtualAssistantScreen
 import com.test.design.presentation.assistant.gallery.AssistantUiGalleryScreen
@@ -128,18 +127,15 @@ fun IviDemoScreen(
                 .floatingSystemChromePadding(),
         ) {
             Box(Modifier.fillMaxSize()) {
-                AnimatedContent(
-                    targetState = pageWidget,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(
-                            if (hostBlurred) Modifier.blur(AssistantBackdropBlur) else Modifier,
-                        ),
-                    transitionSpec = {
-                        EnterTransition.None togetherWith ExitTransition.None
-                    },
-                    label = "dashboard_container_transform",
-                ) { expandedWidget ->
+                AssistantGradientBlurHost(blurred = hostBlurred) {
+                    AnimatedContent(
+                        targetState = pageWidget,
+                        modifier = Modifier.fillMaxSize(),
+                        transitionSpec = {
+                            EnterTransition.None togetherWith ExitTransition.None
+                        },
+                        label = "dashboard_container_transform",
+                    ) { expandedWidget ->
                     when (expandedWidget) {
                         null -> DashboardHubContent(
                             state = dashboardState,
@@ -207,6 +203,7 @@ fun IviDemoScreen(
                         DashboardWidget.VirtualAssistant,
                         DashboardWidget.AssistantGallery -> Unit
                     }
+                }
                 }
 
                 if (assistantOpen) {

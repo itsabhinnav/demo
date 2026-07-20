@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -64,9 +65,9 @@ internal data class ImmersiveEyePose(
  * — eyeStyle stays in the soft-capsule range so glyphs never swap to arcs/dashes.
  */
 private val PersonaBase = ImmersiveEyePose(
-    eyeOpen = 1.12f,
+    eyeOpen = 1.0f,
     eyeWidth = 1.12f,
-    eyeHeight = 1.22f,
+    eyeHeight = 0.92f,
     eyeGap = 1.48f,
     eyeStyle = 0.05f,
     faceGlow = 0.55f,
@@ -81,16 +82,16 @@ private val PersonaBase = ImmersiveEyePose(
 internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) {
     AssistantMood.Idle -> PersonaBase
     AssistantMood.Listening -> PersonaBase.copy(
-        eyeOpen = 1.28f,
-        eyeWidth = 1.15f,
-        eyeHeight = 1.32f,
+        eyeOpen = 1.08f,
+        eyeWidth = 1.12f,
+        eyeHeight = 0.98f,
         faceGlow = 0.72f,
         mouthVisible = 0.12f,
         lookY = -0.05f,
         blush = 0.12f,
     )
     AssistantMood.Speaking -> PersonaBase.copy(
-        eyeOpen = 1.18f,
+        eyeOpen = 1.05f,
         mouthCurve = 0.42f,
         mouthOpen = 0.45f,
         mouthVisible = 1f,
@@ -98,8 +99,8 @@ internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) 
         tilt = 1f,
     )
     AssistantMood.Thinking -> PersonaBase.copy(
-        eyeOpen = 1.05f,
-        eyeHeight = 1.1f,
+        eyeOpen = 0.98f,
+        eyeHeight = 0.90f,
         lookX = 0.22f,
         lookY = -0.08f,
         mouthVisible = 0.1f,
@@ -107,23 +108,23 @@ internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) 
         faceGlow = 0.58f,
     )
     AssistantMood.Reading -> PersonaBase.copy(
-        eyeOpen = 1.1f,
+        eyeOpen = 1.0f,
         lookX = 0.28f,
         mouthVisible = 0.08f,
         faceGlow = 0.55f,
     )
     AssistantMood.Searching -> PersonaBase.copy(
-        eyeOpen = 1.25f,
-        eyeHeight = 1.11f, // ~13% shorter than prior 1.28 — less tall capsules
+        eyeOpen = 1.06f,
+        eyeHeight = 0.95f,
         mouthVisible = 0.1f,
         faceGlow = 0.68f,
         tilt = 1.5f,
         blinkSpeed = 1.15f,
     )
     AssistantMood.Happy -> PersonaBase.copy(
-        eyeOpen = 1.05f,
-        eyeWidth = 1.28f,
-        eyeHeight = 0.95f, // soft squint — same capsules
+        eyeOpen = 0.98f,
+        eyeWidth = 1.22f,
+        eyeHeight = 0.82f,
         mouthCurve = 0.85f,
         mouthOpen = 0.08f,
         mouthVisible = 0.95f,
@@ -132,9 +133,9 @@ internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) 
         tilt = -2f,
     )
     AssistantMood.Excited -> PersonaBase.copy(
-        eyeOpen = 1.35f,
-        eyeWidth = 1.22f,
-        eyeHeight = 1.35f,
+        eyeOpen = 1.1f,
+        eyeWidth = 1.18f,
+        eyeHeight = 1.0f,
         mouthCurve = 0.92f,
         mouthOpen = 0.35f,
         mouthVisible = 1f,
@@ -205,6 +206,7 @@ private val PoseSpring = spring<Float>(
  * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 fun ImmersiveEyesFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
@@ -216,7 +218,16 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
-    val shellMorph = rememberExpressiveShellMorph(mood)
+    // Fixed SemiCircle shell — no mood morph yet.
+    val shellMorph = remember {
+        ExpressiveShellMorphState(
+            morph = Morph(
+                start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+                end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+            ),
+            progress = 1f,
+        )
+    }
     val eyeOpen = remember { Animatable(target.eyeOpen) }
     val eyeWidth = remember { Animatable(target.eyeWidth) }
     val eyeHeight = remember { Animatable(target.eyeHeight) }
@@ -413,29 +424,31 @@ fun ImmersiveEyesFace(
                 center = Offset(cx, cy),
             )
 
-            // Low-alpha expressive shell — silhouette only, not a hard NOMI orb.
-            val shellHalf = faceR * 1.35f
+            // Fixed SemiCircle silhouette (wider than tall).
+            val shellW = faceR * 1.45f
+            val shellH = faceR * 0.78f
             val shellAlpha = auraAlphaForContrast(highContrast, 0.16f) * glow.coerceIn(0.25f, 1f)
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = Rect(
-                    left = cx - shellHalf,
-                    top = cy - shellHalf,
-                    right = cx + shellHalf,
-                    bottom = cy + shellHalf,
+                    left = cx - shellW,
+                    top = cy - shellH * 0.85f,
+                    right = cx + shellW,
+                    bottom = cy + shellH * 0.35f,
                 ),
                 color = brandGlow.copy(alpha = shellAlpha),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
             rotate(liveTilt, pivot = Offset(cx, cy)) {
-                val open = (eyeOpen.value * blink.value).coerceIn(0.05f, 1.4f)
+                val open = (eyeOpen.value * blink.value).coerceIn(0.05f, 1.12f)
                 val gap = faceR * 0.36f * eyeGap.value.coerceIn(1f, 1.8f)
                 val eyeY = cy - faceR * 0.06f + lookY.value * faceR * 0.1f
                 val gaze = lookX.value * faceR * 0.06f
-                // Larger capsules — same glyph morphs for every mood.
+                // Shorter capsules — capped height while animating.
                 val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
-                val barH = faceR * 0.3f * eyeHeight.value * open
+                val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
+                    .coerceAtMost(faceR * 0.26f)
                 val left = Offset(cx - gap + gaze, eyeY)
                 val right = Offset(cx + gap + gaze, eyeY)
 
@@ -487,7 +500,8 @@ private fun DrawScope.drawNomiGlyphEye(
     color: Color,
 ) {
     val w = width.coerceAtLeast(1.5f)
-    val h = height.coerceAtLeast(w * 1.05f)
+    // Allow short capsules — do not force taller-than-wide.
+    val h = height.coerceAtLeast(w * 0.55f)
     when {
         style > 0.28f -> {
             // Cute ^ happy arcs (icon-pack Nomi)
