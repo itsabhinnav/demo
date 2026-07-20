@@ -486,6 +486,7 @@ fun ImmersiveAssistantOverlay(
                         AssistantCornerBubble(
                             mood = mood,
                             prompt = bubblePrompt,
+                            brandGlow = brandGlow,
                             modifier = Modifier.fillMaxSize(),
                             onClick = { visible = false },
                             onBoundsInRoot = onBubbleBoundsInRoot,

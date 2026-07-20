@@ -165,10 +165,16 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                             val w = frame.width.coerceAtLeast(1)
                             val h = frame.height.coerceAtLeast(1)
                             val density = resources.displayMetrics.density
-                            val bw = (300 * density).roundToInt()
-                            val bh = (100 * density).roundToInt()
+                            val bw = (360 * density).roundToInt()
+                            val bh = (120 * density).roundToInt()
                             val inset = (20 * density).roundToInt()
-                            Rect(w - bw - inset, h - bh - inset, w - inset, h - inset)
+                            val chromeBottom = (84 * density).roundToInt()
+                            Rect(
+                                w - bw - inset,
+                                h - bh - inset - chromeBottom,
+                                w - inset,
+                                h - inset - chromeBottom,
+                            )
                         } else {
                             Rect(bubbleHitRect)
                         }

@@ -114,7 +114,7 @@ internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) 
     )
     AssistantMood.Searching -> PersonaBase.copy(
         eyeOpen = 1.25f,
-        eyeHeight = 1.28f,
+        eyeHeight = 1.11f, // ~13% shorter than prior 1.28 — less tall capsules
         mouthVisible = 0.1f,
         faceGlow = 0.68f,
         tilt = 1.5f,
