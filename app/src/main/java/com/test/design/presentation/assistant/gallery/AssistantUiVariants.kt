@@ -103,6 +103,7 @@ private fun DroidFaceUi(mood: AssistantMood, modifier: Modifier) {
         Spacer(Modifier.height(56.dp))
         DroidAssistantFace(
             glyph = selected,
+            shellMood = mood,
             modifier = Modifier.size(120.dp),
         )
         Spacer(Modifier.height(16.dp))

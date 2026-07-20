@@ -61,6 +61,6 @@ enum class AssistantUiStyle(
     ),
     DroidFace(
         title = "Droid face",
-        blurb = "Bugdroid icon pack · 36 glyphs",
+        blurb = "Expressive shell morph · Bugdroid glyphs",
     ),
 }

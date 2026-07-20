@@ -109,6 +109,28 @@ class AssistantMoodTest {
     }
 
     @Test
+    fun expressiveShellMapsMoodsToThreeFaceLikeShapes() {
+        assertEquals(ExpressiveShellKind.Arch, AssistantMood.Idle.toShellKind())
+        assertEquals(ExpressiveShellKind.Arch, AssistantMood.Bored.toShellKind())
+        assertEquals(ExpressiveShellKind.Arch, AssistantMood.Drowsy.toShellKind())
+        assertEquals(ExpressiveShellKind.Arch, AssistantMood.Tired.toShellKind())
+        assertEquals(ExpressiveShellKind.Arch, AssistantMood.Sad.toShellKind())
+
+        assertEquals(ExpressiveShellKind.SemiCircle, AssistantMood.Listening.toShellKind())
+        assertEquals(ExpressiveShellKind.SemiCircle, AssistantMood.Thinking.toShellKind())
+        assertEquals(ExpressiveShellKind.SemiCircle, AssistantMood.Reading.toShellKind())
+        assertEquals(ExpressiveShellKind.SemiCircle, AssistantMood.Searching.toShellKind())
+
+        assertEquals(ExpressiveShellKind.Oval, AssistantMood.Speaking.toShellKind())
+        assertEquals(ExpressiveShellKind.Oval, AssistantMood.Happy.toShellKind())
+        assertEquals(ExpressiveShellKind.Oval, AssistantMood.Excited.toShellKind())
+
+        AssistantMood.entries.forEach { mood ->
+            assertTrue(mood.toShellKind() in ExpressiveShellKind.entries.toSet())
+        }
+    }
+
+    @Test
     fun wavePoseSharesSameStyleWithStateEnergy() {
         AssistantMood.entries.forEach { mood ->
             val wave = mood.toWavePose()
