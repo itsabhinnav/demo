@@ -203,8 +203,9 @@ fun ImmersiveAssistantOverlay(
         }
     }
 
-    // Drive conversation: context beats → script; TTS + lip-sync on assistant lines.
-    LaunchedEffect(visible, session, drivingUx, vehicleState) {
+    // Drive conversation once per summon — do not re-key on drivingUx / vehicleState
+    // or mid-session vehicle ticks restart the script in an endless loop.
+    LaunchedEffect(visible, session) {
         if (!visible) return@LaunchedEffect
         val contextBeats = buildDriveContextBeats(drivingUx, vehicleState)
         val sessionScript = contextBeats + script
@@ -329,7 +330,7 @@ fun ImmersiveAssistantOverlay(
 
         if (visible) {
             delay(500)
-            // Exit animation + host teardown happen in the visibility effect below.
+            // One demo cycle complete — dismiss (no auto-replay).
             visible = false
         }
     }
