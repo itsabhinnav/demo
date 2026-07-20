@@ -163,7 +163,9 @@ fun ImmersiveAssistantOverlay(
         assistantSpeechEvents(context).collectLatest { event ->
             if (!visible) return@collectLatest
             when (event) {
-                AssistantSpeechEvent.Hotword -> Unit
+                AssistantSpeechEvent.Hotword -> {
+                    if (!visible) summon()
+                }
                 is AssistantSpeechEvent.Partial -> {
                     if (liveSttActive || speaker == DialogueSpeaker.User ||
                         mood == AssistantMood.Listening

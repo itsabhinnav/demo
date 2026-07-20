@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.test.design.MainActivity
 import com.test.design.presentation.DesignAppShell
 import kotlinx.coroutines.flow.collectLatest
 
@@ -27,8 +26,9 @@ import kotlinx.coroutines.flow.collectLatest
  * Standalone assistant entry — separate from in-app home chrome.
  *
  * Prefers [ImmersiveAssistantOverlayService] (translucent over whatever is on screen).
- * Brings [MainActivity] forward first so the overlay has demo content underneath.
- * Falls back to hosting the same UI in this activity when overlay permission is missing.
+ * Does **not** cold-start MainActivity: OsmDroid + overlay together spike GL memory
+ * (~200MB+) and kill emulators when immersive/speaking starts. Open home first, or use
+ * `.cursor/scripts/launch-assistant.sh`.
  *
  * ```
  * adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
@@ -59,9 +59,7 @@ class VirtualAssistantActivity : ComponentActivity() {
             micPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
 
-        // Overlay is pre-granted on install; never prompt. Keep home under the glass.
         if (Settings.canDrawOverlays(this)) {
-            bringMainUnderlay()
             ImmersiveAssistantOverlayService.show(this)
             finish()
             return
@@ -95,25 +93,11 @@ class VirtualAssistantActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (Settings.canDrawOverlays(this)) {
-            bringMainUnderlay()
             ImmersiveAssistantOverlayService.show(this)
             finish()
         } else {
             summonEpoch++
         }
-    }
-
-    private fun bringMainUnderlay() {
-        startActivity(
-            Intent(this, MainActivity::class.java).apply {
-                addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION,
-                )
-            },
-        )
     }
 
     companion object {

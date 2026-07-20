@@ -29,6 +29,11 @@ class AssistantUiGalleryActivity : ComponentActivity() {
         window.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
         window.setDimAmount(0f)
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        // Explicitly clear blur-behind — theme must not enable it (emulator SF crash).
+        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            window.attributes = window.attributes.apply { blurBehindRadius = 0 }
+        }
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),

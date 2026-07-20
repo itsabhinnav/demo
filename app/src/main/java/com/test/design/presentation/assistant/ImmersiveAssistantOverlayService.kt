@@ -10,7 +10,6 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AndroidUiDispatcher
@@ -32,7 +31,6 @@ import com.test.design.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -135,15 +133,13 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                     drivingUxState = DrivingUxState.Parked,
                     appMotionScheme = AppMotionScheme.Expressive,
                 ) {
-                    LaunchedEffect(Unit) {
-                        hotwordDetections(this@ImmersiveAssistantOverlayService).collectLatest {
-                            notifyImmersiveAssistantHotword()
-                        }
-                    }
                     VirtualAssistantOverlay(
                         onDismiss = { stopSelf() },
                         modifier = Modifier.fillMaxSize(),
                         awaitHotword = false,
+                        // Prefer silent lip-sync on AVDs — TTS init often fails (status=-1)
+                        // and still stresses AudioFlinger around the immersive morph.
+                        enableTts = false,
                         onPresentationChanged = { next ->
                             presentation = next
                             if (next == AssistantPresentation.Immersive) {

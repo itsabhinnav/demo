@@ -75,7 +75,9 @@ There is no always-on background hotword yet — open the assistant first (dock 
 
 ## Emulator note
 
-Window blur-behind (`FLAG_BLUR_BEHIND`) is **disabled** on the immersive overlay — enabling it when the session goes fullscreen often crashes SurfaceFlinger on emulators. The Compose scrim still dims the backdrop.
+- Window blur-behind (`FLAG_BLUR_BEHIND` / `windowBlurBehindEnabled`) is disabled for the immersive overlay **and** Assistant Gallery theme — it crashes SurfaceFlinger on emulators (Pixel Tablet GPU is fine). Compose scrim still dims.
+- Do **not** rely on cold-starting Main under the overlay; OsmDroid + overlay can use ~200MB GL and get the process killed when speaking starts. Open home first (or use `launch-assistant.sh`).
+- Overlay TTS is off by default (silent lip-sync); wake earcons are haptic-only.
 
 ## In-app
 

@@ -61,6 +61,8 @@ fun VirtualAssistantOverlay(
     /** When true, starts listening / waiting for hotword instead of showing immediately. */
     awaitHotword: Boolean = true,
     onRequestHotwordListen: (() -> Unit)? = null,
+    enableLiveSpeech: Boolean = true,
+    enableTts: Boolean = true,
     onPresentationChanged: (AssistantPresentation) -> Unit = {},
     onBubbleBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
@@ -70,6 +72,8 @@ fun VirtualAssistantOverlay(
         initialMood = initialMood,
         awaitHotword = awaitHotword,
         onRequestHotwordListen = onRequestHotwordListen,
+        enableLiveSpeech = enableLiveSpeech,
+        enableTts = enableTts,
         onPresentationChanged = onPresentationChanged,
         onBubbleBoundsInRoot = onBubbleBoundsInRoot,
     )

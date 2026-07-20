@@ -30,9 +30,7 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:enforceStatusBarContrast">false</item>
         <item name="android:enforceNavigationBarContrast">false</item>
-        <item name="android:windowBackgroundBlurRadius">48px</item>
-        <item name="android:windowBlurBehindEnabled">true</item>
-        <item name="android:windowBlurBehindRadius">48px</item>
+        <!-- No windowBlurBehind* — crashes SurfaceFlinger on emulators; Compose scrim dims. -->
     </style>
 
     <!-- Trampoline / fallback — transparent; primary path is the overlay service. -->
