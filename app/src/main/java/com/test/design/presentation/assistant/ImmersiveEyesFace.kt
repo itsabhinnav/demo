@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -37,7 +38,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * NIO NOMI–style glyphs: floating white eyes/mouth that blend into the backdrop — no orb frame.
+ * NIO NOMI–style glyphs: floating white eyes/mouth over a soft expressive shell.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
@@ -195,7 +196,7 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Floating Nomi glyphs (no circular housing) — eyes/mouth sit in a soft brand aura.
+ * Floating Nomi glyphs with a soft Material expressive shell under the eyes/mouth.
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
@@ -215,6 +216,7 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
+    val shellMorph = rememberExpressiveShellMorph(mood)
     val eyeOpen = remember { Animatable(target.eyeOpen) }
     val eyeWidth = remember { Animatable(target.eyeWidth) }
     val eyeHeight = remember { Animatable(target.eyeHeight) }
@@ -409,6 +411,20 @@ fun ImmersiveEyesFace(
                 ),
                 radius = faceR * 1.65f,
                 center = Offset(cx, cy),
+            )
+
+            // Low-alpha expressive shell — silhouette only, not a hard NOMI orb.
+            val shellHalf = faceR * 1.35f
+            val shellAlpha = auraAlphaForContrast(highContrast, 0.16f) * glow.coerceIn(0.25f, 1f)
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = Rect(
+                    left = cx - shellHalf,
+                    top = cy - shellHalf,
+                    right = cx + shellHalf,
+                    bottom = cy + shellHalf,
+                ),
+                color = brandGlow.copy(alpha = shellAlpha),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()

@@ -28,7 +28,7 @@ val DroidGlyph = Color(0xFFB8F818)
 val DroidGreen = DroidGlyph
 
 /**
- * Flat Android Bugdroid head — dark dome + neon glyph from the icon pack.
+ * Flat Android Bugdroid head — Material expressive shell + neon glyph from the icon pack.
  */
 @Composable
 fun DroidAssistantFace(
@@ -42,6 +42,7 @@ fun DroidAssistantFace(
         modifier = modifier,
         bodyColor = bodyColor,
         glyphColor = glyphColor,
+        shellMood = mood,
     )
 }
 
@@ -51,7 +52,9 @@ fun DroidAssistantFace(
     modifier: Modifier = Modifier,
     bodyColor: Color = DroidShell,
     glyphColor: Color = DroidGlyph,
+    shellMood: AssistantMood = AssistantMood.Idle,
 ) {
+    val shellMorph = rememberExpressiveShellMorph(shellMood)
     // Slightly tall so antennae + full dome + chin margin fit without clipping mouths.
     Canvas(modifier = modifier.aspectRatio(0.92f)) {
         val side = min(size.width, size.height * 0.92f)
@@ -59,8 +62,21 @@ fun DroidAssistantFace(
         val headR = side * 0.42f
         // Flat chin near bottom — leave padding so stroke mouths stay inside the dome.
         val chinY = size.height * 0.90f
+        val faceCy = chinY - headR * 0.48f
+        val shellR = headR * 1.08f
+        val shellBounds = Rect(
+            left = cx - shellR,
+            top = faceCy - shellR,
+            right = cx + shellR,
+            bottom = faceCy + shellR,
+        )
 
-        drawDroidShell(cx = cx, chinY = chinY, headR = headR, color = bodyColor)
+        drawDroidAntennae(cx = cx, chinY = chinY, headR = headR, color = bodyColor)
+        drawExpressiveFaceShell(
+            morphState = shellMorph,
+            bounds = shellBounds,
+            color = bodyColor,
+        )
         drawDroidGlyph(
             glyph = glyph,
             cx = cx,
@@ -80,13 +96,13 @@ internal data class DroidFacePose(
 internal fun AssistantMood.toDroidFacePose(): DroidFacePose =
     DroidFacePose(glyph = toDroidFaceGlyph())
 
-private fun DrawScope.drawDroidShell(
+private fun DrawScope.drawDroidAntennae(
     cx: Float,
     chinY: Float,
     headR: Float,
     color: Color,
 ) {
-    // Antennae — thin stems + round tips, ~28° from vertical
+    // Antennae — thin stems + round tips, ~28° from vertical (not morphed).
     val antLen = headR * 0.26f
     val antW = headR * 0.06f
     val tipR = headR * 0.055f
@@ -110,19 +126,6 @@ private fun DrawScope.drawDroidShell(
     }
     antenna(-1f)
     antenna(1f)
-
-    // Dome — perfect semicircle, flat chin at chinY
-    val headPath = Path().apply {
-        addArc(
-            oval = Rect(cx - headR, chinY - headR, cx + headR, chinY + headR),
-            startAngleDegrees = 180f,
-            sweepAngleDegrees = 180f,
-        )
-        lineTo(cx + headR, chinY)
-        lineTo(cx - headR, chinY)
-        close()
-    }
-    drawPath(headPath, color)
 }
 
 private fun DrawScope.drawDroidGlyph(
