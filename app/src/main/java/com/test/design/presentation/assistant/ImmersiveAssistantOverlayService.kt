@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Rect
-import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.view.Gravity
@@ -150,7 +149,6 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                             if (next == AssistantPresentation.Immersive) {
                                 bubbleHitRect.setEmpty()
                             }
-                            updateBlurBehind(next == AssistantPresentation.Immersive)
                         },
                         onBubbleBoundsInRoot = { l, t, r, b ->
                             if (presentation == AssistantPresentation.Compact) {
@@ -203,26 +201,12 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            // Blur only once immersive — compact listening stays clear.
+            // Do not set FLAG_BLUR_BEHIND — it crashes SurfaceFlinger on many emulators
+            // when immersive covers the screen. ImmersiveBackdrop provides the dim.
         }
 
         overlayView = view
         windowManager.addView(view, params)
-    }
-
-    private fun updateBlurBehind(enabled: Boolean) {
-        val view = overlayView ?: return
-        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (enabled) {
-                params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-                params.blurBehindRadius = 48
-            } else {
-                params.flags = params.flags and WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
-                params.blurBehindRadius = 0
-            }
-            runCatching { windowManager.updateViewLayout(view, params) }
-        }
     }
 
     private fun detachOverlay() {

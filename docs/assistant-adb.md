@@ -73,6 +73,10 @@ Mic listening runs **after** the assistant overlay/activity is open. Say:
 
 There is no always-on background hotword yet — open the assistant first (dock sparkles icon, or the launch command above).
 
+## Emulator note
+
+Window blur-behind (`FLAG_BLUR_BEHIND`) is **disabled** on the immersive overlay — enabling it when the session goes fullscreen often crashes SurfaceFlinger on emulators. The Compose scrim still dims the backdrop.
+
 ## In-app
 
 From `MainActivity`, the floating dock **AutoAwesome** (purple sparkles) / mic icons call `ImmersiveAssistantOverlayService.show()`.
