@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "com.test.design.framework.scalableui"
-        minSdk = 34
-        targetSdk = 36
+        minSdk = 35
+        targetSdk = 37
         versionCode = 2
         versionName = "2.0-adaptive-space"
     }

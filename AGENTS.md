@@ -19,6 +19,21 @@ Debug APK output:
 
 `app/build/outputs/apk/debug/app-debug.apk`
 
+**SDK levels:** `minSdk` = **35** (Android 15), `compileSdk` / `targetSdk` = **37** (Android 17).
+
+## Docker + AOSP Car Cuttlefish
+
+Preferred runtime is a **Cuttlefish** remote/local instance of **AOSP Car** (`aosp_cf_x86_64_auto`) from `aosp-android-latest-release` (Android 17). See [`docs/cuttlefish.md`](docs/cuttlefish.md).
+
+```bash
+./scripts/cuttlefish/fetch-aosp-car.sh
+docker compose --profile cuttlefish up -d --build   # needs /dev/kvm
+./scripts/cuttlefish/connect-remote.sh
+.cursor/scripts/install-apk.sh
+```
+
+Cloud VMs lack KVM — set `CUTTLEFISH_HOST` to a remote CVD host, or fall back to the phone AVD via `.cursor/scripts/start-device.sh`.
+
 ## Cursor Cloud specific instructions
 
 This repo is configured for **Cursor Cloud Agents**, so work continues when the developer laptop is off. Use the **Cursor iOS app** or [cursor.com/agents](https://cursor.com/agents) to start and supervise agents.
@@ -39,10 +54,12 @@ After the cloud environment boots:
 
 ```bash
 ./gradlew assembleDebug
-.cursor/scripts/install-apk.sh   # when an emulator/device is connected
+.cursor/scripts/install-apk.sh   # when Cuttlefish or an emulator/device is connected
 ```
 
-To interact with the UI from iOS, use **remote desktop control** on the cloud agent session after the agent starts the emulator terminal (`.cursor/scripts/start-emulator.sh`).
+Preferred device: remote **AOSP Car Cuttlefish** (`CUTTLEFISH_HOST`, port `6520`). Otherwise `.cursor/scripts/start-device.sh` falls back to the phone emulator.
+
+To interact with the UI from iOS, use **remote desktop control** on the cloud agent session after the agent starts the device terminal, or open the Cuttlefish WebRTC console on the KVM host (`https://<host>:8443`).
 
 ### Environment
 
@@ -51,15 +68,18 @@ Cloud agent setup is defined in:
 - `.cursor/environment.json`
 - `.cursor/Dockerfile`
 - `.cursor/scripts/cloud-install.sh`
+- `docker-compose.yml` + `docker/cuttlefish/` (AOSP Car CVD on KVM hosts)
+- `scripts/cuttlefish/` (fetch / start / stop / remote adb)
 
 `ANDROID_HOME` defaults to `/opt/android-sdk` in cloud VMs.
 
 ### Build & run gotchas (non-obvious)
 
-- The app's `compileSdk` is `release(37)`, which requires `platforms;android-37.0` (note the `.0` suffix — plain `platforms;android-37` does not exist) and `build-tools;37.0.0`. These are installed by `.cursor/Dockerfile` (the environment source of truth referenced by `.cursor/environment.json`). Gradle uses **JDK 17** (`JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`), not the VM's default JDK 21.
+- The app's `compileSdk` / `targetSdk` are **API 37** (Android 17) and `minSdk` is **API 35** (Android 15). Platform `platforms;android-37.0` (note the `.0` suffix) and `build-tools;37.0.0` are installed by `.cursor/Dockerfile`. Gradle uses **JDK 17** (`JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`), not the VM's default JDK 21.
+- Prefer **AOSP Car Cuttlefish** over the phone emulator when a KVM host is available (`docs/cuttlefish.md`). Fetch images with `./scripts/cuttlefish/fetch-aosp-car.sh`; ADB is on port **6520**. Car SDK stubs land in `prebuilt/car-sdk/` and are optional `compileOnly` deps.
 - Use `./gradlew assembleDebug testDebugUnitTest` to verify. `./gradlew lintDebug` currently **fails on pre-existing lint errors** in the app code (e.g. `MissingSuperCall`), so it is not a reliable gate — do not treat those lint failures as an environment problem.
-- The cloud VM has **no KVM** (it is itself a KVM/Firecracker guest with no nested virtualization and no `/dev/kvm`), so the emulator runs software-only (`-accel off -gpu swiftshader_indirect`). Cold boot takes several minutes, and the starved SystemUI process often shows recurring "System UI isn't responding" ANR dialogs — the demo app itself renders fine behind them. Run `adb shell settings put global hide_error_dialogs 1` and be patient; tap **Wait** to dismiss. Confirm the app is up via `adb shell dumpsys activity activities | grep topResumedActivity` (expect `com.test.design/.MainActivity`).
-- Two AVDs are provisioned (`.cursor/Dockerfile`): **`cloud_avd`** (Android 14 / API 34) and **`android17_avd`** (Android 17 / API 37). Only `cloud_avd` boots in the cloud — the Android 17 x86_64 image requires **AVX/F16C** CPU instructions that QEMU's software (TCG) engine cannot emulate (log shows `TCG doesn't support requested feature: CPUID.01H:ECX.avx`), so `android17_avd` hangs at boot without KVM. Use `android17_avd` only on a host that exposes `/dev/kvm` (local machine or a KVM-enabled runner); the default `.cursor/scripts/start-emulator.sh` targets `cloud_avd`, override with `ANDROID_AVD_NAME=android17_avd`.
+- The cloud VM has **no KVM** (it is itself a KVM/Firecracker guest with no nested virtualization and no `/dev/kvm`), so Cuttlefish cannot boot locally. Point `CUTTLEFISH_HOST` at a remote CVD, or use the software phone AVD fallback (`.cursor/scripts/start-device.sh` → `start-emulator.sh`). Emulator cold boot takes several minutes; run `adb shell settings put global hide_error_dialogs 1` and be patient. Confirm the app is up via `adb shell dumpsys activity activities | grep topResumedActivity` (expect `com.test.design/.MainActivity`).
+- Two AVDs are still provisioned as fallbacks (`.cursor/Dockerfile`): **`cloud_avd`** (Android 14 / API 34) and **`android17_avd`** (Android 17 / API 37). Only `cloud_avd` boots in the cloud without KVM. Override with `ANDROID_AVD_NAME=android17_avd` on KVM hosts if not using Cuttlefish.
 
 ### Device safety (agents)
 

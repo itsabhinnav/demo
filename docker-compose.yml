@@ -1,0 +1,63 @@
+# AAOS design demo — Docker build env + AOSP Car Cuttlefish (Android 17).
+#
+# Requires KVM on the host for the cuttlefish service:
+#   ls /dev/kvm
+#
+# Quick start:
+#   ./scripts/cuttlefish/fetch-aosp-car.sh   # ~2GB AOSP auto images + Car SDK
+#   docker compose up -d --build
+#   ./scripts/cuttlefish/connect-remote.sh  # adb → localhost:6520
+#   ./gradlew assembleDebug && .cursor/scripts/install-apk.sh
+#
+# WebRTC console: https://localhost:8443
+# Remote host: set CUTTLEFISH_HOST / CUTTLEFISH_ADB_PORT and skip local cuttlefish.
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: .cursor/Dockerfile
+    image: aaos-demo-dev:android17
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - gradle-cache:/root/.gradle
+    environment:
+      ANDROID_HOME: /opt/android-sdk
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      CUTTLEFISH_HOST: ${CUTTLEFISH_HOST:-cuttlefish}
+      CUTTLEFISH_ADB_PORT: ${CUTTLEFISH_ADB_PORT:-6520}
+    # Keep container alive for interactive `docker compose exec dev bash`
+    command: ["sleep", "infinity"]
+    profiles: ["full", "dev"]
+
+  cuttlefish:
+    build:
+      context: .
+      dockerfile: docker/cuttlefish/Dockerfile
+    image: aaos-demo-cuttlefish:android17-auto
+    privileged: true
+    devices:
+      - /dev/kvm:/dev/kvm
+    group_add:
+      - kvm
+    ports:
+      - "${CUTTLEFISH_WEBRTC_PORT:-8443}:8443"
+      - "${CUTTLEFISH_ADB_PORT:-6520}:6520"
+    volumes:
+      - ./cuttlefish-data:/home/vsoc-01/cf:rw
+      - ./cuttlefish-data:/cf:rw
+    environment:
+      CF_HOME: /home/vsoc-01/cf
+      CF_START_WEBRTC: "true"
+      CF_DAEMON: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "adb connect 127.0.0.1:6520 >/dev/null 2>&1 && adb -s 127.0.0.1:6520 get-state 2>/dev/null | grep -q device || /cf/bin/adb connect 127.0.0.1:6520 >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
+    profiles: ["full", "cuttlefish"]
+
+volumes:
+  gradle-cache:

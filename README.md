@@ -11,6 +11,21 @@ chmod +x ./gradlew
 
 Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 
+**SDK:** compile/target **Android 17 (API 37)**, minSdk **Android 15 (API 35)**.
+
+## Docker + AOSP Car Cuttlefish
+
+Run the demo against a Cuttlefish **AOSP Automotive** instance (`aosp_cf_x86_64_auto`) instead of a phone emulator. Full guide: [`docs/cuttlefish.md`](docs/cuttlefish.md).
+
+```bash
+./scripts/cuttlefish/fetch-aosp-car.sh          # Android 17 auto images + Car SDK
+docker compose --profile cuttlefish up -d --build
+./scripts/cuttlefish/connect-remote.sh          # adb → :6520
+./gradlew assembleDebug && .cursor/scripts/install-apk.sh
+```
+
+WebRTC console: `https://localhost:8443`. Remote KVM host: set `CUTTLEFISH_HOST`.
+
 ## Architecture — Adaptive Space (Scalable UI)
 
 Sealed home layout lives in **`:scalable-ui-rro`** (Android 17 Advanced Windowing):
