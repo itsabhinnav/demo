@@ -35,12 +35,13 @@
         <item name="android:windowBlurBehindRadius">48px</item>
     </style>
 
-    <!-- Standalone assistant host — opaque so AAOS shows the task. -->
-    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design">
-        <item name="android:windowIsTranslucent">false</item>
+    <!-- Trampoline / fallback — transparent; primary path is the overlay service. -->
+    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design.Panel">
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 </resources>

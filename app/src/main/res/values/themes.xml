@@ -42,14 +42,15 @@
     </style>
 
     <!--
-      Standalone assistant host — opaque so AAOS actually shows the task (translucent
-      activities get parked invisible under app_panel). Compose draws the immersive UI.
+      Trampoline / in-activity fallback. Transparent so AAOS can show content under the
+      assistant when overlay permission is unavailable. Primary path is the overlay service.
     -->
-    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design">
-        <item name="android:windowIsTranslucent">false</item>
+    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design.Panel">
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@null</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 </resources>

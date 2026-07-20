@@ -86,6 +86,20 @@ startActivity(MapIntents.openMain(context))
 startActivity(MapIntents.openMain(context, openDashboard = true))
 ```
 
+## Assistant
+
+Translucent immersive assistant (corner bubble → fullscreen). Full adb cheat sheet: [`docs/assistant-adb.md`](docs/assistant-adb.md).
+
+```bash
+adb shell appops set com.test.design SYSTEM_ALERT_WINDOW allow
+adb shell pm grant com.test.design android.permission.RECORD_AUDIO
+
+adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
+  -n com.test.design/.presentation.assistant.VirtualAssistantActivity
+```
+
+Or: `.cursor/scripts/launch-assistant.sh`
+
 ### Scalable UI action (system intent)
 
 In `scalable_ui_actions.xml`, dispatch the map activity when a panel event fires:
