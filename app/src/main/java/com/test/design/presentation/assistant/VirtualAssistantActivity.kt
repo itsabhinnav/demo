@@ -1,11 +1,11 @@
 package com.test.design.presentation.assistant
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color as AndroidColor
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -24,9 +24,9 @@ import kotlinx.coroutines.flow.collectLatest
 /**
  * Standalone assistant entry — separate from [com.test.design.MainActivity] / in-app home.
  *
- * Prefers [ImmersiveAssistantOverlayService] (translucent over any app). Overlay permission
- * is granted at install time (`appops SYSTEM_ALERT_WINDOW allow`) — no in-app prompt.
- * If overlay is unavailable, hosts the same UI in this activity.
+ * Hosts the immersive UI in this activity (reliable on AAOS). System overlay windows are
+ * force-hidden while Settings / other apps set hide-non-system-overlay, so we no longer
+ * trampoline into [ImmersiveAssistantOverlayService] and finish.
  *
  * ```
  * adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
@@ -57,13 +57,6 @@ class VirtualAssistantActivity : ComponentActivity() {
             micPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
 
-        // Overlay is pre-granted on install; never prompt the user.
-        if (Settings.canDrawOverlays(this)) {
-            ImmersiveAssistantOverlayService.show(this)
-            finish()
-            return
-        }
-
         setContent {
             DesignAppShell(
                 applySafeDrawingInsets = false,
@@ -91,15 +84,20 @@ class VirtualAssistantActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (Settings.canDrawOverlays(this)) {
-            ImmersiveAssistantOverlayService.show(this)
-            finish()
-        } else {
-            summonEpoch++
-        }
+        summonEpoch++
     }
 
     companion object {
         const val ACTION_OPEN_ASSISTANT = "com.test.design.action.OPEN_ASSISTANT"
+
+        fun launch(context: Context) {
+            context.startActivity(
+                Intent(context, VirtualAssistantActivity::class.java).apply {
+                    action = ACTION_OPEN_ASSISTANT
+                    // Stay on the main AAOS app panel (same affinity as MainActivity).
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                },
+            )
+        }
     }
 }

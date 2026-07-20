@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.test.design.navigation.AppDestination
 import com.test.design.navigation.AppNavHost
 import com.test.design.presentation.DesignAppShell
+import com.test.design.presentation.assistant.ImmersiveAssistantOverlayService
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.DashboardViewModel
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
@@ -70,15 +71,10 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 onOpenAssistant = {
-                    dashboardViewModel.onEvent(
-                        DashboardEvent.WidgetTapped(DashboardWidget.VirtualAssistant),
-                    )
-                    val route = navController.currentBackStackEntry?.destination?.route
-                    if (route == AppDestination.Dashboard) return@DesignAppShell
-                    navController.navigate(AppDestination.DrivingHome) {
-                        popUpTo(AppDestination.DrivingHome) { inclusive = false }
-                        launchSingleTop = true
-                    }
+                    // Overlay while Main is focused — full-screen over the home map.
+                    // (TYPE_APPLICATION_OVERLAY is force-hidden under Settings; activity
+                    // path is used by VirtualAssistantActivity / adb.)
+                    ImmersiveAssistantOverlayService.show(this@MainActivity)
                 },
             ) {
                 AppNavHost(

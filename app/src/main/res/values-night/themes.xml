@@ -35,7 +35,7 @@
         <item name="android:windowBlurBehindRadius">48px</item>
     </style>
 
-    <!-- Trampoline / permission gate only — immersive UI is the overlay service. -->
+    <!-- Standalone assistant host — opaque so AAOS shows the task. -->
     <style name="Theme.Design.AssistantStandalone" parent="Theme.Design">
         <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowDisablePreview">true</item>

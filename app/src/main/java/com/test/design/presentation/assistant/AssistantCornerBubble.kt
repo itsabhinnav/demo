@@ -24,11 +24,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.ivi.dashboard.components.FloatingChromeBottomSpace
 import kotlin.math.roundToInt
 
 /**
  * Gallery-style corner bubble — bottom-end glass chip with face + prompt.
  * Used for non-blocking listening before the immersive fullscreen morph.
+ *
+ * Sits above [FloatingChromeBottomSpace] so the in-app floating dock does not cover it.
  */
 @Composable
 fun AssistantCornerBubble(
@@ -41,7 +44,12 @@ fun AssistantCornerBubble(
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
         CornerBubbleGlass(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 20.dp,
+                    bottom = 20.dp + FloatingChromeBottomSpace,
+                )
                 .width(260.dp)
                 .then(
                     if (onBoundsInRoot != null) {

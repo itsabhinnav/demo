@@ -42,8 +42,8 @@
     </style>
 
     <!--
-      Standalone trampoline only (permission gate). Must be opaque so AAOS shows it.
-      Immersive translucent UI lives on ImmersiveAssistantOverlayService.
+      Standalone assistant host — opaque so AAOS actually shows the task (translucent
+      activities get parked invisible under app_panel). Compose draws the immersive UI.
     -->
     <style name="Theme.Design.AssistantStandalone" parent="Theme.Design">
         <item name="android:windowIsTranslucent">false</item>
