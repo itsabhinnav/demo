@@ -50,8 +50,8 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
- * Immersive eyes assistant — full-screen gradient overlay, centered elliptical eyes,
- * single transcript line. Appears on hotword (or tap).
+ * Immersive eyes assistant — corner bubble while listening, then fullscreen morph.
+ * Appears on hotword (or tap / icon launch).
  */
 @Composable
 fun VirtualAssistantOverlay(
@@ -61,6 +61,8 @@ fun VirtualAssistantOverlay(
     /** When true, starts listening / waiting for hotword instead of showing immediately. */
     awaitHotword: Boolean = true,
     onRequestHotwordListen: (() -> Unit)? = null,
+    onPresentationChanged: (AssistantPresentation) -> Unit = {},
+    onBubbleBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
     ImmersiveAssistantOverlay(
         onDismiss = onDismiss,
@@ -68,6 +70,8 @@ fun VirtualAssistantOverlay(
         initialMood = initialMood,
         awaitHotword = awaitHotword,
         onRequestHotwordListen = onRequestHotwordListen,
+        onPresentationChanged = onPresentationChanged,
+        onBubbleBoundsInRoot = onBubbleBoundsInRoot,
     )
 }
 
@@ -337,12 +341,14 @@ fun SharedTransitionScope.VirtualAssistantScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
+    onPresentationChanged: (AssistantPresentation) -> Unit = {},
 ) {
     VirtualAssistantOverlay(
         onDismiss = onBack,
         modifier = modifier.fillMaxSize(),
         initialMood = initialMood,
         awaitHotword = false,
+        onPresentationChanged = onPresentationChanged,
     )
 }
 
@@ -351,12 +357,14 @@ fun VirtualAssistantScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     initialMood: AssistantMood = AssistantMood.Idle,
+    onPresentationChanged: (AssistantPresentation) -> Unit = {},
 ) {
     VirtualAssistantOverlay(
         onDismiss = onBack,
         modifier = modifier,
         initialMood = initialMood,
         awaitHotword = false,
+        onPresentationChanged = onPresentationChanged,
     )
 }
 

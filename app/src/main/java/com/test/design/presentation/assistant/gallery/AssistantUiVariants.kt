@@ -419,28 +419,11 @@ private fun ListeningRingsUi(mood: AssistantMood, modifier: Modifier) {
 
 @Composable
 private fun CornerBubbleUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-        GlassSurface(
-            modifier = Modifier
-                .padding(20.dp)
-                .width(260.dp),
-            corner = 22.dp,
-        ) {
-            Row(
-                Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                AssistantFace(mood = mood, modifier = Modifier.size(52.dp))
-                Text(
-                    text = prompt,
-                    color = AssistantUiChrome.OnGlass,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
+    com.test.design.presentation.assistant.AssistantCornerBubble(
+        mood = mood,
+        prompt = prompt,
+        modifier = modifier,
+    )
 }
 
 @Composable
