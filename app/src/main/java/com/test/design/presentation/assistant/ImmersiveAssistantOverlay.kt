@@ -16,28 +16,40 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -51,6 +63,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.test.design.core.DrivingUxState
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.presentation.activityViewModel
 import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
@@ -82,6 +95,7 @@ fun ImmersiveAssistantOverlay(
     script: List<DialogueBeat> = ImmersiveDialogueScript,
     enableLiveSpeech: Boolean = true,
     enableTts: Boolean = true,
+    onFeedback: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val wake = rememberAssistantWakeFeedback()
@@ -92,7 +106,7 @@ fun ImmersiveAssistantOverlay(
     val brandAccent = MaterialTheme.colorScheme.primary
 
     var visible by remember { mutableStateOf(!awaitHotword) }
-    var session by remember { mutableStateOf(0) }
+    var session by remember { mutableIntStateOf(0) }
     var mood by remember { mutableStateOf(initialMood) }
     var transcript by remember { mutableStateOf("") }
     var speaker by remember { mutableStateOf(DialogueSpeaker.System) }
@@ -103,6 +117,9 @@ fun ImmersiveAssistantOverlay(
     var clusterHandOff by remember { mutableStateOf(false) }
     var liveSttActive by remember { mutableStateOf(false) }
     var sttBuffer by remember { mutableStateOf("") }
+    var weatherAmbient by remember { mutableStateOf<WeatherAmbientKind?>(null) }
+    var showThumbs by remember { mutableStateOf(false) }
+    var thumbsTick by remember { mutableIntStateOf(0) }
 
     fun summon() {
         session += 1
@@ -114,6 +131,8 @@ fun ImmersiveAssistantOverlay(
         clusterHandOff = false
         liveSttActive = false
         sttBuffer = ""
+        weatherAmbient = null
+        showThumbs = false
         val gaze = gazeForSpeaker(DialogueSpeaker.User)
         gazeX = gaze.first
         gazeY = gaze.second
@@ -147,10 +166,12 @@ fun ImmersiveAssistantOverlay(
                     if (liveSttActive || mood == AssistantMood.Listening) {
                         liveSttActive = true
                         speaker = DialogueSpeaker.User
-                        mood = AssistantMood.Listening
                         sttBuffer = event.text
                         transcript = event.text
                         gesture = faceGestureForText(event.text)
+                        // Keyword fatigue → Drowsy/Tired mood sink (sensor-ready).
+                        mood = fatigueMoodForText(event.text) ?: AssistantMood.Listening
+                        weatherAmbientForText(event.text)?.let { weatherAmbient = it }
                     }
                 }
                 is AssistantSpeechEvent.Rms -> {
@@ -186,8 +207,24 @@ fun ImmersiveAssistantOverlay(
                 continue
             }
 
+            // Hide thumbs when the driver speaks again or we re-enter listening.
+            if (beat.speaker == DialogueSpeaker.User ||
+                beat.mood == AssistantMood.Listening
+            ) {
+                showThumbs = false
+            }
             mood = beat.mood
             speaker = beat.speaker
+            // Weather ambient from beat tag, or keyword on user lines.
+            when {
+                beat.weatherAmbient != null -> weatherAmbient = beat.weatherAmbient
+                beat.speaker == DialogueSpeaker.User ->
+                    weatherAmbientForText(beat.text)?.let { weatherAmbient = it }
+            }
+            // Keyword fatigue on scripted user lines (demo path).
+            if (beat.speaker == DialogueSpeaker.User) {
+                fatigueMoodForText(beat.text)?.let { mood = it }
+            }
             // Let Searching / Reading / Bored run built-in look loops; otherwise gaze speaker.
             if (beat.mood == AssistantMood.Searching ||
                 beat.mood == AssistantMood.Reading ||
@@ -228,9 +265,20 @@ fun ImmersiveAssistantOverlay(
                     }
                 }
                 mouthAmplitude = null
+                // Post-answer thumbs — hidden in Restricted glance budget.
+                if (isAnswerMood(beat.mood) && drivingUx != DrivingUxState.Restricted) {
+                    showThumbs = true
+                    thumbsTick += 1
+                }
             } else {
                 transcript = beat.text
                 delay(beat.holdMs)
+            }
+
+            // Fade weather after the spoken weather answer settles.
+            if (beat.weatherAmbient != null && isAnswerMood(beat.mood)) {
+                delay(400)
+                weatherAmbient = null
             }
 
             gesture = FaceGesture.None
@@ -241,6 +289,8 @@ fun ImmersiveAssistantOverlay(
             mood = AssistantMood.Idle
             speaker = DialogueSpeaker.System
             transcript = "Mirrored to cluster · tap to dismiss"
+            showThumbs = false
+            weatherAmbient = null
             runCatching {
                 context.startActivity(
                     Intent(context, DrivingStatusGlanceActivity::class.java).addFlags(
@@ -255,6 +305,27 @@ fun ImmersiveAssistantOverlay(
             delay(500)
             // Exit animation + host teardown happen in the visibility effect below.
             visible = false
+        }
+    }
+
+    // Auto-dismiss thumbs after ~4s or when listening resumes.
+    LaunchedEffect(showThumbs, thumbsTick, mood) {
+        if (!showThumbs) return@LaunchedEffect
+        if (mood == AssistantMood.Listening) {
+            showThumbs = false
+            return@LaunchedEffect
+        }
+        delay(4_000)
+        showThumbs = false
+    }
+
+    // Clear nod after thumbs-up feedback.
+    LaunchedEffect(gesture) {
+        if (gesture == FaceGesture.Nod || gesture == FaceGesture.Shake) {
+            delay(700)
+            if (gesture == FaceGesture.Nod || gesture == FaceGesture.Shake) {
+                gesture = FaceGesture.None
+            }
         }
     }
 
@@ -319,7 +390,7 @@ fun ImmersiveAssistantOverlay(
     }
 
     val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
-    val faceSize = if (clusterHandOff) 140.dp else 220.dp
+    val faceSize = if (clusterHandOff) 168.dp else 300.dp
     val showOverlay = visible || overlayAlpha.value > 0.02f
 
     Box(
@@ -347,6 +418,11 @@ fun ImmersiveAssistantOverlay(
                     .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
             ) {
                 ImmersiveBackdrop()
+                WeatherAmbientOverlay(
+                    kind = weatherAmbient,
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color(0xFFB3E5FC),
+                )
                 ImmersiveBorderGlow(glowColor = brandGlow)
             }
 
@@ -412,6 +488,23 @@ fun ImmersiveAssistantOverlay(
                     ImmersiveTranscript(
                         text = transcript,
                         speaker = speaker,
+                        mood = mood,
+                        showThumbs = showThumbs && !clusterHandOff,
+                        onThumbsUp = {
+                            onFeedback(true)
+                            gesture = FaceGesture.Nod
+                            showThumbs = false
+                            transcript = "Thanks"
+                            speaker = DialogueSpeaker.System
+                        },
+                        onThumbsDown = {
+                            onFeedback(false)
+                            mood = AssistantMood.Sad
+                            gesture = FaceGesture.None
+                            showThumbs = false
+                            transcript = "Thanks"
+                            speaker = DialogueSpeaker.System
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .graphicsLayer {
@@ -425,19 +518,19 @@ fun ImmersiveAssistantOverlay(
     }
 }
 
-/** Semi-transparent tint so blurred host content reads through. */
+/** Radial stage: darkest at center, fades to transparent toward the edges. */
 @Composable
 private fun ImmersiveBackdrop() {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(
+                Brush.radialGradient(
                     colorStops = arrayOf(
-                        0.0f to Color(0xA610141C),
-                        0.4f to Color(0xB80A0C10),
-                        0.75f to Color(0xCC050608),
-                        1.0f to Color(0xD9000000),
+                        0.0f to Color(0xE6050608),
+                        0.35f to Color(0xB80A0C10),
+                        0.65f to Color(0x6610141C),
+                        1.0f to Color(0x00000000),
                     ),
                 ),
             ),
@@ -527,20 +620,25 @@ private fun ImmersiveBorderGlow(glowColor: Color = Color(0xFF8AB4F8)) {
 private fun ImmersiveTranscript(
     text: String,
     speaker: DialogueSpeaker,
+    mood: AssistantMood,
+    showThumbs: Boolean,
+    onThumbsUp: () -> Unit,
+    onThumbsDown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val status = mood.microStatus()
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AnimatedContent(
-            targetState = text to speaker,
+            targetState = Triple(text, speaker, status),
             transitionSpec = {
                 (fadeIn(tween(280)) + slideInVertically(tween(320)) { it / 4 }) togetherWith
                     (fadeOut(tween(180)) + slideOutVertically(tween(220)) { -it / 5 })
             },
             label = "immersive_transcript",
-        ) { (line, who) ->
+        ) { (line, who, statusLine) ->
             if (line.isBlank()) {
                 Box(modifier = Modifier.padding(8.dp))
             } else {
@@ -567,8 +665,21 @@ private fun ImmersiveTranscript(
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 0.8.sp,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 8.dp),
+                        modifier = Modifier.padding(bottom = 4.dp),
                     )
+                    if (!statusLine.isNullOrBlank()) {
+                        Text(
+                            text = statusLine,
+                            color = Color(0xFF9AA0A6).copy(alpha = 0.9f),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.4.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
                     Text(
                         text = line,
                         color = whoBodyColor,
@@ -582,6 +693,64 @@ private fun ImmersiveTranscript(
                     )
                 }
             }
+        }
+
+        ImmersiveThumbsRow(
+            visible = showThumbs,
+            onThumbsUp = onThumbsUp,
+            onThumbsDown = onThumbsDown,
+            modifier = Modifier.padding(top = 16.dp),
+        )
+    }
+}
+
+@Composable
+private fun ImmersiveThumbsRow(
+    visible: Boolean,
+    onThumbsUp: () -> Unit,
+    onThumbsDown: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val alpha = remember { Animatable(0f) }
+    LaunchedEffect(visible) {
+        if (visible) {
+            alpha.animateTo(1f, tween(320, easing = FastOutSlowInEasing))
+        } else {
+            alpha.animateTo(0f, tween(220))
+        }
+    }
+    if (!visible && alpha.value < 0.02f) return
+
+    Row(
+        modifier = modifier.graphicsLayer { this.alpha = alpha.value.coerceIn(0f, 1f) },
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = onThumbsUp,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ThumbUp,
+                contentDescription = "Helpful",
+                tint = Color(0xFFE8EAED).copy(alpha = 0.4f),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        IconButton(
+            onClick = onThumbsDown,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ThumbDown,
+                contentDescription = "Not helpful",
+                tint = Color(0xFFE8EAED).copy(alpha = 0.4f),
+                modifier = Modifier.size(22.dp),
+            )
         }
     }
 }
@@ -603,51 +772,132 @@ fun notifyImmersiveAssistantHotword() {
 }
 
 /**
- * Calm single-persona conversation — listen → think → answer → confirm.
- * Moods stay near Listening / Thinking / Speaking so the face doesn't flip characters.
+ * Full emotion walk — listening → think → read → search → speak,
+ * weather snow/rain ambience, happy / sad / excited / bored / drowsy / tired.
  */
 val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
     DialogueBeat(
         speaker = DialogueSpeaker.System,
         text = "Listening…",
         mood = AssistantMood.Listening,
-        holdMs = 1400,
+        holdMs = 1600,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Hey — find a coffee stop nearby",
         mood = AssistantMood.Listening,
+        holdMs = 2600,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "On it — thinking through nearby options…",
+        mood = AssistantMood.Thinking,
         holdMs = 2400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Sure — looking for cafés along your route.",
-        mood = AssistantMood.Thinking,
+        text = "Searching cafés along your route…",
+        mood = AssistantMood.Searching,
         holdMs = 2600,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Reading reviews for Bluebird Roasters…",
+        mood = AssistantMood.Reading,
+        holdMs = 2400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Bluebird Roasters is 6 minutes away. Want that stop?",
         mood = AssistantMood.Speaking,
-        holdMs = 3200,
+        holdMs = 3000,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Yes!",
         mood = AssistantMood.Listening,
-        holdMs = 1200,
+        holdMs = 1400,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "Done — stop added. You're all set.",
-        mood = AssistantMood.Speaking,
+        text = "Done — stop added. You're going to love their cold brew!",
+        mood = AssistantMood.Happy,
         holdMs = 2800,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "They close in about ten minutes — Harbor Light stays open later if you prefer.",
+        text = "Oh wait — they close in ten minutes. Sorry about that.",
+        mood = AssistantMood.Sad,
+        holdMs = 2800,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Harbor Light is open late — I've got a better option!",
+        mood = AssistantMood.Excited,
+        holdMs = 2800,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "Will it snow tonight?",
+        mood = AssistantMood.Listening,
+        holdMs = 2200,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Thinking through the overnight forecast…",
+        mood = AssistantMood.Thinking,
+        holdMs = 2000,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Reading the radar along your route…",
+        mood = AssistantMood.Reading,
+        holdMs = 2200,
+        weatherAmbient = WeatherAmbientKind.Snow,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Light snow after midnight — roads should stay clear until then.",
         mood = AssistantMood.Speaking,
-        holdMs = 3400,
+        holdMs = 3200,
+        weatherAmbient = WeatherAmbientKind.Snow,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "And will it rain tomorrow?",
+        mood = AssistantMood.Listening,
+        holdMs = 2000,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "A soft drizzle around midday — nothing heavy.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        weatherAmbient = WeatherAmbientKind.Rain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.System,
+        text = "Quiet stretch ahead…",
+        mood = AssistantMood.Bored,
+        holdMs = 2000,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "I'm feeling a bit tired",
+        mood = AssistantMood.Listening,
+        holdMs = 2000,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.System,
+        text = "Late night mode",
+        mood = AssistantMood.Drowsy,
+        holdMs = 2000,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "I'll keep watch while you drive. Rest when you can.",
+        mood = AssistantMood.Tired,
+        holdMs = 2800,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,

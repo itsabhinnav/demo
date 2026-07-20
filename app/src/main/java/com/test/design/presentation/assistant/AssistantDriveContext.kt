@@ -62,13 +62,47 @@ internal fun buildDriveContextBeats(
     if (drivingUx == DrivingUxState.Restricted && (battery == null || battery > 25)) {
         beats += DialogueBeat(
             speaker = DialogueSpeaker.Assistant,
-            text = "Long stretch ahead — I can keep watch and stay quiet.",
+            text = "Long stretch ahead — I'll keep watch and stay quiet. Rest when you can.",
             mood = AssistantMood.Tired,
-            holdMs = 2400,
+            holdMs = 2600,
         )
     }
 
     return beats
+}
+
+/** Demo / keyword path into Drowsy or Tired — sensor-ready single mood sink. */
+internal fun fatigueMoodForText(text: String): AssistantMood? {
+    val t = text.lowercase()
+    return when {
+        listOf("drowsy", "sleepy", "falling asleep", "nodding off").any { t.contains(it) } ->
+            AssistantMood.Drowsy
+        listOf("tired", "exhausted", "fatigued", "worn out", "I'm beat").any { t.contains(it) } ->
+            AssistantMood.Tired
+        else -> null
+    }
+}
+
+/** Light weather intent → ambient kind for rain/snow stage layer. */
+internal fun weatherAmbientForText(text: String): WeatherAmbientKind? {
+    val t = text.lowercase()
+    return when {
+        listOf("snow", "blizzard", "flurries", "sleet").any { t.contains(it) } ->
+            WeatherAmbientKind.Snow
+        listOf("rain", "drizzle", "storm", "shower", "pouring").any { t.contains(it) } ->
+            WeatherAmbientKind.Rain
+        else -> null
+    }
+}
+
+/** Moods that count as a completed assistant answer for thumbs feedback. */
+internal fun isAnswerMood(mood: AssistantMood): Boolean = when (mood) {
+    AssistantMood.Speaking,
+    AssistantMood.Happy,
+    AssistantMood.Sad,
+    AssistantMood.Excited,
+    -> true
+    else -> false
 }
 
 /**

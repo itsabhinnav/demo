@@ -101,4 +101,27 @@ class AssistantFeaturesTest {
             ),
         )
     }
+
+    @Test
+    fun fatigueKeywordsMapToDrowsyOrTired() {
+        assertEquals(AssistantMood.Drowsy, fatigueMoodForText("I'm getting drowsy"))
+        assertEquals(AssistantMood.Tired, fatigueMoodForText("I'm feeling a bit tired"))
+        assertEquals(null, fatigueMoodForText("Find a charger"))
+    }
+
+    @Test
+    fun weatherKeywordsMapToAmbientKind() {
+        assertEquals(WeatherAmbientKind.Snow, weatherAmbientForText("Will it snow tonight?"))
+        assertEquals(WeatherAmbientKind.Rain, weatherAmbientForText("And will it rain tomorrow?"))
+        assertEquals(null, weatherAmbientForText("Find a coffee stop"))
+    }
+
+    @Test
+    fun answerMoodsGateThumbsFeedback() {
+        assertTrue(isAnswerMood(AssistantMood.Speaking))
+        assertTrue(isAnswerMood(AssistantMood.Happy))
+        assertFalse(isAnswerMood(AssistantMood.Thinking))
+        assertFalse(isAnswerMood(AssistantMood.Reading))
+        assertFalse(isAnswerMood(AssistantMood.Listening))
+    }
 }

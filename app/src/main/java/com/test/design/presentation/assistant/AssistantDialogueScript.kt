@@ -3,15 +3,20 @@ package com.test.design.presentation.assistant
 /**
  * One beat in the simulated user ↔ assistant conversation.
  * [mood] drives the side persona while the line is active.
+ * [weatherAmbient] optionally paints rain/snow behind the immersive face.
  */
 data class DialogueBeat(
     val speaker: DialogueSpeaker,
     val text: String,
     val mood: AssistantMood,
     val holdMs: Long = 2200L,
+    val weatherAmbient: WeatherAmbientKind? = null,
 )
 
 enum class DialogueSpeaker { User, Assistant, System }
+
+/** Soft stage weather for weather-related beats. */
+enum class WeatherAmbientKind { Rain, Snow }
 
 /**
  * Demo script that walks through every personality state while chatting.
@@ -103,7 +108,7 @@ val DemoDialogueScript: List<DialogueBeat> = listOf(
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
-        text = "I've been up a while — I'll keep watch while you drive.",
+        text = "I'll keep watch while you drive. Rest when you can.",
         mood = AssistantMood.Tired,
         holdMs = 2600,
     ),

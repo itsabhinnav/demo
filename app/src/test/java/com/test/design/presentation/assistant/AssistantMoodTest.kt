@@ -15,7 +15,7 @@ class AssistantMoodTest {
                     "Idle",
                     "Listening",
                     "Speaking",
-                    "Working",
+                    "Thinking",
                     "Happy",
                     "Sad",
                     "Excited",
@@ -74,18 +74,22 @@ class AssistantMoodTest {
             assertTrue(pose.mouthVisible in 0f..1f)
             assertTrue(pose.blinkSpeed in 0.2f..1.6f)
         }
-        // Subtle single persona — moods only nudge mouth / openness slightly
+        // Same capsule eyes — emotions morph mouth / openness
         assertTrue(
             AssistantMood.Happy.toImmersiveEyePose().mouthCurve >
                 AssistantMood.Sad.toImmersiveEyePose().mouthCurve,
         )
         assertTrue(
-            AssistantMood.Listening.toImmersiveEyePose().eyeOpen >=
+            AssistantMood.Excited.toImmersiveEyePose().eyeOpen >
                 AssistantMood.Drowsy.toImmersiveEyePose().eyeOpen,
+        )
+        assertTrue(
+            AssistantMood.Listening.toImmersiveEyePose().eyeOpen >
+                AssistantMood.Tired.toImmersiveEyePose().eyeOpen,
         )
         assertTrue(AssistantMood.Speaking.toImmersiveEyePose().mouthVisible > 0.5f)
         assertTrue(
-            AssistantMood.Bored.toImmersiveEyePose().eyeOpen <=
+            AssistantMood.Bored.toImmersiveEyePose().eyeOpen <
                 AssistantMood.Idle.toImmersiveEyePose().eyeOpen,
         )
     }
@@ -146,13 +150,38 @@ class AssistantMoodTest {
     @Test
     fun immersiveScriptShowsOneLinePhasesAndEmotions() {
         val moods = ImmersiveDialogueScript.map { it.mood }.toSet()
-        assertTrue(moods.contains(AssistantMood.Listening))
-        assertTrue(moods.contains(AssistantMood.Thinking))
-        assertTrue(moods.contains(AssistantMood.Speaking))
-        // Single-persona script — no emotion carousel
-        assertTrue(moods.none { it == AssistantMood.Excited || it == AssistantMood.Bored })
+        assertTrue(
+            moods.containsAll(
+                listOf(
+                    AssistantMood.Listening,
+                    AssistantMood.Thinking,
+                    AssistantMood.Reading,
+                    AssistantMood.Searching,
+                    AssistantMood.Speaking,
+                    AssistantMood.Happy,
+                    AssistantMood.Sad,
+                    AssistantMood.Excited,
+                    AssistantMood.Bored,
+                    AssistantMood.Drowsy,
+                    AssistantMood.Tired,
+                ),
+            ),
+        )
         assertTrue(ImmersiveDialogueScript.all { it.text.isNotBlank() })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.User })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })
+        assertTrue(ImmersiveDialogueScript.any { it.weatherAmbient == WeatherAmbientKind.Snow })
+        assertTrue(ImmersiveDialogueScript.any { it.weatherAmbient == WeatherAmbientKind.Rain })
+    }
+
+    @Test
+    fun microStatusUsesGlanceableVerbs() {
+        assertEquals("Thinking…", AssistantMood.Thinking.microStatus())
+        assertEquals("Reading…", AssistantMood.Reading.microStatus())
+        assertEquals("Listening…", AssistantMood.Listening.microStatus())
+        assertEquals("Taking it easy…", AssistantMood.Drowsy.microStatus())
+        assertEquals("Taking it easy…", AssistantMood.Tired.microStatus())
+        assertEquals(null, AssistantMood.Speaking.microStatus())
+        assertEquals(null, AssistantMood.Happy.microStatus())
     }
 }

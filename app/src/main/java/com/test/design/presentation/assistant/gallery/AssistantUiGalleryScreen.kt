@@ -158,7 +158,7 @@ private fun moodPrompt(mood: AssistantMood): String = when (mood) {
     AssistantMood.Idle -> "Ready when you are"
     AssistantMood.Listening -> "Listening…"
     AssistantMood.Speaking -> "Here's what I found"
-    AssistantMood.Thinking -> "Working on it"
+    AssistantMood.Thinking -> "Thinking…"
     AssistantMood.Happy -> "Glad I could help"
     AssistantMood.Sad -> "Sorry about that"
     AssistantMood.Excited -> "Great news!"

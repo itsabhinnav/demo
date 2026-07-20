@@ -31,7 +31,7 @@ enum class AssistantMood(
         glowIntensity = 0.7f,
     ),
     Thinking(
-        label = "Working",
+        label = "Thinking",
         caption = "Working it out",
         glowColor = Color(0xFFB39DDB),
         glowIntensity = 0.65f,
@@ -84,4 +84,17 @@ enum class AssistantMood(
         glowColor = Color(0xFF26C6DA),
         glowIntensity = 0.8f,
     ),
+}
+
+/**
+ * Glanceable verb under the transcript speaker label.
+ * Null = no micro status (Speaking / Happy / etc. stay quiet).
+ */
+fun AssistantMood.microStatus(): String? = when (this) {
+    AssistantMood.Listening -> "Listening…"
+    AssistantMood.Thinking -> "Thinking…"
+    AssistantMood.Reading -> "Reading…"
+    AssistantMood.Searching -> "Searching…"
+    AssistantMood.Drowsy, AssistantMood.Tired -> "Taking it easy…"
+    else -> null
 }

@@ -59,78 +59,139 @@ internal data class ImmersiveEyePose(
 )
 
 /**
- * One calm persona — moods only nudge gaze / mouth slightly so the face reads as
- * a single presence instead of flipping between cartoon expressions.
+ * Shared capsule eye/mouth persona. Moods morph geometry (openness, squint, gaze, mouth)
+ * — eyeStyle stays in the soft-capsule range so glyphs never swap to arcs/dashes.
  */
 private val PersonaBase = ImmersiveEyePose(
-    eyeOpen = 1f,
-    eyeWidth = 0.92f,
-    eyeHeight = 1.02f,
-    eyeGap = 1.42f,
-    eyeStyle = 0.08f,
-    faceGlow = 0.42f,
-    mouthCurve = 0.18f,
+    eyeOpen = 1.12f,
+    eyeWidth = 1.12f,
+    eyeHeight = 1.22f,
+    eyeGap = 1.48f,
+    eyeStyle = 0.05f,
+    faceGlow = 0.55f,
+    mouthCurve = 0.2f,
     mouthOpen = 0f,
     mouthVisible = 0.35f,
-    blush = 0.06f,
+    blush = 0.08f,
     tilt = 0f,
-    blinkSpeed = 0.85f,
+    blinkSpeed = 0.9f,
 )
 
 internal fun AssistantMood.toImmersiveEyePose(): ImmersiveEyePose = when (this) {
     AssistantMood.Idle -> PersonaBase
     AssistantMood.Listening -> PersonaBase.copy(
-        eyeOpen = 1.06f,
-        faceGlow = 0.5f,
-        mouthVisible = 0.2f,
-        lookY = -0.03f,
+        eyeOpen = 1.28f,
+        eyeWidth = 1.15f,
+        eyeHeight = 1.32f,
+        faceGlow = 0.72f,
+        mouthVisible = 0.12f,
+        lookY = -0.05f,
+        blush = 0.12f,
     )
     AssistantMood.Speaking -> PersonaBase.copy(
-        mouthCurve = 0.28f,
-        mouthOpen = 0.28f,
-        mouthVisible = 0.85f,
-        faceGlow = 0.48f,
+        eyeOpen = 1.18f,
+        mouthCurve = 0.42f,
+        mouthOpen = 0.45f,
+        mouthVisible = 1f,
+        faceGlow = 0.7f,
+        tilt = 1f,
     )
-    AssistantMood.Thinking,
-    AssistantMood.Reading,
-    AssistantMood.Searching,
-    -> PersonaBase.copy(
-        lookX = 0.12f,
-        lookY = -0.04f,
-        mouthVisible = 0.15f,
+    AssistantMood.Thinking -> PersonaBase.copy(
+        eyeOpen = 1.05f,
+        eyeHeight = 1.1f,
+        lookX = 0.22f,
+        lookY = -0.08f,
+        mouthVisible = 0.1f,
+        tilt = 4f,
+        faceGlow = 0.58f,
+    )
+    AssistantMood.Reading -> PersonaBase.copy(
+        eyeOpen = 1.1f,
+        lookX = 0.28f,
+        mouthVisible = 0.08f,
+        faceGlow = 0.55f,
+    )
+    AssistantMood.Searching -> PersonaBase.copy(
+        eyeOpen = 1.25f,
+        eyeHeight = 1.28f,
+        mouthVisible = 0.1f,
+        faceGlow = 0.68f,
         tilt = 1.5f,
+        blinkSpeed = 1.15f,
     )
-    AssistantMood.Happy,
-    AssistantMood.Excited,
-    -> PersonaBase.copy(
-        mouthCurve = 0.38f,
-        mouthVisible = 0.55f,
-        blush = 0.14f,
-        faceGlow = 0.5f,
+    AssistantMood.Happy -> PersonaBase.copy(
+        eyeOpen = 1.05f,
+        eyeWidth = 1.28f,
+        eyeHeight = 0.95f, // soft squint — same capsules
+        mouthCurve = 0.85f,
+        mouthOpen = 0.08f,
+        mouthVisible = 0.95f,
+        blush = 0.45f,
+        faceGlow = 0.78f,
+        tilt = -2f,
     )
-    AssistantMood.Sad,
-    AssistantMood.Tired,
-    -> PersonaBase.copy(
-        lookY = 0.05f,
-        mouthCurve = 0.05f,
-        mouthVisible = 0.4f,
-        faceGlow = 0.36f,
+    AssistantMood.Excited -> PersonaBase.copy(
+        eyeOpen = 1.35f,
+        eyeWidth = 1.22f,
+        eyeHeight = 1.35f,
+        mouthCurve = 0.92f,
+        mouthOpen = 0.35f,
+        mouthVisible = 1f,
+        blush = 0.35f,
+        faceGlow = 0.85f,
+        tilt = -3f,
+        blinkSpeed = 1.25f,
+    )
+    AssistantMood.Sad -> PersonaBase.copy(
+        eyeOpen = 0.85f,
+        eyeWidth = 1.15f,
+        eyeHeight = 0.88f,
+        lookY = 0.14f,
+        mouthCurve = -0.7f,
+        mouthOpen = 0.04f,
+        mouthVisible = 0.75f,
+        faceGlow = 0.4f,
+        tilt = 3.5f,
         blinkSpeed = 0.7f,
     )
-    AssistantMood.Bored,
-    AssistantMood.Drowsy,
-    -> PersonaBase.copy(
-        eyeOpen = 0.92f,
-        lookX = 0.1f,
-        mouthVisible = 0.25f,
-        faceGlow = 0.34f,
-        blinkSpeed = 0.65f,
+    AssistantMood.Bored -> PersonaBase.copy(
+        eyeOpen = 0.72f,
+        eyeWidth = 1.18f,
+        eyeHeight = 0.72f,
+        lookX = 0.32f,
+        lookY = 0.06f,
+        mouthCurve = -0.12f,
+        mouthVisible = 0.4f,
+        faceGlow = 0.38f,
+        tilt = 2.5f,
+        blinkSpeed = 0.55f,
+    )
+    AssistantMood.Drowsy -> PersonaBase.copy(
+        eyeOpen = 0.55f,
+        eyeWidth = 1.2f,
+        eyeHeight = 0.58f,
+        lookY = 0.1f,
+        mouthVisible = 0.08f,
+        faceGlow = 0.32f,
+        tilt = 2f,
+        blinkSpeed = 0.4f,
+    )
+    AssistantMood.Tired -> PersonaBase.copy(
+        eyeOpen = 0.62f,
+        eyeWidth = 1.16f,
+        eyeHeight = 0.65f,
+        lookY = 0.12f,
+        mouthCurve = -0.25f,
+        mouthVisible = 0.35f,
+        faceGlow = 0.3f,
+        tilt = 2.5f,
+        blinkSpeed = 0.38f,
     )
 }
 
 private val PoseSpring = spring<Float>(
-    dampingRatio = 0.92f,
-    stiffness = Spring.StiffnessVeryLow,
+    dampingRatio = 0.86f,
+    stiffness = Spring.StiffnessLow,
 )
 
 /**
@@ -353,11 +414,12 @@ fun ImmersiveEyesFace(
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
             rotate(liveTilt, pivot = Offset(cx, cy)) {
                 val open = (eyeOpen.value * blink.value).coerceIn(0.05f, 1.4f)
-                val gap = faceR * 0.34f * eyeGap.value.coerceIn(1f, 1.8f)
+                val gap = faceR * 0.36f * eyeGap.value.coerceIn(1f, 1.8f)
                 val eyeY = cy - faceR * 0.06f + lookY.value * faceR * 0.1f
                 val gaze = lookX.value * faceR * 0.06f
-                val barW = faceR * 0.075f * eyeWidth.value.coerceIn(0.8f, 1.25f)
-                val barH = faceR * 0.2f * eyeHeight.value * open
+                // Larger capsules — same glyph morphs for every mood.
+                val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
+                val barH = faceR * 0.3f * eyeHeight.value * open
                 val left = Offset(cx - gap + gaze, eyeY)
                 val right = Offset(cx + gap + gaze, eyeY)
 
@@ -376,8 +438,10 @@ fun ImmersiveEyesFace(
                     )
                 }
 
-                drawNomiGlyphEye(left, barW, barH, eyeStyle.value, glyph)
-                drawNomiGlyphEye(right, barW, barH, eyeStyle.value, glyph)
+                // Keep capsule eyes for all moods (clamp out of arc/dash branches).
+                val capsuleStyle = eyeStyle.value.coerceIn(-0.2f, 0.25f)
+                drawNomiGlyphEye(left, barW, barH, capsuleStyle, glyph)
+                drawNomiGlyphEye(right, barW, barH, capsuleStyle, glyph)
 
                 val speaking = mouthAmplitude != null ||
                     mood == AssistantMood.Speaking ||
