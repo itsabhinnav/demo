@@ -3,10 +3,12 @@ package com.test.design.presentation.assistant
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -33,12 +35,17 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * Translucent system overlay host for the standalone immersive assistant.
  *
  * AAOS multi-panel parks translucent *activities* under app_panel as invisible;
  * TYPE_APPLICATION_OVERLAY draws over Settings / any app with the same look.
+ *
+ * While listening ([AssistantPresentation.Compact]), touches outside the corner
+ * bubble pass through to underlying apps. Fullscreen hit testing resumes when
+ * the session morphs to [AssistantPresentation.Immersive].
  */
 class ImmersiveAssistantOverlayService : LifecycleService(),
     SavedStateRegistryOwner,
@@ -53,12 +60,15 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
         get() = store
 
     private lateinit var windowManager: WindowManager
-    private var overlayView: ComposeView? = null
+    private var overlayView: PassThroughFrameLayout? = null
 
     private val uiJob = SupervisorJob()
     private val uiScope = CoroutineScope(AndroidUiDispatcher.Main + uiJob)
 
     private var summonEpoch = 0
+    private val bubbleHitRect = Rect()
+    @Volatile
+    private var presentation: AssistantPresentation = AssistantPresentation.Compact
 
     override fun onCreate() {
         super.onCreate()
@@ -135,9 +145,52 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                         onDismiss = { stopSelf() },
                         modifier = Modifier.fillMaxSize(),
                         awaitHotword = false,
+                        onPresentationChanged = { next ->
+                            presentation = next
+                            if (next == AssistantPresentation.Immersive) {
+                                bubbleHitRect.setEmpty()
+                            }
+                            updateBlurBehind(next == AssistantPresentation.Immersive)
+                        },
+                        onBubbleBoundsInRoot = { l, t, r, b ->
+                            if (presentation == AssistantPresentation.Compact) {
+                                bubbleHitRect.set(l, t, r, b)
+                            }
+                        },
                     )
                 }
             }
+        }
+
+        val view = PassThroughFrameLayout(this).also { frame ->
+            frame.hitRectProvider = {
+                when (presentation) {
+                    AssistantPresentation.Compact -> {
+                        if (bubbleHitRect.isEmpty) {
+                            // Until first layout, claim a small bottom-end region.
+                            val w = frame.width.coerceAtLeast(1)
+                            val h = frame.height.coerceAtLeast(1)
+                            val density = resources.displayMetrics.density
+                            val bw = (300 * density).roundToInt()
+                            val bh = (100 * density).roundToInt()
+                            val inset = (20 * density).roundToInt()
+                            Rect(w - bw - inset, h - bh - inset, w - inset, h - inset)
+                        } else {
+                            Rect(bubbleHitRect)
+                        }
+                    }
+                    AssistantPresentation.Immersive -> {
+                        Rect(0, 0, frame.width.coerceAtLeast(1), frame.height.coerceAtLeast(1))
+                    }
+                }
+            }
+            frame.addView(
+                composeView,
+                android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                ),
+            )
         }
 
         val params = WindowManager.LayoutParams(
@@ -150,14 +203,26 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                flags = flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-                blurBehindRadius = 48
-            }
+            // Blur only once immersive — compact listening stays clear.
         }
 
-        overlayView = composeView
-        windowManager.addView(composeView, params)
+        overlayView = view
+        windowManager.addView(view, params)
+    }
+
+    private fun updateBlurBehind(enabled: Boolean) {
+        val view = overlayView ?: return
+        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (enabled) {
+                params.flags = params.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+                params.blurBehindRadius = 48
+            } else {
+                params.flags = params.flags and WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
+                params.blurBehindRadius = 0
+            }
+            runCatching { windowManager.updateViewLayout(view, params) }
+        }
     }
 
     private fun detachOverlay() {
@@ -189,6 +254,25 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                 Intent(context.applicationContext, ImmersiveAssistantOverlayService::class.java)
                     .setAction(ACTION_STOP),
             )
+        }
+    }
+}
+
+/**
+ * Claims touches only inside [hitRectProvider]; returns false elsewhere so the
+ * window manager forwards events to underlying maps / apps.
+ */
+private class PassThroughFrameLayout(context: Context) : android.widget.FrameLayout(context) {
+    var hitRectProvider: (() -> Rect)? = null
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val rect = hitRectProvider?.invoke() ?: return super.dispatchTouchEvent(ev)
+        val x = ev.x.roundToInt()
+        val y = ev.y.roundToInt()
+        return if (rect.contains(x, y)) {
+            super.dispatchTouchEvent(ev)
+        } else {
+            false
         }
     }
 }
