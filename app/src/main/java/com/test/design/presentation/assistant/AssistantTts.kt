@@ -24,8 +24,7 @@ internal fun shouldSpeakBeat(beat: DialogueBeat): Boolean =
     beat.speaker == DialogueSpeaker.Assistant && beat.text.isNotBlank()
 
 /**
- * Speaks [text]: prefers TextToSpeech on STREAM_MUSIC; falls back to on-device synth
- * when no TTS engine is installed (typical bare AOSP AAOS images).
+ * Speaks [text] via TextToSpeech when an engine is available; otherwise silent lip-sync only.
  */
 internal fun assistantUtteranceLipSync(
     context: Context,
@@ -73,8 +72,7 @@ internal fun assistantUtteranceLipSync(
         }
     }
 
-    Log.i(TAG, "No TTS engine — using speech synth fallback")
-    synthesizeAssistantSpeech(text, holdMs).collect { emit(it) }
+    simulatedLipSync(holdMs).collect { emit(it) }
 }
 
 /** Speak without lip-sync (side panel / gallery). */

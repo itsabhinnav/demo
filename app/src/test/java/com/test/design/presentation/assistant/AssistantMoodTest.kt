@@ -30,10 +30,12 @@ class AssistantMoodTest {
     }
 
     @Test
-    fun listeningUsesStrongerGlowThanIdle() {
-        assertTrue(AssistantMood.Listening.glowIntensity > AssistantMood.Idle.glowIntensity)
-        assertTrue(AssistantMood.Searching.glowIntensity > AssistantMood.Sad.glowIntensity)
-        assertTrue(AssistantMood.Excited.glowIntensity > AssistantMood.Tired.glowIntensity)
+    fun eporoListeningRingPulsesStrongerThanIdle() {
+        assertTrue(
+            AssistantMood.Listening.toEporoPose().ringPulse >
+                AssistantMood.Idle.toEporoPose().ringPulse,
+        )
+        assertTrue(AssistantMood.Searching.toEporoPose().eyeOpen >= 1f)
     }
 
     @Test

@@ -499,7 +499,7 @@ fun ImmersiveAssistantOverlay(
                                     .fillMaxSize()
                                     .windowInsetsPadding(WindowInsets.safeDrawing)
                                     .floatingSystemChromePadding()
-                                    .padding(horizontal = 32.dp, vertical = 16.dp),
+                                    .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
                             ) {
                                 // Assistant chrome occupies ~1/4 of available height at the bottom.
                                 val bandHeight = maxHeight * 0.25f
@@ -540,6 +540,7 @@ fun ImmersiveAssistantOverlay(
                                         highContrast = highContrast,
                                         gesture = gesture,
                                     )
+                                    // Transcript under the face, flush to the bottom of the activity.
                                     ImmersiveTranscript(
                                         text = transcript,
                                         speaker = speaker,
@@ -548,7 +549,7 @@ fun ImmersiveAssistantOverlay(
                                             .graphicsLayer {
                                                 alpha = transcriptAlpha.value.coerceIn(0f, 1f)
                                             }
-                                            .padding(top = 28.dp, bottom = 12.dp),
+                                            .padding(top = 8.dp),
                                     )
                                 }
                             }
