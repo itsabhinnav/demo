@@ -336,6 +336,25 @@ fun ImmersiveEyesFace(
         ),
         label = "breath",
     )
+    // Gentle idle float — slow vertical bob + tiny lateral sway.
+    val idleBob by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "idle_bob",
+    )
+    val idleSway by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "idle_sway",
+    )
 
     LaunchedEffect(mood) {
         val speed = target.blinkSpeed.coerceIn(0.25f, 1.6f)
@@ -406,12 +425,13 @@ fun ImmersiveEyesFace(
         val faceR = side * 0.36f * breath
         val glyph = eyeFillForContrast(highContrast)
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
-        val bob = sin(life * 0.45f).toFloat() * faceR * 0.025f
+        val bobY = idleBob * faceR * 0.058f
+        val swayX = idleSway * faceR * 0.02f
 
         // Very light parallax halo — drifts opposite bob/gaze for a soft depth cue.
-        val parallaxX = -lookX.value * faceR * 0.045f +
+        val parallaxX = -lookX.value * faceR * 0.045f - swayX * 0.55f +
             sin(life * 0.22f).toFloat() * faceR * 0.016f
-        val parallaxY = -bob * 0.65f - lookY.value * faceR * 0.035f +
+        val parallaxY = -bobY * 0.65f - lookY.value * faceR * 0.035f +
             cos(life * 0.19f).toFloat() * faceR * 0.012f
         val haloA = auraAlphaForContrast(highContrast, 0.11f) * glow
         val haloR = faceR * (2.05f + 0.06f * sin(life * 0.5f).toFloat())
@@ -430,7 +450,7 @@ fun ImmersiveEyesFace(
             center = Offset(cx + parallaxX, cy + parallaxY),
         )
 
-        translate(top = bob) {
+        translate(left = swayX, top = bobY) {
             // Soft diffuse aura so glyphs blend into the blurred stage
             val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
             drawCircle(
