@@ -266,17 +266,13 @@ private fun VoicePlateUi(mood: AssistantMood, prompt: String, modifier: Modifier
 
 @Composable
 private fun FaceOnlyUi(mood: AssistantMood, modifier: Modifier) {
+    // No outer glass disc — just the floating persona with a hairline silver rim.
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .clip(CircleShape)
-                .background(AssistantUiChrome.Glass),
-            contentAlignment = Alignment.Center,
-        ) {
-            AssistantPresence(mood = mood, modifier = Modifier.fillMaxSize())
-            AssistantFace(mood = mood, modifier = Modifier.size(148.dp))
-        }
+        AssistantFace(
+            mood = mood,
+            modifier = Modifier.size(168.dp),
+            faceFillRatio = 0.97f,
+        )
     }
 }
 
