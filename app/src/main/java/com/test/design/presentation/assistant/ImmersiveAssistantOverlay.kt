@@ -144,9 +144,8 @@ fun ImmersiveAssistantOverlay(
     LaunchedEffect(presentation, visible) {
         if (visible) {
             onPresentationChanged(presentation)
-        } else {
-            onPresentationChanged(AssistantPresentation.Compact)
         }
+        // Compact (clears host blur) only after exit animation — see dismiss path below.
     }
 
     ImmersiveHotwordBridge(onSummon = { summon() })
@@ -328,7 +327,7 @@ fun ImmersiveAssistantOverlay(
         }
     }
 
-    val overlayAlpha = remember { Animatable(0f) }
+    val backdropAlpha = remember { Animatable(0f) }
     val faceRise = remember { Animatable(1f) } // 1 = below screen, 0 = settled
     val faceScale = remember { Animatable(0.88f) }
     val faceAlpha = remember { Animatable(0f) }
@@ -337,65 +336,64 @@ fun ImmersiveAssistantOverlay(
     var hasPresented by remember { mutableStateOf(false) }
     var immersiveEnteredSession by remember { mutableIntStateOf(-1) }
 
+    // Enter: blur first → face slides up. Exit: face slides down → blur hides.
     LaunchedEffect(visible, session) {
         if (visible) {
             hasPresented = true
             wake.play()
-            overlayAlpha.snapTo(0f)
-            overlayAlpha.animateTo(1f, tween(320, easing = FastOutSlowInEasing))
+            if (immersiveEnteredSession != session) {
+                immersiveEnteredSession = session
+                faceRise.snapTo(1f)
+                faceScale.snapTo(0.86f)
+                faceAlpha.snapTo(0f)
+                transcriptAlpha.snapTo(0f)
+                backdropAlpha.snapTo(0f)
+
+                backdropAlpha.animateTo(1f, tween(360, easing = FastOutSlowInEasing))
+                delay(60)
+                launch {
+                    faceAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+                }
+                launch {
+                    faceScale.animateTo(
+                        1f,
+                        spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
+                    )
+                }
+                faceRise.animateTo(
+                    0f,
+                    spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
+                )
+                delay(80)
+                transcriptAlpha.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
+            }
         } else if (hasPresented) {
             wake.playDismiss()
+            transcriptAlpha.animateTo(0f, tween(160))
             launch {
-                transcriptAlpha.animateTo(0f, tween(180))
+                faceAlpha.animateTo(0f, tween(320, easing = FastOutSlowInEasing))
             }
-            launch {
-                faceAlpha.animateTo(0f, tween(280, easing = FastOutSlowInEasing))
-            }
-            launch {
-                faceRise.animateTo(
-                    0.35f,
-                    tween(320, easing = FastOutSlowInEasing),
-                )
-            }
-            overlayAlpha.animateTo(0f, tween(360, easing = FastOutSlowInEasing))
+            faceRise.animateTo(
+                1f,
+                tween(380, easing = FastOutSlowInEasing),
+            )
+            delay(40)
+            backdropAlpha.animateTo(0f, tween(320, easing = FastOutSlowInEasing))
             faceRise.snapTo(1f)
             faceScale.snapTo(0.88f)
             faceAlpha.snapTo(0f)
             transcriptAlpha.snapTo(0f)
             immersiveEnteredSession = -1
-            // Collapse host (clears Modifier.blur) after tap dismiss or session end.
+            onPresentationChanged(AssistantPresentation.Compact)
+            // Collapse host (clears Modifier.blur) after face + blur exit.
             onDismiss()
         }
     }
 
-    // Immersive face entrance — once per summon session.
-    LaunchedEffect(visible, session, presentation) {
-        if (!visible || presentation != AssistantPresentation.Immersive) return@LaunchedEffect
-        if (immersiveEnteredSession == session) return@LaunchedEffect
-        immersiveEnteredSession = session
-        faceRise.snapTo(1f)
-        faceScale.snapTo(0.86f)
-        faceAlpha.snapTo(0f)
-        transcriptAlpha.snapTo(0f)
-        launch {
-            faceAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
-        }
-        launch {
-            faceScale.animateTo(
-                1f,
-                spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
-            )
-        }
-        faceRise.animateTo(
-            0f,
-            spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
-        )
-        delay(120)
-        transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
-    }
-
-    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
-    val showOverlay = visible || overlayAlpha.value > 0.02f
+    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.65f)
+    val showOverlay = visible ||
+        backdropAlpha.value > 0.02f ||
+        faceAlpha.value > 0.02f
 
     Box(
         modifier = modifier
@@ -421,78 +419,78 @@ fun ImmersiveAssistantOverlay(
             ),
     ) {
         if (showOverlay) {
+            // Blur / dark stage — independent of face chrome.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
+                    .graphicsLayer { alpha = backdropAlpha.value.coerceIn(0f, 1f) },
             ) {
-                // Transparent top → very dark bottom; subtle bluish glow along bottom edge.
-                Box(Modifier.fillMaxSize()) {
-                    ImmersiveBackdrop()
-                    ImmersiveBorderGlow(glowColor = brandGlow)
+                ImmersiveBackdrop()
+                ImmersiveBorderGlow(glowColor = brandGlow)
+            }
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .floatingSystemChromePadding()
+                    .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
+            ) {
+                // Assistant chrome occupies ~1/4 of available height at the bottom.
+                val bandHeight = maxHeight * 0.25f
+                val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
+                val density = LocalDensity.current
+                val risePx = with(density) {
+                    (bandHeight * 0.95f).toPx()
                 }
 
-                BoxWithConstraints(
+                Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .floatingSystemChromePadding()
-                        .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Bottom,
                 ) {
-                    // Assistant chrome occupies ~1/4 of available height at the bottom.
-                    val bandHeight = maxHeight * 0.25f
-                    val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
-                    val density = LocalDensity.current
-                    val risePx = with(density) {
-                        (faceSize * 0.35f).toPx()
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .height(bandHeight),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom,
-                    ) {
-                        if (faceKind != AssistantFaceKind.None) {
-                            ConfigurableAssistantFace(
-                                mood = mood,
-                                kind = faceKind,
-                                modifier = Modifier
-                                    .width(faceSize)
-                                    .offset {
-                                        IntOffset(
-                                            0,
-                                            (faceRise.value * risePx).roundToInt(),
-                                        )
-                                    }
-                                    .graphicsLayer {
-                                        val s = faceScale.value
-                                        scaleX = s
-                                        scaleY = s
-                                        alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                    },
-                                gazeX = gazeX,
-                                gazeY = gazeY,
-                                mouthAmplitude = mouthAmplitude,
-                                brandGlow = brandGlow,
-                                highContrast = highContrast,
-                                gesture = gesture,
-                            )
-                        }
-                        // Transcript under the face, flush to the bottom of the activity.
-                        ImmersiveTranscript(
-                            text = transcript,
-                            speaker = speaker,
+                    if (faceKind != AssistantFaceKind.None) {
+                        ConfigurableAssistantFace(
+                            mood = mood,
+                            kind = faceKind,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .graphicsLayer {
-                                    alpha = transcriptAlpha.value.coerceIn(0f, 1f)
+                                .width(faceSize)
+                                // Keep full face height — don't let the band squeeze/clip the chin.
+                                .height(faceSize / 1.15f)
+                                .offset {
+                                    IntOffset(
+                                        0,
+                                        (faceRise.value * risePx).roundToInt(),
+                                    )
                                 }
-                                .padding(top = 8.dp),
+                                .graphicsLayer {
+                                    val s = faceScale.value
+                                    scaleX = s
+                                    scaleY = s
+                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                },
+                            gazeX = gazeX,
+                            gazeY = gazeY,
+                            mouthAmplitude = mouthAmplitude,
+                            brandGlow = brandGlow,
+                            highContrast = highContrast,
+                            gesture = gesture,
                         )
                     }
+                    // Transcript under the face, flush to the bottom of the activity.
+                    ImmersiveTranscript(
+                        text = transcript,
+                        speaker = speaker,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = transcriptAlpha.value.coerceIn(0f, 1f)
+                            }
+                            .padding(top = 8.dp),
+                    )
                 }
             }
         }
@@ -562,8 +560,7 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
 }
 
 /**
- * Subtle bluish bottom-border glow as a true 2D gradient:
- * horizontal soft center band (30–40–30), soft fade upward from the edge.
+ * Bluish bottom-border glow — center band (30–40–30), soft fade upward from the edge.
  */
 @Composable
 fun ImmersiveBorderGlow(
@@ -579,20 +576,20 @@ fun ImmersiveBorderGlow(
         val w = size.width
         val h = size.height
         val blue = glowColor
-        val bloomH = 64.dp.toPx()
+        val bloomH = 80.dp.toPx()
         val top = h - bloomH
 
-        // Horizontal wash: transparent gutters → center 40% glow.
+        // Horizontal wash: transparent gutters → soft center 40% glow.
         drawRect(
             brush = Brush.horizontalGradient(
                 colorStops = arrayOf(
                     0.00f to Color.Transparent,
                     0.22f to Color.Transparent,
-                    0.30f to blue.copy(alpha = 0.10f),
-                    0.36f to blue.copy(alpha = 0.28f),
-                    0.50f to blue.copy(alpha = 0.40f),
-                    0.64f to blue.copy(alpha = 0.28f),
-                    0.70f to blue.copy(alpha = 0.10f),
+                    0.30f to blue.copy(alpha = 0.14f),
+                    0.36f to blue.copy(alpha = 0.36f),
+                    0.50f to blue.copy(alpha = 0.52f),
+                    0.64f to blue.copy(alpha = 0.36f),
+                    0.70f to blue.copy(alpha = 0.14f),
                     0.78f to Color.Transparent,
                     1.00f to Color.Transparent,
                 ),
@@ -606,8 +603,8 @@ fun ImmersiveBorderGlow(
             brush = Brush.verticalGradient(
                 colorStops = arrayOf(
                     0.00f to Color.Transparent,
-                    0.40f to Color.White.copy(alpha = 0.18f),
-                    0.72f to Color.White.copy(alpha = 0.55f),
+                    0.35f to Color.White.copy(alpha = 0.15f),
+                    0.65f to Color.White.copy(alpha = 0.50f),
                     1.00f to Color.White,
                 ),
                 startY = top,

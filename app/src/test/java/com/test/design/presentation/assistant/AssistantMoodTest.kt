@@ -30,6 +30,27 @@ class AssistantMoodTest {
     }
 
     @Test
+    fun eporoIslandMorphsByMood() {
+        assertTrue(
+            AssistantMood.Speaking.toEporoIslandPose().widthFrac >
+                AssistantMood.Idle.toEporoIslandPose().widthFrac,
+        )
+        assertTrue(
+            AssistantMood.Drowsy.toEporoIslandPose().heightFrac <
+                AssistantMood.Listening.toEporoIslandPose().heightFrac,
+        )
+    }
+
+    @Test
+    fun eporoEyesMorphWidthHeightLikeImmersive() {
+        val happy = AssistantMood.Happy.toEporoEyePose()
+        val drowsy = AssistantMood.Drowsy.toEporoEyePose()
+        assertTrue(happy.eyeWidth > drowsy.eyeWidth || happy.eyeHeight > drowsy.eyeHeight)
+        assertTrue(drowsy.eyeHeight < happy.eyeHeight)
+        assertTrue(AssistantMood.Excited.toEporoEyePose().eyeOpen >= 1f)
+    }
+
+    @Test
     fun eporoListeningRingPulsesStrongerThanIdle() {
         assertTrue(
             AssistantMood.Listening.toEporoPose().ringPulse >

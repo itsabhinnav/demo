@@ -39,6 +39,10 @@ fun ConfigurableAssistantFace(
         AssistantFaceKind.Eporo -> EporoAssistantFace(
             mood = mood,
             modifier = modifier,
+            gazeX = gazeX,
+            gazeY = gazeY,
+            mouthAmplitude = mouthAmplitude,
+            gesture = gesture,
         )
         AssistantFaceKind.Droid -> DroidAssistantFace(
             mood = mood,

@@ -2,14 +2,33 @@
 # Usage (from repo root):
 #   .\build.ps1
 #   . .\build.ps1; build          # define `build` in the current session
+#   .\build.ps1 -RefreshDeps      # force dependency re-resolve (slow)
+#   .\build.ps1 -AllModules       # also build RRO modules
 
 function build {
     param(
         [string]$Activity = "com.test.design/.MainActivity",
-        [switch]$SkipLaunch
+        [switch]$SkipLaunch,
+        [switch]$RefreshDeps,
+        [switch]$AllModules
     )
 
-    .\gradlew.bat assembleDebug --refresh-dependencies
+    # Default: app only + daemon reuse. Avoid --refresh-dependencies unless asked.
+    $gradleArgs = [System.Collections.Generic.List[string]]::new()
+    if ($AllModules) {
+        $gradleArgs.Add("assembleDebug")
+    } else {
+        $gradleArgs.Add(":app:assembleDebug")
+    }
+    $gradleArgs.Add("--parallel")
+    $gradleArgs.Add("--build-cache")
+    $gradleArgs.Add("--configuration-cache")
+    if ($RefreshDeps) {
+        $gradleArgs.Add("--refresh-dependencies")
+    }
+
+    Write-Host "gradlew $($gradleArgs -join ' ')"
+    & .\gradlew.bat @gradleArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Build failed (exit $LASTEXITCODE) - skip install"
         return
