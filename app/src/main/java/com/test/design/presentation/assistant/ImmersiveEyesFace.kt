@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,7 +28,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -39,8 +37,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
+/** Matte black NOMI orb core. */
+private val NomiOrbCore = Color(0xFF050508)
+
 /**
- * NIO NOMI–style glyphs: floating white eyes/mouth over a soft expressive shell.
+ * NIO NOMI–style glyphs: white eyes/mouth on a matte black circular face.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
@@ -198,7 +199,7 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Floating Nomi glyphs with a matte black NOMI face shell under the eyes/mouth.
+ * Floating Nomi glyphs on a matte black circular face (NOMI orb).
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
@@ -207,7 +208,6 @@ private val PoseSpring = spring<Float>(
  * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 fun ImmersiveEyesFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
@@ -219,16 +219,6 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
-    // Fixed SemiCircle shell — no mood morph yet.
-    val shellMorph = remember {
-        ExpressiveShellMorphState(
-            morph = Morph(
-                start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
-                end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
-            ),
-            progress = 1f,
-        )
-    }
     val eyeOpen = remember { Animatable(target.eyeOpen) }
     val eyeWidth = remember { Animatable(target.eyeWidth) }
     val eyeHeight = remember { Animatable(target.eyeHeight) }
@@ -439,17 +429,17 @@ fun ImmersiveEyesFace(
         val swayX = idleSway * faceR * 0.02f
         val pulse = activityPulse.coerceIn(0f, 1f)
 
-        // Soft pulsing halo behind the character — suggests activity without clutter.
+        // Soft pulsing halo behind the character — faint activity cue only.
         val pulseCenter = Offset(cx + swayX * 0.25f, cy + bobY * 0.25f)
-        val pulseA = auraAlphaForContrast(highContrast, 0.15f) * glow *
-            (0.50f + 0.50f * pulse)
-        val pulseR = faceR * (1.90f + 0.28f * pulse)
+        val pulseA = auraAlphaForContrast(highContrast, 0.08f) * glow *
+            (0.45f + 0.55f * pulse)
+        val pulseR = faceR * (2.15f + 0.22f * pulse)
         drawCircle(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
-                    0.0f to brandGlow.copy(alpha = pulseA * 0.26f),
-                    0.38f to brandGlow.copy(alpha = pulseA * 0.12f),
-                    0.72f to brandGlow.copy(alpha = pulseA * 0.04f),
+                    0.0f to brandGlow.copy(alpha = pulseA * 0.16f),
+                    0.45f to brandGlow.copy(alpha = pulseA * 0.06f),
+                    0.80f to brandGlow.copy(alpha = pulseA * 0.02f),
                     1.0f to Color.Transparent,
                 ),
                 center = pulseCenter,
@@ -464,14 +454,13 @@ fun ImmersiveEyesFace(
             sin(life * 0.22f).toFloat() * faceR * 0.016f
         val parallaxY = -bobY * 0.65f - lookY.value * faceR * 0.035f +
             cos(life * 0.19f).toFloat() * faceR * 0.012f
-        val haloA = auraAlphaForContrast(highContrast, 0.11f) * glow
-        val haloR = faceR * (2.05f + 0.06f * sin(life * 0.5f).toFloat())
+        val haloA = auraAlphaForContrast(highContrast, 0.06f) * glow
+        val haloR = faceR * (2.25f + 0.05f * sin(life * 0.5f).toFloat())
         drawCircle(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
-                    0.0f to brandGlow.copy(alpha = haloA * 0.28f),
-                    0.42f to brandGlow.copy(alpha = haloA * 0.10f),
-                    0.78f to brandGlow.copy(alpha = haloA * 0.03f),
+                    0.0f to brandGlow.copy(alpha = haloA * 0.18f),
+                    0.50f to brandGlow.copy(alpha = haloA * 0.05f),
                     1.0f to Color.Transparent,
                 ),
                 center = Offset(cx + parallaxX, cy + parallaxY),
@@ -483,9 +472,9 @@ fun ImmersiveEyesFace(
 
         // Faint floor shadow — flat puddle that barely follows motion so the face feels anchored.
         val floorCx = cx + swayX * 0.3f
-        val floorCy = cy + faceR * 0.78f + bobY * 0.18f
-        val floorW = faceR * 1.48f
-        val floorH = faceR * 0.20f
+        val floorCy = cy + faceR * 0.95f + bobY * 0.18f
+        val floorW = faceR * 1.35f
+        val floorH = faceR * 0.18f
         drawOval(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
@@ -502,82 +491,44 @@ fun ImmersiveEyesFace(
         )
 
         translate(left = swayX, top = bobY) {
-            // Soft diffuse aura so glyphs blend into the stage
-            val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
+            val shellR = faceR * 1.12f
+
+            // Pale thin rim + matte black NOMI orb (matches AssistantFace).
             drawCircle(
-                brush = Brush.radialGradient(
+                brush = Brush.linearGradient(
                     colors = listOf(
-                        brandGlow.copy(alpha = auraA * 0.55f),
-                        brandGlow.copy(alpha = auraA * 0.12f),
-                        Color.Transparent,
+                        Color(0xFFE8ECF2),
+                        Color(0xFF9AA3B2),
+                        Color(0xFF5A6270),
+                        Color(0xFFC5CAD4),
                     ),
-                    center = Offset(cx, cy),
-                    radius = faceR * 1.65f,
+                    start = Offset(cx - shellR, cy - shellR),
+                    end = Offset(cx + shellR, cy + shellR),
                 ),
-                radius = faceR * 1.65f,
+                radius = shellR,
                 center = Offset(cx, cy),
             )
-
-            // Fixed SemiCircle silhouette — tall chin clearance for open / speaking mouths.
-            val shellW = faceR * 1.38f
-            val shellH = faceR * 1.42f
-            val shellBounds = Rect(
-                left = cx - shellW,
-                top = cy - shellH * 0.68f,
-                right = cx + shellW,
-                bottom = cy + shellH * 0.72f,
-            )
-
-            // Soft rim plate — pale NOMI metal edge lifts the black face off the stage.
-            val rimPadX = shellW * 0.055f
-            val rimPadY = shellH * 0.06f
-            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = Rect(
-                    left = shellBounds.left - rimPadX,
-                    top = shellBounds.top - rimPadY,
-                    right = shellBounds.right + rimPadX,
-                    bottom = shellBounds.bottom + rimPadY,
-                ),
-                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.55f),
-            )
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = Rect(
-                    left = shellBounds.left - rimPadX * 0.45f,
-                    top = shellBounds.top - rimPadY * 0.45f,
-                    right = shellBounds.right + rimPadX * 0.45f,
-                    bottom = shellBounds.bottom + rimPadY * 0.45f,
-                ),
-                color = Color(0xFF9AA3B2).copy(alpha = rimAlpha * 0.70f),
-            )
-
-            // Matte black NOMI face plate.
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = shellBounds,
-                color = Color(0xFF050508),
-            )
-            // Soft top-left sheen on the black shell (same cue as NOMI orb).
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.08f),
-                        Color.Transparent,
+                        Color(0xFF141418),
+                        NomiOrbCore,
+                        Color(0xFF000000),
                     ),
-                    center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
-                    radius = faceR * 0.72f,
+                    center = Offset(cx - faceR * 0.15f, cy - faceR * 0.2f),
+                    radius = faceR * 1.25f,
                 ),
-                radius = faceR * 0.72f,
-                center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
+                radius = faceR,
+                center = Offset(cx, cy),
             )
-            // Hairline pale rim stroke.
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = shellBounds,
-                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.65f),
-                style = Stroke(width = 0.028f, cap = StrokeCap.Round),
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.07f), Color.Transparent),
+                    center = Offset(cx - faceR * 0.25f, cy - faceR * 0.4f),
+                    radius = faceR * 0.55f,
+                ),
+                radius = faceR * 0.55f,
+                center = Offset(cx - faceR * 0.25f, cy - faceR * 0.4f),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
