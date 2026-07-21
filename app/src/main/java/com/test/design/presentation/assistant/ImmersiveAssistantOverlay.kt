@@ -43,8 +43,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -528,50 +530,58 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
 }
 
 /**
- * Subtle bluish bottom-border glow.
- * Horizontal intensity is 0 → max → 0 across the width; fades upward from the edge.
+ * Subtle bluish bottom-border glow as a true 2D gradient:
+ * horizontal 0 → max → 0 across the width, soft fade upward from the edge.
  */
 @Composable
 fun ImmersiveBorderGlow(
     modifier: Modifier = Modifier,
     glowColor: Color = Color(0xFF8AB4F8),
 ) {
-    Canvas(modifier = modifier.fillMaxSize()) {
+    Canvas(
+        modifier = modifier
+            .fillMaxSize()
+            // Offscreen layer so DstIn can mask the horizontal wash into a vertical fade.
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
+    ) {
         val w = size.width
         val h = size.height
         val blue = glowColor
-        val borderH = 1.5.dp.toPx()
-        val bloomH = 32.dp.toPx()
+        val bloomH = 64.dp.toPx()
+        val top = h - bloomH
 
-        // Soft bloom above the bottom edge (horizontal 0 → max → 0).
-        drawRect(
-            brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.0f to blue.copy(alpha = 0.22f),
-                    0.40f to blue.copy(alpha = 0.08f),
-                    0.75f to blue.copy(alpha = 0.02f),
-                    1.0f to Color.Transparent,
-                ),
-                center = Offset(w * 0.5f, h),
-                radius = w * 0.52f,
-            ),
-            topLeft = Offset(0f, h - bloomH),
-            size = Size(w, bloomH),
-        )
-
-        // Thin bottom border line — alpha 0 → max → 0 across width.
+        // Horizontal wash: transparent → blue → transparent.
         drawRect(
             brush = Brush.horizontalGradient(
                 colorStops = arrayOf(
-                    0.0f to Color.Transparent,
-                    0.18f to blue.copy(alpha = 0.12f),
-                    0.50f to blue.copy(alpha = 0.42f),
-                    0.82f to blue.copy(alpha = 0.12f),
-                    1.0f to Color.Transparent,
+                    0.00f to Color.Transparent,
+                    0.16f to blue.copy(alpha = 0.10f),
+                    0.34f to blue.copy(alpha = 0.28f),
+                    0.50f to blue.copy(alpha = 0.40f),
+                    0.66f to blue.copy(alpha = 0.28f),
+                    0.84f to blue.copy(alpha = 0.10f),
+                    1.00f to Color.Transparent,
                 ),
             ),
-            topLeft = Offset(0f, h - borderH),
-            size = Size(w, borderH),
+            topLeft = Offset(0f, top),
+            size = Size(w, bloomH),
+        )
+
+        // Vertical mask: invisible at the top of the bloom → strongest on the bottom edge.
+        drawRect(
+            brush = Brush.verticalGradient(
+                colorStops = arrayOf(
+                    0.00f to Color.Transparent,
+                    0.40f to Color.White.copy(alpha = 0.18f),
+                    0.72f to Color.White.copy(alpha = 0.55f),
+                    1.00f to Color.White,
+                ),
+                startY = top,
+                endY = h,
+            ),
+            topLeft = Offset(0f, top),
+            size = Size(w, bloomH),
+            blendMode = BlendMode.DstIn,
         )
     }
 }
