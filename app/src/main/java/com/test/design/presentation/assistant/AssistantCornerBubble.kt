@@ -35,14 +35,14 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.test.design.presentation.ivi.dashboard.components.FloatingChromeBottomSpace
+import com.test.design.presentation.ivi.dashboard.components.rememberedFloatingChromeBottomSpace
 import kotlin.math.roundToInt
 
 /**
  * Listening corner bubble — same [ImmersiveEyesFace] as fullscreen, elevated glass chip.
  * Non-blocking until the session morphs to immersive.
  *
- * Sits above [FloatingChromeBottomSpace] so the floating dock does not cover it.
+ * Sits above the floating dock so it is not covered when system bars are visible.
  */
 @Composable
 fun AssistantCornerBubble(
@@ -53,6 +53,7 @@ fun AssistantCornerBubble(
     onClick: (() -> Unit)? = null,
     onBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
+    val chromeBottom = rememberedFloatingChromeBottomSpace()
     val pulse = rememberInfiniteTransition(label = "corner_bubble_pulse")
     val glowAlpha by pulse.animateFloat(
         initialValue = 0.35f,
@@ -82,7 +83,7 @@ fun AssistantCornerBubble(
                     start = 20.dp,
                     end = 20.dp,
                     top = 20.dp,
-                    bottom = 20.dp + FloatingChromeBottomSpace,
+                    bottom = 20.dp + chromeBottom,
                 )
                 .widthIn(min = 300.dp, max = 360.dp)
                 .heightIn(min = 96.dp)

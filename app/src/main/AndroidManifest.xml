@@ -170,6 +170,19 @@
             android:exported="false"
             android:enabled="true" />
 
+        <!-- ADB show/hide for in-app floating system bars -->
+        <receiver
+            android:name=".presentation.ivi.dashboard.FloatingSystemBarsReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.test.design.action.SHOW_SYSTEM_BARS" />
+                <action android:name="com.test.design.action.HIDE_SYSTEM_BARS" />
+                <action android:name="com.test.design.action.TOGGLE_SYSTEM_BARS" />
+                <action android:name="com.test.design.action.SET_SYSTEM_BARS" />
+            </intent-filter>
+        </receiver>
+
         <!-- Dewd widget_panel host (left rail) -->
         <activity
             android:name=".presentation.ivi.glanceables.DrivingRailActivity"

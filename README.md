@@ -100,6 +100,17 @@ adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
 
 Or: `.cursor/scripts/launch-assistant.sh`
 
+## Floating system bars (adb)
+
+Show/hide the in-app floating top/bottom bars while the demo is running:
+
+```bash
+adb shell am broadcast -a com.test.design.action.TOGGLE_SYSTEM_BARS \
+  -n com.test.design/.presentation.ivi.dashboard.FloatingSystemBarsReceiver
+```
+
+Full cheat sheet: [`docs/system-bars-adb.md`](docs/system-bars-adb.md).
+
 ### Scalable UI action (system intent)
 
 In `scalable_ui_actions.xml`, dispatch the map activity when a panel event fires:
