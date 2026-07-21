@@ -174,36 +174,39 @@ private fun DrawScope.drawHead(
     )
 }
 
-/** Organic Bézier visor — convex brow, blunt chin tab. */
+/** Organic Bézier visor — convex brow, blunt chin tab.
+ * Inset only a thin margin from the Gem shell so the white border stays tight.
+ */
 private fun DrawScope.drawVisor(visorColor: Color) {
     val w = size.width
     val h = size.height
     val p = Path().apply {
-        moveTo(w * 0.18f, h * 0.34f)
+        // ~4–6% inset from Gem shell edges (was ~18% / deeper) for a slim white bezel.
+        moveTo(w * 0.08f, h * 0.28f)
         cubicTo(
-            w * 0.26f, h * 0.23f,
-            w * 0.74f, h * 0.23f,
-            w * 0.82f, h * 0.34f,
+            w * 0.18f, h * 0.14f,
+            w * 0.82f, h * 0.14f,
+            w * 0.92f, h * 0.28f,
         )
         cubicTo(
-            w * 0.90f, h * 0.45f,
-            w * 0.87f, h * 0.63f,
-            w * 0.74f, h * 0.70f,
+            w * 0.97f, h * 0.40f,
+            w * 0.94f, h * 0.66f,
+            w * 0.82f, h * 0.76f,
         )
         cubicTo(
-            w * 0.65f, h * 0.74f,
-            w * 0.60f, h * 0.84f,
-            w * 0.50f, h * 0.84f,
+            w * 0.70f, h * 0.82f,
+            w * 0.62f, h * 0.90f,
+            w * 0.50f, h * 0.90f,
         )
         cubicTo(
-            w * 0.40f, h * 0.84f,
-            w * 0.35f, h * 0.74f,
-            w * 0.26f, h * 0.70f,
+            w * 0.38f, h * 0.90f,
+            w * 0.30f, h * 0.82f,
+            w * 0.18f, h * 0.76f,
         )
         cubicTo(
-            w * 0.13f, h * 0.63f,
-            w * 0.10f, h * 0.45f,
-            w * 0.18f, h * 0.34f,
+            w * 0.06f, h * 0.66f,
+            w * 0.03f, h * 0.40f,
+            w * 0.08f, h * 0.28f,
         )
         close()
     }
@@ -217,14 +220,14 @@ private fun DrawScope.drawVisor(visorColor: Color) {
                 Color.Transparent,
                 Color.Black.copy(alpha = 0.35f),
             ),
-            startY = h * 0.22f,
-            endY = h * 0.84f,
+            startY = h * 0.14f,
+            endY = h * 0.90f,
         ),
     )
     // Elongated top specular.
     drawRoundRect(
         color = Color.White.copy(alpha = 0.55f),
-        topLeft = Offset(w * 0.42f, h * 0.30f),
+        topLeft = Offset(w * 0.42f, h * 0.22f),
         size = Size(w * 0.16f, h * 0.028f),
         cornerRadius = CornerRadius(h * 0.02f, h * 0.02f),
     )
