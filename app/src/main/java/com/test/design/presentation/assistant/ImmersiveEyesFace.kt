@@ -43,7 +43,7 @@ import kotlin.random.Random
 private val NomiFaceBlack = Color(0xFF050508)
 
 /**
- * NIO NOMI–style glyphs: white eyes/mouth on a matte black SemiCircle face.
+ * NIO NOMI–style glyphs: hollow ring eyes + mouth on a matte black SemiCircle face.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
@@ -632,12 +632,12 @@ private fun DrawScope.drawNomiGlyphEye(
             )
         }
         else -> {
-            // Soft capsules — restrained bloom so eyes read as one calm face
+            // Hollow pill-in-pill (Eporo-like ring) — outer stroke + dark core.
             val bloomR = maxOf(w, h) * 1.85f
             drawOval(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        color.copy(alpha = 0.18f),
+                        color.copy(alpha = 0.16f),
                         Color.Transparent,
                     ),
                     center = center,
@@ -646,17 +646,28 @@ private fun DrawScope.drawNomiGlyphEye(
                 topLeft = Offset(center.x - bloomR, center.y - bloomR),
                 size = Size(bloomR * 2f, bloomR * 2f),
             )
+            val strokeW = minOf(w, h) * 0.42f
             drawRoundRect(
-                color = color.copy(alpha = 0.88f),
+                color = color.copy(alpha = 0.96f),
                 topLeft = Offset(center.x - w, center.y - h),
                 size = Size(w * 2f, h * 2f),
                 cornerRadius = CornerRadius(w, w),
+                style = Stroke(width = strokeW, cap = StrokeCap.Round),
             )
+            val innerW = w * 0.52f
+            val innerH = h * 0.52f
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.22f),
-                topLeft = Offset(center.x - w * 0.45f, center.y - h * 0.72f),
-                size = Size(w * 0.65f, h * 0.42f),
-                cornerRadius = CornerRadius(w * 0.4f, w * 0.4f),
+                color = NomiFaceBlack,
+                topLeft = Offset(center.x - innerW, center.y - innerH),
+                size = Size(innerW * 2f, innerH * 2f),
+                cornerRadius = CornerRadius(innerW, innerW),
+            )
+            // Specular on the lower ring arc.
+            drawRoundRect(
+                color = Color.White.copy(alpha = 0.55f),
+                topLeft = Offset(center.x - w * 0.18f, center.y + h * 0.52f),
+                size = Size(w * 0.36f, h * 0.14f),
+                cornerRadius = CornerRadius(w * 0.2f, w * 0.2f),
             )
         }
     }
