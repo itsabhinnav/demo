@@ -355,6 +355,16 @@ fun ImmersiveEyesFace(
         ),
         label = "idle_sway",
     )
+    // Soft activity halo — gentle pulse suggests the persona is live.
+    val activityPulse by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "activity_pulse",
+    )
 
     LaunchedEffect(mood) {
         val speed = target.blinkSpeed.coerceIn(0.25f, 1.6f)
@@ -427,6 +437,27 @@ fun ImmersiveEyesFace(
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bobY = idleBob * faceR * 0.058f
         val swayX = idleSway * faceR * 0.02f
+        val pulse = activityPulse.coerceIn(0f, 1f)
+
+        // Soft pulsing halo behind the character — suggests activity without clutter.
+        val pulseCenter = Offset(cx + swayX * 0.25f, cy + bobY * 0.25f)
+        val pulseA = auraAlphaForContrast(highContrast, 0.15f) * glow *
+            (0.50f + 0.50f * pulse)
+        val pulseR = faceR * (1.90f + 0.28f * pulse)
+        drawCircle(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to brandGlow.copy(alpha = pulseA * 0.26f),
+                    0.38f to brandGlow.copy(alpha = pulseA * 0.12f),
+                    0.72f to brandGlow.copy(alpha = pulseA * 0.04f),
+                    1.0f to Color.Transparent,
+                ),
+                center = pulseCenter,
+                radius = pulseR,
+            ),
+            radius = pulseR,
+            center = pulseCenter,
+        )
 
         // Very light parallax halo — drifts opposite bob/gaze for a soft depth cue.
         val parallaxX = -lookX.value * faceR * 0.045f - swayX * 0.55f +
