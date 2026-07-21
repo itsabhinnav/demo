@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -37,11 +39,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-/** Matte black NOMI orb core. */
-private val NomiOrbCore = Color(0xFF050508)
+/** Matte black face fill (NOMI-like). */
+private val NomiFaceBlack = Color(0xFF050508)
 
 /**
- * NIO NOMI–style glyphs: white eyes/mouth on a matte black circular face.
+ * NIO NOMI–style glyphs: white eyes/mouth on a matte black SemiCircle face.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
@@ -199,7 +201,7 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Floating Nomi glyphs on a matte black circular face (NOMI orb).
+ * Floating Nomi glyphs on a matte black SemiCircle face.
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
@@ -208,6 +210,7 @@ private val PoseSpring = spring<Float>(
  * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 fun ImmersiveEyesFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
@@ -219,6 +222,16 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
+    // Fixed SemiCircle shell — matte black face fill.
+    val shellMorph = remember {
+        ExpressiveShellMorphState(
+            morph = Morph(
+                start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+                end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+            ),
+            progress = 1f,
+        )
+    }
     val eyeOpen = remember { Animatable(target.eyeOpen) }
     val eyeWidth = remember { Animatable(target.eyeWidth) }
     val eyeHeight = remember { Animatable(target.eyeHeight) }
@@ -472,9 +485,9 @@ fun ImmersiveEyesFace(
 
         // Faint floor shadow — flat puddle that barely follows motion so the face feels anchored.
         val floorCx = cx + swayX * 0.3f
-        val floorCy = cy + faceR * 0.95f + bobY * 0.18f
-        val floorW = faceR * 1.35f
-        val floorH = faceR * 0.18f
+        val floorCy = cy + faceR * 0.78f + bobY * 0.18f
+        val floorW = faceR * 1.48f
+        val floorH = faceR * 0.20f
         drawOval(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
@@ -491,44 +504,66 @@ fun ImmersiveEyesFace(
         )
 
         translate(left = swayX, top = bobY) {
-            val shellR = faceR * 1.12f
+            // Fixed SemiCircle silhouette — tall chin clearance for open / speaking mouths.
+            val shellW = faceR * 1.38f
+            val shellH = faceR * 1.42f
+            val shellBounds = Rect(
+                left = cx - shellW,
+                top = cy - shellH * 0.68f,
+                right = cx + shellW,
+                bottom = cy + shellH * 0.72f,
+            )
 
-            // Pale thin rim + matte black NOMI orb (matches AssistantFace).
-            drawCircle(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFFE8ECF2),
-                        Color(0xFF9AA3B2),
-                        Color(0xFF5A6270),
-                        Color(0xFFC5CAD4),
-                    ),
-                    start = Offset(cx - shellR, cy - shellR),
-                    end = Offset(cx + shellR, cy + shellR),
+            // Soft pale rim plate — lifts the black face off the stage.
+            val rimPadX = shellW * 0.055f
+            val rimPadY = shellH * 0.06f
+            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = Rect(
+                    left = shellBounds.left - rimPadX,
+                    top = shellBounds.top - rimPadY,
+                    right = shellBounds.right + rimPadX,
+                    bottom = shellBounds.bottom + rimPadY,
                 ),
-                radius = shellR,
-                center = Offset(cx, cy),
+                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.55f),
             )
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = Rect(
+                    left = shellBounds.left - rimPadX * 0.45f,
+                    top = shellBounds.top - rimPadY * 0.45f,
+                    right = shellBounds.right + rimPadX * 0.45f,
+                    bottom = shellBounds.bottom + rimPadY * 0.45f,
+                ),
+                color = Color(0xFF9AA3B2).copy(alpha = rimAlpha * 0.70f),
+            )
+
+            // Matte black SemiCircle face (color only — shape unchanged).
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = shellBounds,
+                color = NomiFaceBlack,
+            )
+            // Soft top-left sheen on the black shell.
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFF141418),
-                        NomiOrbCore,
-                        Color(0xFF000000),
+                        Color.White.copy(alpha = 0.08f),
+                        Color.Transparent,
                     ),
-                    center = Offset(cx - faceR * 0.15f, cy - faceR * 0.2f),
-                    radius = faceR * 1.25f,
+                    center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
+                    radius = faceR * 0.72f,
                 ),
-                radius = faceR,
-                center = Offset(cx, cy),
+                radius = faceR * 0.72f,
+                center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
             )
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.07f), Color.Transparent),
-                    center = Offset(cx - faceR * 0.25f, cy - faceR * 0.4f),
-                    radius = faceR * 0.55f,
-                ),
-                radius = faceR * 0.55f,
-                center = Offset(cx - faceR * 0.25f, cy - faceR * 0.4f),
+            // Hairline pale rim stroke.
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = shellBounds,
+                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.65f),
+                style = Stroke(width = 0.028f, cap = StrokeCap.Round),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
