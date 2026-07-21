@@ -1,13 +1,11 @@
 package com.test.design.presentation.assistant
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
@@ -207,8 +205,8 @@ private val PoseSpring = spring<Float>(
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
- * @param brandGlow OEM / Material accent for soft under-glow / activity halo
- * @param highContrast sunlight-safe glyph + stronger glow
+ * @param brandGlow unused — kept for call-site compatibility
+ * @param highContrast sunlight-safe glyph rendering
  * @param gesture nod / shake micro-expressions for yes/no
  */
 @Composable
@@ -219,6 +217,7 @@ fun ImmersiveEyesFace(
     gazeX: Float? = null,
     gazeY: Float? = null,
     mouthAmplitude: Float? = null,
+    @Suppress("UNUSED_PARAMETER")
     brandGlow: Color = Color(0xFF8AB4F8),
     highContrast: Boolean = false,
     gesture: FaceGesture = FaceGesture.None,
@@ -259,18 +258,6 @@ fun ImmersiveEyesFace(
     val blush = remember { Animatable(target.blush) }
     val blink = remember { Animatable(1f) }
     val externalGaze = gazeX != null || gazeY != null
-
-    // Subtle frame glow color/intensity — tracks mood state.
-    val stateGlowColor by animateColorAsState(
-        targetValue = mood.glowColor,
-        animationSpec = tween(420, easing = FastOutSlowInEasing),
-        label = "state_glow_color",
-    )
-    val stateGlowIntensity by animateFloatAsState(
-        targetValue = mood.glowIntensity,
-        animationSpec = tween(420, easing = FastOutSlowInEasing),
-        label = "state_glow_intensity",
-    )
 
     LaunchedEffect(mood, highContrast) {
         val glowBoost = if (highContrast) 1.25f else 1f
@@ -382,16 +369,6 @@ fun ImmersiveEyesFace(
         ),
         label = "idle_sway",
     )
-    // Soft activity halo — gentle pulse suggests the persona is live.
-    val activityPulse by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "activity_pulse",
-    )
 
     LaunchedEffect(mood) {
         val speed = target.blinkSpeed.coerceIn(0.25f, 1.6f)
@@ -464,48 +441,6 @@ fun ImmersiveEyesFace(
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bobY = idleBob * faceR * 0.058f
         val swayX = idleSway * faceR * 0.02f
-        val pulse = activityPulse.coerceIn(0f, 1f)
-
-        // Soft pulsing halo behind the character — faint activity cue (mood tinted).
-        val pulseCenter = Offset(cx + swayX * 0.25f, cy + bobY * 0.25f)
-        val pulseA = auraAlphaForContrast(highContrast, 0.08f) * glow *
-            stateGlowIntensity * (0.45f + 0.55f * pulse)
-        val pulseR = faceR * (2.15f + 0.22f * pulse)
-        drawCircle(
-            brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.0f to stateGlowColor.copy(alpha = pulseA * 0.16f),
-                    0.45f to stateGlowColor.copy(alpha = pulseA * 0.06f),
-                    0.80f to stateGlowColor.copy(alpha = pulseA * 0.02f),
-                    1.0f to Color.Transparent,
-                ),
-                center = pulseCenter,
-                radius = pulseR,
-            ),
-            radius = pulseR,
-            center = pulseCenter,
-        )
-
-        // Very light parallax halo — drifts opposite bob/gaze for a soft depth cue.
-        val parallaxX = -lookX.value * faceR * 0.045f - swayX * 0.55f +
-            sin(life * 0.22f).toFloat() * faceR * 0.016f
-        val parallaxY = -bobY * 0.65f - lookY.value * faceR * 0.035f +
-            cos(life * 0.19f).toFloat() * faceR * 0.012f
-        val haloA = auraAlphaForContrast(highContrast, 0.06f) * glow * stateGlowIntensity
-        val haloR = faceR * (2.25f + 0.05f * sin(life * 0.5f).toFloat())
-        drawCircle(
-            brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.0f to stateGlowColor.copy(alpha = haloA * 0.18f),
-                    0.50f to stateGlowColor.copy(alpha = haloA * 0.05f),
-                    1.0f to Color.Transparent,
-                ),
-                center = Offset(cx + parallaxX, cy + parallaxY),
-                radius = haloR,
-            ),
-            radius = haloR,
-            center = Offset(cx + parallaxX, cy + parallaxY),
-        )
 
         // Faint floor shadow — flat puddle that barely follows motion so the face feels anchored.
         val floorCx = cx + swayX * 0.3f
@@ -536,45 +471,6 @@ fun ImmersiveEyesFace(
                 top = cy - shellH * 0.68f,
                 right = cx + shellW,
                 bottom = cy + shellH * 0.72f,
-            )
-
-            // Soft radial gradient glow behind the frame — mood color, not a shaped fill.
-            val frameGlowStrength = auraAlphaForContrast(highContrast, 0.26f) *
-                glow.coerceIn(0.3f, 1.2f) *
-                stateGlowIntensity *
-                (0.70f + 0.30f * pulse)
-            val frameGlowCenter = Offset(
-                (shellBounds.left + shellBounds.right) * 0.5f,
-                (shellBounds.top + shellBounds.bottom) * 0.52f,
-            )
-            val frameGlowR = maxOf(shellW, shellH) * (1.15f + 0.08f * pulse)
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.0f to stateGlowColor.copy(alpha = frameGlowStrength * 0.42f),
-                        0.35f to stateGlowColor.copy(alpha = frameGlowStrength * 0.22f),
-                        0.65f to stateGlowColor.copy(alpha = frameGlowStrength * 0.08f),
-                        1.0f to Color.Transparent,
-                    ),
-                    center = frameGlowCenter,
-                    radius = frameGlowR,
-                ),
-                radius = frameGlowR,
-                center = frameGlowCenter,
-            )
-            // Softer outer falloff so the bloom reads as light, not a hard plate.
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.0f to stateGlowColor.copy(alpha = frameGlowStrength * 0.12f),
-                        0.55f to stateGlowColor.copy(alpha = frameGlowStrength * 0.04f),
-                        1.0f to Color.Transparent,
-                    ),
-                    center = frameGlowCenter,
-                    radius = frameGlowR * 1.35f,
-                ),
-                radius = frameGlowR * 1.35f,
-                center = frameGlowCenter,
             )
 
             // Soft Gem rim plate — pale NOMI metal edge lifts the black face off the stage.
