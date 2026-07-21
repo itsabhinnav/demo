@@ -206,13 +206,13 @@ private fun ImmersiveEyesUi(mood: AssistantMood, prompt: String, modifier: Modif
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ImmersiveEyesFace(
                 mood = mood,
-                modifier = Modifier.size(200.dp),
+                modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(28.dp))
             Text(
                 text = prompt,
                 color = Color(0xFFF8F9FA),
-                fontSize = 22.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp),
