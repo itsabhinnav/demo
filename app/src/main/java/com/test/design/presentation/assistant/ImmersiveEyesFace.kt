@@ -43,7 +43,7 @@ import kotlin.random.Random
 private val NomiFaceBlack = Color(0xFF050508)
 
 /**
- * NIO NOMI–style glyphs: white eyes/mouth on a matte black Gem face with a thin white Gem bezel.
+ * NIO NOMI–style glyphs: white eyes/mouth on a matte black SemiCircle face.
  */
 internal data class ImmersiveEyePose(
     val eyeOpen: Float = 1f,
@@ -222,12 +222,12 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
-    // Shared Gem silhouette — white outer rim + black face (same shape so bezel pad is visible).
+    // Fixed SemiCircle shell — matte black face fill.
     val shellMorph = remember {
         ExpressiveShellMorphState(
             morph = Morph(
-                start = ExpressiveShellKind.Gem.toRoundedPolygon(),
-                end = ExpressiveShellKind.Gem.toRoundedPolygon(),
+                start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+                end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
             ),
             progress = 1f,
         )
@@ -504,7 +504,7 @@ fun ImmersiveEyesFace(
         )
 
         translate(left = swayX, top = bobY) {
-            // Gem silhouette — tall bounds keep chin clearance for open / speaking mouths.
+            // Fixed SemiCircle silhouette — tall chin clearance for open / speaking mouths.
             val shellW = faceR * 1.38f
             val shellH = faceR * 1.42f
             val shellBounds = Rect(
@@ -514,22 +514,7 @@ fun ImmersiveEyesFace(
                 bottom = cy + shellH * 0.72f,
             )
 
-            // Thin white Gem outer bezel (same shape as black fill — pad alone sets the gap).
-            val rimPadX = shellW * 0.035f
-            val rimPadY = shellH * 0.035f
-            val rimAlpha = auraAlphaForContrast(highContrast, 0.55f) * glow.coerceIn(0.55f, 1f)
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = Rect(
-                    left = shellBounds.left - rimPadX,
-                    top = shellBounds.top - rimPadY,
-                    right = shellBounds.right + rimPadX,
-                    bottom = shellBounds.bottom + rimPadY,
-                ),
-                color = Color(0xFFF2F4F7).copy(alpha = rimAlpha),
-            )
-
-            // Matte black Gem face inset inside the white bezel.
+            // Matte black SemiCircle face (color only — shape unchanged).
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = shellBounds,
@@ -547,6 +532,14 @@ fun ImmersiveEyesFace(
                 ),
                 radius = faceR * 0.72f,
                 center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
+            )
+            // Hairline pale rim stroke.
+            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = shellBounds,
+                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.65f),
+                style = Stroke(width = 0.028f, cap = StrokeCap.Round),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()
