@@ -482,7 +482,7 @@ fun ImmersiveEyesFace(
         )
 
         translate(left = swayX, top = bobY) {
-            // Soft diffuse aura so glyphs blend into the blurred stage
+            // Soft diffuse aura so glyphs blend into the stage
             val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
             drawCircle(
                 brush = Brush.radialGradient(
@@ -501,16 +501,65 @@ fun ImmersiveEyesFace(
             // Fixed SemiCircle silhouette — tall chin clearance for open / speaking mouths.
             val shellW = faceR * 1.38f
             val shellH = faceR * 1.42f
-            val shellAlpha = auraAlphaForContrast(highContrast, 0.16f) * glow.coerceIn(0.25f, 1f)
+            val shellBounds = Rect(
+                left = cx - shellW,
+                top = cy - shellH * 0.68f,
+                right = cx + shellW,
+                bottom = cy + shellH * 0.72f,
+            )
+
+            // Soft contact shadow — lifts the character off the backdrop.
+            drawOval(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(
+                        0.0f to Color.Black.copy(alpha = 0.34f * glow.coerceIn(0.4f, 1f)),
+                        0.55f to Color.Black.copy(alpha = 0.12f),
+                        1.0f to Color.Transparent,
+                    ),
+                    center = Offset(cx, cy + shellH * 0.62f),
+                    radius = shellW * 0.92f,
+                ),
+                topLeft = Offset(cx - shellW * 0.92f, cy + shellH * 0.28f),
+                size = Size(shellW * 1.84f, shellH * 0.72f),
+            )
+
+            // Soft rim plate behind the shell — bright edge separates face from bg.
+            val rimPadX = shellW * 0.055f
+            val rimPadY = shellH * 0.06f
+            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = Rect(
-                    left = cx - shellW,
-                    top = cy - shellH * 0.68f,
-                    right = cx + shellW,
-                    bottom = cy + shellH * 0.72f,
+                    left = shellBounds.left - rimPadX,
+                    top = shellBounds.top - rimPadY,
+                    right = shellBounds.right + rimPadX,
+                    bottom = shellBounds.bottom + rimPadY,
                 ),
+                color = Color.White.copy(alpha = rimAlpha * 0.22f),
+            )
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = Rect(
+                    left = shellBounds.left - rimPadX * 0.45f,
+                    top = shellBounds.top - rimPadY * 0.45f,
+                    right = shellBounds.right + rimPadX * 0.45f,
+                    bottom = shellBounds.bottom + rimPadY * 0.45f,
+                ),
+                color = brandGlow.copy(alpha = rimAlpha * 0.55f),
+            )
+
+            val shellAlpha = auraAlphaForContrast(highContrast, 0.22f) * glow.coerceIn(0.3f, 1f)
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = shellBounds,
                 color = brandGlow.copy(alpha = shellAlpha),
+            )
+            // Hairline rim stroke for a crisp lift against the visible backdrop.
+            drawExpressiveFaceShell(
+                morphState = shellMorph,
+                bounds = shellBounds,
+                color = Color.White.copy(alpha = rimAlpha * 0.55f),
+                style = Stroke(width = 0.028f, cap = StrokeCap.Round),
             )
 
             val liveTilt = tilt.value + 0.35f * sin(life * 0.28f).toFloat()

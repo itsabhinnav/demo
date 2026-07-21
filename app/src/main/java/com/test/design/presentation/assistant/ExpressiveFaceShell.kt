@@ -16,6 +16,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.graphics.shapes.Morph
@@ -108,12 +110,13 @@ internal fun DrawScope.drawExpressiveFaceShell(
     morphState: ExpressiveShellMorphState,
     bounds: Rect,
     color: Color,
+    style: DrawStyle = Fill,
 ) {
     if (bounds.width <= 0f || bounds.height <= 0f) return
     val unit = morphState.morph.toPath(morphState.progress)
     translate(left = bounds.left, top = bounds.top) {
         scale(scaleX = bounds.width, scaleY = bounds.height, pivot = Offset.Zero) {
-            drawPath(path = unit, color = color)
+            drawPath(path = unit, color = color, style = style)
         }
     }
 }

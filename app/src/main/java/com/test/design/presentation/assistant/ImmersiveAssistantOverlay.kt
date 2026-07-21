@@ -490,7 +490,10 @@ fun ImmersiveAssistantOverlay(
     }
 }
 
-/** Vertical stage: transparent top → dark bottom, with a deeper pool behind face/text. */
+/**
+ * Vertical stage: mostly clear top → soft darken at the bottom so the
+ * underlying UI stays discernible while the face/transcript still read.
+ */
 @Composable
 fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -501,28 +504,28 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
                     Brush.verticalGradient(
                         colorStops = arrayOf(
                             0.0f to Color(0x00000000),
-                            0.48f to Color(0x00000000),
-                            0.66f to Color(0x6610141C),
-                            0.80f to Color(0xCC0A0C10),
-                            1.0f to Color(0xF2050608),
+                            0.52f to Color(0x00000000),
+                            0.70f to Color(0x33101820),
+                            0.86f to Color(0x6610141C),
+                            1.0f to Color(0x990A0C10),
                         ),
                     ),
                 ),
         )
-        // Extra darken where face + transcript sit (bottom-center).
+        // Light bottom-center pool — enough contrast for glyphs, map still visible.
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
             drawRect(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
-                        0.0f to Color(0xF2000000),
-                        0.40f to Color(0xB3000000),
-                        0.72f to Color(0x66000000),
+                        0.0f to Color(0x99000000),
+                        0.42f to Color(0x55000000),
+                        0.78f to Color(0x22000000),
                         1.0f to Color.Transparent,
                     ),
-                    center = Offset(w * 0.5f, h * 0.86f),
-                    radius = minOf(w * 0.48f, h * 0.42f),
+                    center = Offset(w * 0.5f, h * 0.88f),
+                    radius = minOf(w * 0.42f, h * 0.36f),
                 ),
             )
         }
