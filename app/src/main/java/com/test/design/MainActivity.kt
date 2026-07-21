@@ -20,6 +20,7 @@ import com.test.design.presentation.DesignAppShell
 import com.test.design.presentation.assistant.ImmersiveAssistantOverlayService
 import com.test.design.presentation.ivi.dashboard.DashboardEvent
 import com.test.design.presentation.ivi.dashboard.DashboardViewModel
+import com.test.design.presentation.ivi.dashboard.FloatingSystemBarsVisibility
 import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
 import com.test.design.presentation.ivi.map.EXTRA_OPEN_DASHBOARD
 
@@ -30,6 +31,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // In-app floating chrome stays hidden until ADB show/toggle.
+        FloatingSystemBarsVisibility.hide()
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
@@ -46,6 +49,8 @@ class MainActivity : ComponentActivity() {
             // Immersive temporarily off; pad for system bars while debugging.
             DesignAppShell(
                 applySafeDrawingInsets = true,
+                // Opt-in host; FloatingSystemBarsVisibility (hidden by default) gates rendering.
+                showFloatingSystemBars = true,
                 onOpenApps = {
                     navController.navigate(AppDestination.Dashboard) {
                         launchSingleTop = true

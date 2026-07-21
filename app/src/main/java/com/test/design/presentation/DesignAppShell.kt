@@ -57,7 +57,8 @@ inline fun <reified VM : ViewModel> activityViewModel(): VM {
 @Composable
 fun DesignAppShell(
     applySafeDrawingInsets: Boolean = true,
-    showFloatingSystemBars: Boolean = true,
+    /** Host allows floating bars; runtime visibility is [FloatingSystemBarsVisibility] (hidden by default). */
+    showFloatingSystemBars: Boolean = false,
     /** When false, skip opaque screen backdrop (Scalable UI panel hosts). */
     showScreenBackground: Boolean = true,
     onOpenApps: () -> Unit = {},

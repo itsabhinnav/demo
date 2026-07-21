@@ -6,16 +6,22 @@ Show/hide the Compose floating top/bottom bars hosted by `DesignAppShell`
 ## Prerequisites
 
 ```bash
-# Install (or reinstall) debug APK
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+# Prefer the synced prebuilt (keeps install scripts in sync with main)
+adb install -r prebuilt/app-debug.apk
+# or: adb install -r app/build/outputs/apk/debug/app-debug.apk
 
-# Open the demo home (bars are hidden by default)
+# Open the demo home — floating bars stay hidden until SHOW/TOGGLE
 adb shell am start -n com.test.design/.MainActivity
 ```
 
+Rebuild prebuilts after pulling: `./scripts/sync-prebuilts.sh`
+
 The demo app process must be running. Bars only appear on hosts that use
 `DesignAppShell` with `showFloatingSystemBars = true` (e.g. `MainActivity`)
-**and** after an adb show/toggle (hidden on cold start).
+**and** after an adb show/toggle (hidden on cold start / process restart).
+
+This controls the **Compose** floating chrome only — not AAOS CarSystemUI
+`status` / `nav` Scalable UI bars from the Dewd/RRO overlays.
 
 ## Commands
 
