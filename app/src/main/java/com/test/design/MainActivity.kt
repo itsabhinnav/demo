@@ -1,7 +1,9 @@
 package com.test.design
 
 import android.content.Intent
+import android.graphics.PixelFormat
 import android.os.Bundle
+import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -13,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.test.design.navigation.AppDestination
 import com.test.design.navigation.AppNavHost
@@ -31,14 +34,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // In-app floating chrome stays hidden until ADB show/toggle.
         FloatingSystemBarsVisibility.hide()
+
+        // Keep the activity buffer opaque — transparent BLAST buffers read as a black screen
+        // on the AAOS emulator (screencap pixels were RGBA 0,0,0,0).
+        window.setFormat(PixelFormat.OPAQUE)
+        window.setBackgroundDrawableResource(R.color.canvas_background)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
-        // Immersive temporarily off — keep system bars visible.
-        // hideSystemBarsImmersive()
 
         openDashboardRequest.value = intent.getBooleanExtra(EXTRA_OPEN_DASHBOARD, false)
 
@@ -46,10 +52,8 @@ class MainActivity : ComponentActivity() {
             val shouldOpenDashboard by openDashboardRequest
             val navController = rememberNavController()
 
-            // Immersive temporarily off; pad for system bars while debugging.
             DesignAppShell(
                 applySafeDrawingInsets = true,
-                // Opt-in host; FloatingSystemBarsVisibility (hidden by default) gates rendering.
                 showFloatingSystemBars = true,
                 onOpenApps = {
                     navController.navigate(AppDestination.Dashboard) {
@@ -60,7 +64,6 @@ class MainActivity : ComponentActivity() {
                     dashboardViewModel.onEvent(
                         DashboardEvent.WidgetTapped(DashboardWidget.Settings),
                     )
-                    // Expand Settings on whichever host is active (shared activity VM).
                     val route = navController.currentBackStackEntry?.destination?.route
                     if (route == AppDestination.Dashboard) return@DesignAppShell
                     navController.navigate(AppDestination.DrivingHome) {
@@ -76,9 +79,6 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 onOpenAssistant = {
-                    // Overlay while Main is focused — full-screen over the home map.
-                    // (TYPE_APPLICATION_OVERLAY is force-hidden under Settings; activity
-                    // path is used by VirtualAssistantActivity / adb.)
                     ImmersiveAssistantOverlayService.show(this@MainActivity)
                 },
             ) {
@@ -90,6 +90,20 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+
+        val content = findViewById<android.view.View>(android.R.id.content)
+        content.setBackgroundResource(R.color.canvas_background)
+        val vto = content.viewTreeObserver
+        vto.addOnDrawListener(object : ViewTreeObserver.OnDrawListener {
+            override fun onDraw() {
+                content.post {
+                    if (vto.isAlive) {
+                        runCatching { vto.removeOnDrawListener(this) }
+                    }
+                    reportFullyDrawn()
+                }
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -100,7 +114,5 @@ class MainActivity : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        // Immersive temporarily off.
-        // if (hasFocus) hideSystemBarsImmersive()
     }
 }

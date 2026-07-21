@@ -13,6 +13,10 @@
         <item name="android:colorControlNormal">@color/control_normal</item>
         <item name="colorControlNormal">@color/control_normal</item>
         <item name="android:forceDarkAllowed">false</item>
+        <!-- Avoid stuck starting_reveal splash covering a black buffer on AAOS emulator. -->
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowShowWallpaper">false</item>
     </style>
 
     <!-- Scalable UI TaskPanel hosts — transparent so content behind shows through. -->

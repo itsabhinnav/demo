@@ -65,8 +65,9 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
 import com.test.design.presentation.ivi.media.components.MediaTransportControlsBar
+import com.test.design.presentation.ivi.navigation.components.DrivingMapBackdrop
+import com.test.design.presentation.ivi.navigation.components.mapChromeLayer
 import com.test.design.presentation.ivi.navigation.components.DefaultMapCenter
-import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
 import com.test.design.theme.CarDesignTokens
 
 /**
@@ -129,13 +130,9 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                 ),
             ),
     ) {
-        OsmMapBackground(
-            center = DefaultMapCenter,
-            zoom = 15.0,
-            showRoute = true,
-            modifier = Modifier.fillMaxSize(),
-        )
+        DrivingMapBackdrop(modifier = Modifier.fillMaxSize())
 
+        Box(modifier = Modifier.fillMaxSize().mapChromeLayer()) {
         val scrimAlpha by animateFloatAsState(
             targetValue = when {
                 mediaOpen || parkingOpen -> 0.28f
@@ -272,6 +269,7 @@ fun SharedTransitionScope.AdaptiveSpaceScreen(
                     }
                 }
             }
+        }
         }
     }
 }

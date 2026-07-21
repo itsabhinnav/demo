@@ -43,7 +43,8 @@ import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.map.rememberMapOverlayMetrics
-import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
+import com.test.design.presentation.ivi.navigation.components.DrivingMapBackdrop
+import com.test.design.presentation.ivi.navigation.components.mapChromeLayer
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
 import com.test.design.presentation.ivi.navigation.components.TurnInstructionCard
@@ -72,19 +73,16 @@ fun SharedTransitionScope.NavigationScreen(
             modifier = modifier.fillMaxSize(),
         ),
     ) {
-        // Full-bleed map layer — ignores Scalable UI / system safe areas.
+        // Full-bleed Compose map — avoids OsmDroid AndroidView z-order blackout.
         ScreenBackground(modifier = Modifier.fillMaxSize())
-        OsmMapBackground(
-            modifier = Modifier.fillMaxSize(),
-            showRoute = true,
-            interactive = true,
-        )
+        DrivingMapBackdrop(modifier = Modifier.fillMaxSize())
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.22f)
                 .align(Alignment.TopCenter)
+                .mapChromeLayer()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
@@ -100,6 +98,7 @@ fun SharedTransitionScope.NavigationScreen(
         AdaptiveLayout(
             modifier = Modifier
                 .fillMaxSize()
+                .mapChromeLayer()
                 // Scalable UI SafeBounds + system bars → WindowInsets; pad overlays only.
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) { layout ->
