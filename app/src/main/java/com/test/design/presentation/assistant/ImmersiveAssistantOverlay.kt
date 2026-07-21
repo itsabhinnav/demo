@@ -9,8 +9,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -71,8 +69,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
- * Immersive assistant: starts as a non-blocking corner bubble while listening, then morphs
- * to a full-screen translucent stage (centered ring face + transcript) when ready to respond.
+ * Immersive assistant: opens directly as a full-screen translucent stage
+ * (bottom-band face + transcript).
  *
  * Features: gaze-to-speaker, STT streaming, TTS lip-sync, drive-context prompts,
  * cluster hand-off, OEM brand tint, high-contrast eyes, wake haptic/chime, nod/shake.
@@ -89,6 +87,7 @@ fun ImmersiveAssistantOverlay(
     enableTts: Boolean = true,
     onFeedback: (Boolean) -> Unit = {},
     onPresentationChanged: (AssistantPresentation) -> Unit = {},
+    @Suppress("UNUSED_PARAMETER")
     onBubbleBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
@@ -101,7 +100,7 @@ fun ImmersiveAssistantOverlay(
 
     var visible by remember { mutableStateOf(!awaitHotword) }
     var session by remember { mutableIntStateOf(if (!awaitHotword) 1 else 0) }
-    var presentation by remember { mutableStateOf(AssistantPresentation.Compact) }
+    var presentation by remember { mutableStateOf(AssistantPresentation.Immersive) }
     var mood by remember {
         mutableStateOf(if (!awaitHotword) AssistantMood.Listening else initialMood)
     }
@@ -120,7 +119,7 @@ fun ImmersiveAssistantOverlay(
 
     fun summon() {
         session += 1
-        presentation = AssistantPresentation.Compact
+        presentation = AssistantPresentation.Immersive
         mood = AssistantMood.Listening
         transcript = ""
         speaker = DialogueSpeaker.System
@@ -203,14 +202,6 @@ fun ImmersiveAssistantOverlay(
 
         for (beat in sessionScript) {
             if (!isActive || !visible) break
-
-            if (shouldExpandToImmersive(beat) &&
-                presentation != AssistantPresentation.Immersive
-            ) {
-                presentation = AssistantPresentation.Immersive
-                // Let the morph settle before speaking / showing immersive chrome.
-                delay(420)
-            }
 
             // If live STT already captured a user line matching this beat, skip typed replay.
             if (beat.speaker == DialogueSpeaker.User &&
@@ -386,7 +377,7 @@ fun ImmersiveAssistantOverlay(
         }
     }
 
-    // Immersive face entrance — once per session when expanding from the corner bubble.
+    // Immersive face entrance — once per summon session.
     LaunchedEffect(visible, session, presentation) {
         if (!visible || presentation != AssistantPresentation.Immersive) return@LaunchedEffect
         if (immersiveEnteredSession == session) return@LaunchedEffect
@@ -414,12 +405,6 @@ fun ImmersiveAssistantOverlay(
 
     val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
     val showOverlay = visible || overlayAlpha.value > 0.02f
-    val isImmersive = presentation == AssistantPresentation.Immersive
-    val bubblePrompt = when {
-        transcript.isNotBlank() -> transcript
-        mood == AssistantMood.Listening -> "Listening…"
-        else -> "How can I help?"
-    }
 
     Box(
         modifier = modifier
@@ -435,125 +420,89 @@ fun ImmersiveAssistantOverlay(
                             summon()
                         },
                     )
-                } else if (isImmersive) {
+                } else {
                     Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = { visible = false },
                     )
-                } else {
-                    // Compact: pass-through — only the bubble handles taps.
-                    Modifier
                 },
             ),
     ) {
         if (showOverlay) {
-            AnimatedContent(
-                targetState = presentation,
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
-                transitionSpec = {
-                    (
-                        fadeIn(tween(420, easing = FastOutSlowInEasing)) +
-                            scaleIn(
-                                initialScale = 0.92f,
-                                animationSpec = tween(460, easing = FastOutSlowInEasing),
-                            )
-                        ) togetherWith (
-                        fadeOut(tween(280, easing = FastOutSlowInEasing)) +
-                            scaleOut(
-                                targetScale = 0.94f,
-                                animationSpec = tween(280, easing = FastOutSlowInEasing),
-                            )
-                        )
-                },
-                label = "assistant_presentation",
-            ) { phase ->
-                when (phase) {
-                    AssistantPresentation.Compact -> {
-                        AssistantCornerBubble(
-                            mood = mood,
-                            prompt = bubblePrompt,
-                            brandGlow = brandGlow,
-                            modifier = Modifier.fillMaxSize(),
-                            onClick = { visible = false },
-                            onBoundsInRoot = onBubbleBoundsInRoot,
-                        )
+            ) {
+                // Transparent top → very dark bottom; glow only along bottom edge.
+                Box(Modifier.fillMaxSize()) {
+                    ImmersiveBackdrop()
+                    WeatherAmbientOverlay(
+                        kind = weatherAmbient,
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color(0xFFB3E5FC),
+                    )
+                    ImmersiveBorderGlow(glowColor = brandGlow)
+                }
+
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .floatingSystemChromePadding()
+                        .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
+                ) {
+                    // Assistant chrome occupies ~1/4 of available height at the bottom.
+                    val bandHeight = maxHeight * 0.25f
+                    val faceSize = (bandHeight * 0.55f).coerceIn(72.dp, 120.dp)
+                    val density = LocalDensity.current
+                    val risePx = with(density) {
+                        (faceSize * 0.35f).toPx()
                     }
-                    AssistantPresentation.Immersive -> {
-                        Box(Modifier.fillMaxSize()) {
-                            // Transparent top → very dark bottom; glow only along bottom edge.
-                            Box(Modifier.fillMaxSize()) {
-                                ImmersiveBackdrop()
-                                WeatherAmbientOverlay(
-                                    kind = weatherAmbient,
-                                    modifier = Modifier.fillMaxSize(),
-                                    tint = Color(0xFFB3E5FC),
-                                )
-                                ImmersiveBorderGlow(glowColor = brandGlow)
-                            }
 
-                            BoxWithConstraints(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                                    .floatingSystemChromePadding()
-                                    .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
-                            ) {
-                                // Assistant chrome occupies ~1/4 of available height at the bottom.
-                                val bandHeight = maxHeight * 0.25f
-                                val faceSize = (bandHeight * 0.55f).coerceIn(72.dp, 120.dp)
-                                val density = LocalDensity.current
-                                val risePx = with(density) {
-                                    (faceSize * 0.35f).toPx()
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .fillMaxWidth()
-                                        .height(bandHeight),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Bottom,
-                                ) {
-                                    ImmersiveEyesFace(
-                                        mood = mood,
-                                        modifier = Modifier
-                                            .size(faceSize)
-                                            .offset {
-                                                IntOffset(
-                                                    0,
-                                                    (faceRise.value * risePx).roundToInt(),
-                                                )
-                                            }
-                                            .graphicsLayer {
-                                                val s = faceScale.value
-                                                scaleX = s
-                                                scaleY = s
-                                                alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                            },
-                                        gazeX = gazeX,
-                                        gazeY = gazeY,
-                                        mouthAmplitude = mouthAmplitude,
-                                        brandGlow = brandGlow,
-                                        highContrast = highContrast,
-                                        gesture = gesture,
-                                    )
-                                    // Transcript under the face, flush to the bottom of the activity.
-                                    ImmersiveTranscript(
-                                        text = transcript,
-                                        speaker = speaker,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .graphicsLayer {
-                                                alpha = transcriptAlpha.value.coerceIn(0f, 1f)
-                                            }
-                                            .padding(top = 8.dp),
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(bandHeight),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom,
+                    ) {
+                        ImmersiveEyesFace(
+                            mood = mood,
+                            modifier = Modifier
+                                .size(faceSize)
+                                .offset {
+                                    IntOffset(
+                                        0,
+                                        (faceRise.value * risePx).roundToInt(),
                                     )
                                 }
-                            }
-                        }
+                                .graphicsLayer {
+                                    val s = faceScale.value
+                                    scaleX = s
+                                    scaleY = s
+                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                },
+                            gazeX = gazeX,
+                            gazeY = gazeY,
+                            mouthAmplitude = mouthAmplitude,
+                            brandGlow = brandGlow,
+                            highContrast = highContrast,
+                            gesture = gesture,
+                        )
+                        // Transcript under the face, flush to the bottom of the activity.
+                        ImmersiveTranscript(
+                            text = transcript,
+                            speaker = speaker,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    alpha = transcriptAlpha.value.coerceIn(0f, 1f)
+                                }
+                                .padding(top = 8.dp),
+                        )
                     }
                 }
             }

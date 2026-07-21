@@ -50,7 +50,7 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
- * Immersive eyes assistant — corner bubble while listening, then fullscreen morph.
+ * Immersive eyes assistant — opens directly as a fullscreen translucent overlay.
  * Appears on hotword (or tap / icon launch).
  */
 @Composable
