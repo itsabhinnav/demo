@@ -232,16 +232,6 @@ fun ImmersiveEyesFace(
             progress = 1f,
         )
     }
-    // Material Gem silhouette for the pale white outer rim layer.
-    val rimMorph = remember {
-        ExpressiveShellMorphState(
-            morph = Morph(
-                start = ExpressiveShellKind.Gem.toRoundedPolygon(),
-                end = ExpressiveShellKind.Gem.toRoundedPolygon(),
-            ),
-            progress = 1f,
-        )
-    }
     val eyeOpen = remember { Animatable(target.eyeOpen) }
     val eyeWidth = remember { Animatable(target.eyeWidth) }
     val eyeHeight = remember { Animatable(target.eyeHeight) }
@@ -524,31 +514,6 @@ fun ImmersiveEyesFace(
                 bottom = cy + shellH * 0.72f,
             )
 
-            // Soft Gem rim plate — pale NOMI metal edge lifts the black face off the stage.
-            val rimPadX = shellW * 0.014f
-            val rimPadY = shellH * 0.015f
-            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
-            drawExpressiveFaceShell(
-                morphState = rimMorph,
-                bounds = Rect(
-                    left = shellBounds.left - rimPadX,
-                    top = shellBounds.top - rimPadY,
-                    right = shellBounds.right + rimPadX,
-                    bottom = shellBounds.bottom + rimPadY,
-                ),
-                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.55f),
-            )
-            drawExpressiveFaceShell(
-                morphState = rimMorph,
-                bounds = Rect(
-                    left = shellBounds.left - rimPadX * 0.4f,
-                    top = shellBounds.top - rimPadY * 0.4f,
-                    right = shellBounds.right + rimPadX * 0.4f,
-                    bottom = shellBounds.bottom + rimPadY * 0.4f,
-                ),
-                color = Color(0xFF9AA3B2).copy(alpha = rimAlpha * 0.70f),
-            )
-
             // Matte black SemiCircle face (color only — shape unchanged).
             drawExpressiveFaceShell(
                 morphState = shellMorph,
@@ -569,6 +534,7 @@ fun ImmersiveEyesFace(
                 center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
             )
             // Hairline pale rim stroke.
+            val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = shellBounds,
