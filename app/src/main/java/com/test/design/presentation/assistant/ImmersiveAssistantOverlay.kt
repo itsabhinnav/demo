@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -433,7 +434,7 @@ fun ImmersiveAssistantOverlay(
                     .fillMaxSize()
                     .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
             ) {
-                // Transparent top → very dark bottom.
+                // Transparent top → very dark bottom; subtle bluish glow along bottom edge.
                 Box(Modifier.fillMaxSize()) {
                     ImmersiveBackdrop()
                     WeatherAmbientOverlay(
@@ -441,6 +442,7 @@ fun ImmersiveAssistantOverlay(
                         modifier = Modifier.fillMaxSize(),
                         tint = Color(0xFFB3E5FC),
                     )
+                    ImmersiveBorderGlow(glowColor = brandGlow)
                 }
 
                 BoxWithConstraints(
@@ -452,7 +454,7 @@ fun ImmersiveAssistantOverlay(
                 ) {
                     // Assistant chrome occupies ~1/4 of available height at the bottom.
                     val bandHeight = maxHeight * 0.25f
-                    val faceSize = (bandHeight * 0.55f).coerceIn(72.dp, 120.dp)
+                    val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
                     val density = LocalDensity.current
                     val risePx = with(density) {
                         (faceSize * 0.35f).toPx()
@@ -546,6 +548,55 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Subtle bluish bottom-border glow.
+ * Horizontal intensity is 0 → max → 0 across the width; fades upward from the edge.
+ */
+@Composable
+fun ImmersiveBorderGlow(
+    modifier: Modifier = Modifier,
+    glowColor: Color = Color(0xFF8AB4F8),
+) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        val blue = glowColor
+        val borderH = 1.5.dp.toPx()
+        val bloomH = 32.dp.toPx()
+
+        // Soft bloom above the bottom edge (horizontal 0 → max → 0).
+        drawRect(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to blue.copy(alpha = 0.22f),
+                    0.40f to blue.copy(alpha = 0.08f),
+                    0.75f to blue.copy(alpha = 0.02f),
+                    1.0f to Color.Transparent,
+                ),
+                center = Offset(w * 0.5f, h),
+                radius = w * 0.52f,
+            ),
+            topLeft = Offset(0f, h - bloomH),
+            size = Size(w, bloomH),
+        )
+
+        // Thin bottom border line — alpha 0 → max → 0 across width.
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colorStops = arrayOf(
+                    0.0f to Color.Transparent,
+                    0.18f to blue.copy(alpha = 0.12f),
+                    0.50f to blue.copy(alpha = 0.42f),
+                    0.82f to blue.copy(alpha = 0.12f),
+                    1.0f to Color.Transparent,
+                ),
+            ),
+            topLeft = Offset(0f, h - borderH),
+            size = Size(w, borderH),
+        )
+    }
+}
+
 @Composable
 private fun ImmersiveTranscript(
     text: String,
@@ -562,7 +613,7 @@ private fun ImmersiveTranscript(
         modifier = modifier,
     ) { (line, who) ->
         if (line.isBlank()) {
-            Box(modifier = Modifier.height(28.dp))
+            Box(modifier = Modifier.height(34.dp))
         } else {
             val bodyColor = when (who) {
                 DialogueSpeaker.User -> Color(0xFFD2E3FC)
@@ -572,7 +623,7 @@ private fun ImmersiveTranscript(
             Text(
                 text = line,
                 color = bodyColor,
-                fontSize = 22.sp,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
