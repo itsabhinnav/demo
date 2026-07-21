@@ -14,7 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -31,6 +33,8 @@ enum class ExpressiveShellKind {
     Arch,
     SemiCircle,
     Oval,
+    /** Material 3 gem — used for the pale outer rim plate behind the face shell. */
+    Gem,
 }
 
 /** Mood → one of three face-like expressive shapes. */
@@ -59,6 +63,7 @@ internal fun ExpressiveShellKind.toRoundedPolygon(): RoundedPolygon = when (this
     ExpressiveShellKind.Arch -> MaterialShapes.Arch
     ExpressiveShellKind.SemiCircle -> MaterialShapes.SemiCircle
     ExpressiveShellKind.Oval -> MaterialShapes.Oval
+    ExpressiveShellKind.Gem -> MaterialShapes.Gem
 }
 
 /**
@@ -112,11 +117,35 @@ internal fun DrawScope.drawExpressiveFaceShell(
     color: Color,
     style: DrawStyle = Fill,
 ) {
+    drawExpressiveFaceShellPath(morphState, bounds) { path ->
+        drawPath(path = path, color = color, style = style)
+    }
+}
+
+/** Brush fill variant — used for glossy white outer shells (e.g. Eporo). */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+internal fun DrawScope.drawExpressiveFaceShell(
+    morphState: ExpressiveShellMorphState,
+    bounds: Rect,
+    brush: Brush,
+    style: DrawStyle = Fill,
+) {
+    drawExpressiveFaceShellPath(morphState, bounds) { path ->
+        drawPath(path = path, brush = brush, style = style)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private inline fun DrawScope.drawExpressiveFaceShellPath(
+    morphState: ExpressiveShellMorphState,
+    bounds: Rect,
+    draw: DrawScope.(Path) -> Unit,
+) {
     if (bounds.width <= 0f || bounds.height <= 0f) return
     val unit = morphState.morph.toPath(morphState.progress)
     translate(left = bounds.left, top = bounds.top) {
         scale(scaleX = bounds.width, scaleY = bounds.height, pivot = Offset.Zero) {
-            drawPath(path = unit, color = color, style = style)
+            draw(unit)
         }
     }
 }
