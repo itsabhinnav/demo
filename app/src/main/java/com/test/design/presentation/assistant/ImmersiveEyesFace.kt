@@ -219,12 +219,22 @@ fun ImmersiveEyesFace(
     gesture: FaceGesture = FaceGesture.None,
 ) {
     val target = mood.toImmersiveEyePose()
-    // Fixed SemiCircle shell — no mood morph yet.
+    // Fixed SemiCircle face plate — no mood morph yet.
     val shellMorph = remember {
         ExpressiveShellMorphState(
             morph = Morph(
                 start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
                 end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+            ),
+            progress = 1f,
+        )
+    }
+    // Material Gem silhouette for the pale white outer rim layer.
+    val rimMorph = remember {
+        ExpressiveShellMorphState(
+            morph = Morph(
+                start = ExpressiveShellKind.Gem.toRoundedPolygon(),
+                end = ExpressiveShellKind.Gem.toRoundedPolygon(),
             ),
             progress = 1f,
         )
@@ -528,12 +538,12 @@ fun ImmersiveEyesFace(
                 bottom = cy + shellH * 0.72f,
             )
 
-            // Soft rim plate — pale NOMI metal edge lifts the black face off the stage.
+            // Soft Gem rim plate — pale NOMI metal edge lifts the black face off the stage.
             val rimPadX = shellW * 0.055f
             val rimPadY = shellH * 0.06f
             val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
             drawExpressiveFaceShell(
-                morphState = shellMorph,
+                morphState = rimMorph,
                 bounds = Rect(
                     left = shellBounds.left - rimPadX,
                     top = shellBounds.top - rimPadY,
@@ -543,7 +553,7 @@ fun ImmersiveEyesFace(
                 color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.55f),
             )
             drawExpressiveFaceShell(
-                morphState = shellMorph,
+                morphState = rimMorph,
                 bounds = Rect(
                     left = shellBounds.left - rimPadX * 0.45f,
                     top = shellBounds.top - rimPadY * 0.45f,

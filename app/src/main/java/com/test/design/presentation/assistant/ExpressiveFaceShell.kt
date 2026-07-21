@@ -31,6 +31,8 @@ enum class ExpressiveShellKind {
     Arch,
     SemiCircle,
     Oval,
+    /** Material 3 gem — used for the pale outer rim plate behind the face shell. */
+    Gem,
 }
 
 /** Mood → one of three face-like expressive shapes. */
@@ -59,6 +61,7 @@ internal fun ExpressiveShellKind.toRoundedPolygon(): RoundedPolygon = when (this
     ExpressiveShellKind.Arch -> MaterialShapes.Arch
     ExpressiveShellKind.SemiCircle -> MaterialShapes.SemiCircle
     ExpressiveShellKind.Oval -> MaterialShapes.Oval
+    ExpressiveShellKind.Gem -> MaterialShapes.Gem
 }
 
 /**

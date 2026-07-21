@@ -130,6 +130,16 @@ class AssistantMoodTest {
         AssistantMood.entries.forEach { mood ->
             assertTrue(mood.toShellKind() in ExpressiveShellKind.entries.toSet())
         }
+        assertTrue(ExpressiveShellKind.Gem in ExpressiveShellKind.entries)
+    }
+
+    @Test
+    @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+    fun gemShellUsesMaterialGemShape() {
+        assertEquals(
+            androidx.compose.material3.MaterialShapes.Gem,
+            ExpressiveShellKind.Gem.toRoundedPolygon(),
+        )
     }
 
     @Test
