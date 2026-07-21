@@ -81,8 +81,7 @@ fun AppsGlance(
         LauncherApp("Store", Icons.Default.Store, null, Color(0xFF34A853)),
         LauncherApp("Camera", Icons.Default.CameraAlt, null, Color(0xFFE1306C)),
         LauncherApp("Chat", Icons.Default.Chat, null, Color(0xFF25D366)),
-        LauncherApp("Music", Icons.Default.MusicNote, null, Color(0xFFA3A3A3)),
-        LauncherApp("Listen", Icons.Default.MusicNote, null, Color(0xFF1DB954)),
+        LauncherApp("Music", Icons.Default.MusicNote, null, Color(0xFF1DB954)),
         LauncherApp("Watch", null, "N", Color(0xFFE50914)),
         LauncherApp(
             label = "Assistant",
