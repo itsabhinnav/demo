@@ -198,11 +198,11 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Floating Nomi glyphs with a soft Material expressive shell under the eyes/mouth.
+ * Floating Nomi glyphs with a matte black NOMI face shell under the eyes/mouth.
  *
  * @param gazeX/gazeY optional cabin gaze override (−1..1); null keeps mood look loops
  * @param mouthAmplitude optional lip-sync 0..1 (drives mouth while speaking)
- * @param brandGlow OEM / Material accent for the soft under-glow
+ * @param brandGlow OEM / Material accent for soft under-glow / activity halo
  * @param highContrast sunlight-safe glyph + stronger glow
  * @param gesture nod / shake micro-expressions for yes/no
  */
@@ -528,7 +528,7 @@ fun ImmersiveEyesFace(
                 bottom = cy + shellH * 0.72f,
             )
 
-            // Soft rim plate behind the shell — bright edge separates face from bg.
+            // Soft rim plate — pale NOMI metal edge lifts the black face off the stage.
             val rimPadX = shellW * 0.055f
             val rimPadY = shellH * 0.06f
             val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
@@ -540,7 +540,7 @@ fun ImmersiveEyesFace(
                     right = shellBounds.right + rimPadX,
                     bottom = shellBounds.bottom + rimPadY,
                 ),
-                color = Color.White.copy(alpha = rimAlpha * 0.22f),
+                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.55f),
             )
             drawExpressiveFaceShell(
                 morphState = shellMorph,
@@ -550,20 +550,33 @@ fun ImmersiveEyesFace(
                     right = shellBounds.right + rimPadX * 0.45f,
                     bottom = shellBounds.bottom + rimPadY * 0.45f,
                 ),
-                color = brandGlow.copy(alpha = rimAlpha * 0.55f),
+                color = Color(0xFF9AA3B2).copy(alpha = rimAlpha * 0.70f),
             )
 
-            val shellAlpha = auraAlphaForContrast(highContrast, 0.22f) * glow.coerceIn(0.3f, 1f)
+            // Matte black NOMI face plate.
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = shellBounds,
-                color = brandGlow.copy(alpha = shellAlpha),
+                color = Color(0xFF050508),
             )
-            // Hairline rim stroke for a crisp lift against the visible backdrop.
+            // Soft top-left sheen on the black shell (same cue as NOMI orb).
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.08f),
+                        Color.Transparent,
+                    ),
+                    center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
+                    radius = faceR * 0.72f,
+                ),
+                radius = faceR * 0.72f,
+                center = Offset(cx - faceR * 0.28f, cy - faceR * 0.32f),
+            )
+            // Hairline pale rim stroke.
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = shellBounds,
-                color = Color.White.copy(alpha = rimAlpha * 0.55f),
+                color = Color(0xFFE8ECF2).copy(alpha = rimAlpha * 0.65f),
                 style = Stroke(width = 0.028f, cap = StrokeCap.Round),
             )
 
