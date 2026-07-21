@@ -88,7 +88,7 @@ startActivity(MapIntents.openMain(context, openDashboard = true))
 
 ## Assistant
 
-Translucent immersive assistant (corner bubble → fullscreen). Full adb cheat sheet: [`docs/assistant-adb.md`](docs/assistant-adb.md).
+Translucent immersive assistant (fullscreen overlay). Full adb cheat sheet: [`docs/assistant-adb.md`](docs/assistant-adb.md).
 
 ```bash
 adb shell appops set com.test.design SYSTEM_ALERT_WINDOW allow

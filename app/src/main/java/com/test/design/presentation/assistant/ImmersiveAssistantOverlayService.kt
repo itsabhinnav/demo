@@ -3,11 +3,9 @@ package com.test.design.presentation.assistant
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.graphics.Rect
 import android.os.IBinder
 import android.provider.Settings
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Recomposer
@@ -32,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 /**
  * Translucent system overlay host for the standalone immersive assistant.
@@ -40,9 +37,7 @@ import kotlin.math.roundToInt
  * AAOS multi-panel parks translucent *activities* under app_panel as invisible;
  * TYPE_APPLICATION_OVERLAY draws over Settings / any app with the same look.
  *
- * While listening ([AssistantPresentation.Compact]), touches outside the corner
- * bubble pass through to underlying apps. Fullscreen hit testing resumes when
- * the session morphs to [AssistantPresentation.Immersive].
+ * Opens directly in immersive fullscreen (no corner bubble).
  */
 class ImmersiveAssistantOverlayService : LifecycleService(),
     SavedStateRegistryOwner,
@@ -57,15 +52,12 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
         get() = store
 
     private lateinit var windowManager: WindowManager
-    private var overlayView: PassThroughFrameLayout? = null
+    private var overlayView: android.widget.FrameLayout? = null
 
     private val uiJob = SupervisorJob()
     private val uiScope = CoroutineScope(AndroidUiDispatcher.Main + uiJob)
 
     private var summonEpoch = 0
-    private val bubbleHitRect = Rect()
-    @Volatile
-    private var presentation: AssistantPresentation = AssistantPresentation.Compact
 
     override fun onCreate() {
         super.onCreate()
@@ -140,50 +132,12 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                         // Prefer silent lip-sync on AVDs — TTS init often fails (status=-1)
                         // and still stresses AudioFlinger around the immersive morph.
                         enableTts = false,
-                        onPresentationChanged = { next ->
-                            presentation = next
-                            if (next == AssistantPresentation.Immersive) {
-                                bubbleHitRect.setEmpty()
-                            }
-                        },
-                        onBubbleBoundsInRoot = { l, t, r, b ->
-                            if (presentation == AssistantPresentation.Compact) {
-                                bubbleHitRect.set(l, t, r, b)
-                            }
-                        },
                     )
                 }
             }
         }
 
-        val view = PassThroughFrameLayout(this).also { frame ->
-            frame.hitRectProvider = {
-                when (presentation) {
-                    AssistantPresentation.Compact -> {
-                        if (bubbleHitRect.isEmpty) {
-                            // Until first layout, claim a small bottom-end region.
-                            val w = frame.width.coerceAtLeast(1)
-                            val h = frame.height.coerceAtLeast(1)
-                            val density = resources.displayMetrics.density
-                            val bw = (360 * density).roundToInt()
-                            val bh = (120 * density).roundToInt()
-                            val inset = (20 * density).roundToInt()
-                            val chromeBottom = (84 * density).roundToInt()
-                            Rect(
-                                w - bw - inset,
-                                h - bh - inset - chromeBottom,
-                                w - inset,
-                                h - inset - chromeBottom,
-                            )
-                        } else {
-                            Rect(bubbleHitRect)
-                        }
-                    }
-                    AssistantPresentation.Immersive -> {
-                        Rect(0, 0, frame.width.coerceAtLeast(1), frame.height.coerceAtLeast(1))
-                    }
-                }
-            }
+        val view = android.widget.FrameLayout(this).also { frame ->
             frame.addView(
                 composeView,
                 android.widget.FrameLayout.LayoutParams(
@@ -240,25 +194,6 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
                 Intent(context.applicationContext, ImmersiveAssistantOverlayService::class.java)
                     .setAction(ACTION_STOP),
             )
-        }
-    }
-}
-
-/**
- * Claims touches only inside [hitRectProvider]; returns false elsewhere so the
- * window manager forwards events to underlying maps / apps.
- */
-private class PassThroughFrameLayout(context: Context) : android.widget.FrameLayout(context) {
-    var hitRectProvider: (() -> Rect)? = null
-
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val rect = hitRectProvider?.invoke() ?: return super.dispatchTouchEvent(ev)
-        val x = ev.x.roundToInt()
-        val y = ev.y.roundToInt()
-        return if (rect.contains(x, y)) {
-            super.dispatchTouchEvent(ev)
-        } else {
-            false
         }
     }
 }

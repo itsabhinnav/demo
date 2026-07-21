@@ -21,7 +21,7 @@ Or use the install helper (grants both):
 
 ## Launch assistant
 
-Brings `MainActivity` under the glass, then shows the translucent overlay (corner bubble → immersive morph):
+Brings `MainActivity` under the glass, then shows the translucent immersive overlay:
 
 ```bash
 adb shell am start -a com.test.design.action.OPEN_ASSISTANT \

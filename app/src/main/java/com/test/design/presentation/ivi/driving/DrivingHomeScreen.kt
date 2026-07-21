@@ -85,8 +85,10 @@ fun DrivingHomeScreen(
             mutableStateOf(AssistantPresentation.Compact)
         }
         LaunchedEffect(assistantOpen) {
-            if (!assistantOpen) {
-                assistantPresentation = AssistantPresentation.Compact
+            assistantPresentation = if (assistantOpen) {
+                AssistantPresentation.Immersive
+            } else {
+                AssistantPresentation.Compact
             }
         }
         val hostBlurred = galleryOpen ||
