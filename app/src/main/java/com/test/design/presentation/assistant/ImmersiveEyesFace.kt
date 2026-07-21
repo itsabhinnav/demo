@@ -481,6 +481,26 @@ fun ImmersiveEyesFace(
             center = Offset(cx + parallaxX, cy + parallaxY),
         )
 
+        // Faint floor shadow — flat puddle that barely follows motion so the face feels anchored.
+        val floorCx = cx + swayX * 0.3f
+        val floorCy = cy + faceR * 0.78f + bobY * 0.18f
+        val floorW = faceR * 1.48f
+        val floorH = faceR * 0.20f
+        drawOval(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to Color.Black.copy(alpha = 0.30f),
+                    0.40f to Color.Black.copy(alpha = 0.14f),
+                    0.75f to Color.Black.copy(alpha = 0.04f),
+                    1.0f to Color.Transparent,
+                ),
+                center = Offset(floorCx, floorCy),
+                radius = floorW,
+            ),
+            topLeft = Offset(floorCx - floorW, floorCy - floorH),
+            size = Size(floorW * 2f, floorH * 2f),
+        )
+
         translate(left = swayX, top = bobY) {
             // Soft diffuse aura so glyphs blend into the stage
             val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
@@ -506,21 +526,6 @@ fun ImmersiveEyesFace(
                 top = cy - shellH * 0.68f,
                 right = cx + shellW,
                 bottom = cy + shellH * 0.72f,
-            )
-
-            // Soft contact shadow — lifts the character off the backdrop.
-            drawOval(
-                brush = Brush.radialGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.Black.copy(alpha = 0.34f * glow.coerceIn(0.4f, 1f)),
-                        0.55f to Color.Black.copy(alpha = 0.12f),
-                        1.0f to Color.Transparent,
-                    ),
-                    center = Offset(cx, cy + shellH * 0.62f),
-                    radius = shellW * 0.92f,
-                ),
-                topLeft = Offset(cx - shellW * 0.92f, cy + shellH * 0.28f),
-                size = Size(shellW * 1.84f, shellH * 0.72f),
             )
 
             // Soft rim plate behind the shell — bright edge separates face from bg.
