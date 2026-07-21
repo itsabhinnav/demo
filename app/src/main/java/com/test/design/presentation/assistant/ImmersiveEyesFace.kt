@@ -407,6 +407,28 @@ fun ImmersiveEyesFace(
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bob = sin(life * 0.45f).toFloat() * faceR * 0.025f
 
+        // Very light parallax halo — drifts opposite bob/gaze for a soft depth cue.
+        val parallaxX = -lookX.value * faceR * 0.045f +
+            sin(life * 0.22f).toFloat() * faceR * 0.016f
+        val parallaxY = -bob * 0.65f - lookY.value * faceR * 0.035f +
+            cos(life * 0.19f).toFloat() * faceR * 0.012f
+        val haloA = auraAlphaForContrast(highContrast, 0.11f) * glow
+        val haloR = faceR * (2.05f + 0.06f * sin(life * 0.5f).toFloat())
+        drawCircle(
+            brush = Brush.radialGradient(
+                colorStops = arrayOf(
+                    0.0f to brandGlow.copy(alpha = haloA * 0.28f),
+                    0.42f to brandGlow.copy(alpha = haloA * 0.10f),
+                    0.78f to brandGlow.copy(alpha = haloA * 0.03f),
+                    1.0f to Color.Transparent,
+                ),
+                center = Offset(cx + parallaxX, cy + parallaxY),
+                radius = haloR,
+            ),
+            radius = haloR,
+            center = Offset(cx + parallaxX, cy + parallaxY),
+        )
+
         translate(top = bob) {
             // Soft diffuse aura so glyphs blend into the blurred stage
             val auraA = auraAlphaForContrast(highContrast, 0.22f) * glow
