@@ -194,12 +194,16 @@ private val Glyph = Color(0xFFF5F7FA)
 
 /**
  * NIO NOMI–style assistant — glossy glass sphere, black circular face, white glyphs.
+ *
+ * @param faceFillRatio Fraction of the silver shell radius filled by the matte black face.
+ *   Higher values yield a thinner silver rim (e.g. `0.97f` ≈ hairline). Default `0.78f`.
  */
 @Composable
 fun AssistantFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
     faceColor: Color = Glyph,
+    faceFillRatio: Float = 0.78f,
 ) {
     val target = mood.toFacePose()
     val eyeOpen = remember { Animatable(target.eyeOpen) }
@@ -309,7 +313,7 @@ fun AssistantFace(
         val cx = size.width * 0.5f
         val cy = size.height * 0.5f
         val shellR = side * 0.42f * breath
-        val faceR = shellR * 0.78f
+        val faceR = shellR * faceFillRatio.coerceIn(0.5f, 0.995f)
         val r = faceR
         val moodTint = mood.glowColor
         val g = borderGlow.value
