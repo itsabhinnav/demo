@@ -565,8 +565,8 @@ fun ImmersiveEyesFace(
             )
 
             // Soft Gem rim plate — pale NOMI metal edge lifts the black face off the stage.
-            val rimPadX = shellW * 0.028f
-            val rimPadY = shellH * 0.030f
+            val rimPadX = shellW * 0.014f
+            val rimPadY = shellH * 0.015f
             val rimAlpha = auraAlphaForContrast(highContrast, 0.28f) * glow.coerceIn(0.35f, 1f)
             drawExpressiveFaceShell(
                 morphState = rimMorph,
