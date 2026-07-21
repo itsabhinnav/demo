@@ -59,8 +59,13 @@ class VirtualAssistantActivity : ComponentActivity() {
             micPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
 
+        intent.getStringExtra(EXTRA_FACE)?.let { AssistantFaceConfig.setFromRaw(this, it) }
+
         if (Settings.canDrawOverlays(this)) {
-            ImmersiveAssistantOverlayService.show(this)
+            ImmersiveAssistantOverlayService.show(
+                this,
+                face = intent.getStringExtra(EXTRA_FACE),
+            )
             finish()
             return
         }
@@ -92,8 +97,12 @@ class VirtualAssistantActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        intent.getStringExtra(EXTRA_FACE)?.let { AssistantFaceConfig.setFromRaw(this, it) }
         if (Settings.canDrawOverlays(this)) {
-            ImmersiveAssistantOverlayService.show(this)
+            ImmersiveAssistantOverlayService.show(
+                this,
+                face = intent.getStringExtra(EXTRA_FACE),
+            )
             finish()
         } else {
             summonEpoch++
@@ -102,12 +111,14 @@ class VirtualAssistantActivity : ComponentActivity() {
 
     companion object {
         const val ACTION_OPEN_ASSISTANT = "com.test.design.action.OPEN_ASSISTANT"
+        const val EXTRA_FACE = AssistantFaceReceiver.EXTRA_FACE
 
-        fun launch(context: Context) {
+        fun launch(context: Context, face: String? = null) {
             context.startActivity(
                 Intent(context, VirtualAssistantActivity::class.java).apply {
                     action = ACTION_OPEN_ASSISTANT
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    if (face != null) putExtra(EXTRA_FACE, face)
                 },
             )
         }

@@ -184,6 +184,17 @@
             </intent-filter>
         </receiver>
 
+        <!-- ADB swap immersive assistant face (none|eyes|eporo|droid|glyph) -->
+        <receiver
+            android:name=".presentation.assistant.AssistantFaceReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.test.design.action.SET_ASSISTANT_FACE" />
+                <action android:name="com.test.design.action.GET_ASSISTANT_FACE" />
+            </intent-filter>
+        </receiver>
+
         <!-- Dewd widget_panel host (left rail) -->
         <activity
             android:name=".presentation.ivi.glanceables.DrivingRailActivity"

@@ -65,6 +65,6 @@ enum class AssistantUiStyle(
     ),
     EporoFace(
         title = "EPORO",
-        blurb = "Material Gem shell · Bézier visor · glow eyes · LED bar",
+        blurb = "SemiCircle shell · Bézier visor · glow eyes",
     ),
 }

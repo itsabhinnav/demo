@@ -74,8 +74,16 @@ internal fun ExpressiveShellKind.toRoundedPolygon(): RoundedPolygon = when (this
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 internal fun rememberExpressiveShellMorph(
     mood: AssistantMood,
+): ExpressiveShellMorphState = rememberExpressiveShellMorph(mood.toShellKind())
+
+/**
+ * Morph the outer shell toward [targetKind] (e.g. Eporo SemiCircle ↔ Gem).
+ */
+@Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+internal fun rememberExpressiveShellMorph(
+    targetKind: ExpressiveShellKind,
 ): ExpressiveShellMorphState {
-    val targetKind = mood.toShellKind()
     var settledKind by remember { mutableStateOf(targetKind) }
     var morph by remember {
         mutableStateOf(

@@ -1,0 +1,55 @@
+package com.test.design.presentation.assistant
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class AssistantFaceKindTest {
+
+    @Test
+    fun parsesCanonicalKeys() {
+        assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("none"))
+        assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("eyes"))
+        assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporo"))
+        assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("droid"))
+        assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("glyph"))
+    }
+
+    @Test
+    fun parsesAliases() {
+        assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("off"))
+        assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("noface"))
+        assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("immersive"))
+        assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporp"))
+        assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("bugdroid"))
+        assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("classic"))
+    }
+
+    @Test
+    fun ignoresCaseAndWhitespace() {
+        assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("  EPORO "))
+        assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("Eyes"))
+    }
+
+    @Test
+    fun unknownReturnsNull() {
+        assertNull(AssistantFaceKind.parse(null))
+        assertNull(AssistantFaceKind.parse(""))
+        assertNull(AssistantFaceKind.parse("banana"))
+    }
+
+    @Test
+    fun adbKeysAreUnique() {
+        val keys = AssistantFaceKind.entries.map { it.adbKey }
+        assertEquals(keys.size, keys.toSet().size)
+        assertTrue(keys.contains("none"))
+        assertTrue(keys.contains("eyes"))
+        assertTrue(keys.contains("eporo"))
+    }
+
+    @Test
+    fun defaultIsEporo() {
+        assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.Default)
+    }
+}

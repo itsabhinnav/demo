@@ -73,8 +73,16 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.getStringExtra(EXTRA_FACE)?.let { raw ->
+            AssistantFaceConfig.setFromRaw(this, raw)
+        }
         when (intent?.action) {
             ACTION_STOP -> stopSelf()
+            ACTION_SET_FACE -> {
+                val raw = intent.getStringExtra(EXTRA_FACE)
+                    ?: intent.getStringExtra(EXTRA_KIND)
+                AssistantFaceConfig.setFromRaw(this, raw)
+            }
             ACTION_SUMMON -> {
                 summonEpoch++
                 notifyImmersiveAssistantHotword()
@@ -173,20 +181,23 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
     companion object {
         const val ACTION_STOP = "com.test.design.assistant.IMMERSIVE_STOP"
         const val ACTION_SUMMON = "com.test.design.assistant.IMMERSIVE_SUMMON"
+        const val ACTION_SET_FACE = "com.test.design.assistant.SET_FACE"
+        const val EXTRA_FACE = AssistantFaceReceiver.EXTRA_FACE
+        const val EXTRA_KIND = AssistantFaceReceiver.EXTRA_KIND
 
         @Volatile
         private var instance: ImmersiveAssistantOverlayService? = null
 
-        fun show(context: Context) {
+        fun show(context: Context, face: String? = null) {
             val app = context.applicationContext
-            if (instance != null) {
-                app.startService(
-                    Intent(app, ImmersiveAssistantOverlayService::class.java)
-                        .setAction(ACTION_SUMMON),
-                )
-            } else {
-                app.startService(Intent(app, ImmersiveAssistantOverlayService::class.java))
+            val intent = Intent(app, ImmersiveAssistantOverlayService::class.java)
+            if (face != null) {
+                intent.putExtra(EXTRA_FACE, face)
             }
+            if (instance != null) {
+                intent.action = ACTION_SUMMON
+            }
+            app.startService(intent)
         }
 
         fun stop(context: Context) {

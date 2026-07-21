@@ -42,7 +42,7 @@ val EporoGlowSoft = Color(0xFFB8A6FF)
 
 /**
  * EPORO / robot head — Compose Canvas architecture:
- * HeadShell (Material Gem) → Visor → Eyes → BottomLightBar → GlossHighlights.
+ * HeadShell (SemiCircle) → Visor → Eyes → GlossHighlights.
  * Same outer footprint as [DroidAssistantFace].
  */
 @Composable
@@ -55,12 +55,12 @@ fun EporoAssistantFace(
     glowColor: Color = EporoGlow,
 ) {
     val pose = mood.toEporoPose()
-    // Material Gem silhouette for the pale white outer head shell.
+    // Fixed SemiCircle white outer plate.
     val shellMorph = remember {
         ExpressiveShellMorphState(
             morph = Morph(
-                start = ExpressiveShellKind.Gem.toRoundedPolygon(),
-                end = ExpressiveShellKind.Gem.toRoundedPolygon(),
+                start = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
+                end = ExpressiveShellKind.SemiCircle.toRoundedPolygon(),
             ),
             progress = 1f,
         )
@@ -141,7 +141,6 @@ fun EporoAssistantFace(
                 glow = glowColor,
             )
 
-            drawBottomLight(glowPhase)
             drawVisorSpecks()
         }
     }
@@ -175,13 +174,13 @@ private fun DrawScope.drawHead(
 }
 
 /** Organic Bézier visor — convex brow, blunt chin tab.
- * Slim white Gem bezel; slightly more inset than the tightest fit.
+ * Slim white SemiCircle bezel; slightly more inset than the tightest fit.
  */
 private fun DrawScope.drawVisor(visorColor: Color) {
     val w = size.width
     val h = size.height
     val p = Path().apply {
-        // ~10–12% inset from Gem shell — a bit more white border than the ultra-tight cut.
+        // ~10–12% inset from white SemiCircle shell.
         moveTo(w * 0.11f, h * 0.30f)
         cubicTo(
             w * 0.20f, h * 0.17f,
@@ -272,42 +271,6 @@ private fun DrawScope.drawEye(
         color = Color.White.copy(alpha = 0.9f),
         radius = radius * 0.1f,
         center = Offset(center.x, center.y + radius * 0.78f),
-    )
-}
-
-private fun DrawScope.drawBottomLight(phase: Float) {
-    val w = size.width
-    val h = size.height
-    val y = h * 0.90f
-    val barH = h * 0.018f
-    // Bloom under LED.
-    drawIntoCanvas { canvas ->
-        val paint = Paint().asFrameworkPaint().apply {
-            isAntiAlias = true
-            color = EporoGlowSoft.copy(alpha = 0.35f * phase).toArgb()
-            maskFilter = BlurMaskFilter(barH * 4f, BlurMaskFilter.Blur.NORMAL)
-        }
-        canvas.nativeCanvas.drawRoundRect(
-            w * 0.06f,
-            y - barH,
-            w * 0.94f,
-            y + barH * 2f,
-            barH,
-            barH,
-            paint,
-        )
-    }
-    drawRoundRect(
-        brush = Brush.horizontalGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.25f),
-                Color(0xFFF4EAFF).copy(alpha = 0.55f + 0.35f * phase),
-                Color.White.copy(alpha = 0.25f),
-            ),
-        ),
-        topLeft = Offset(w * 0.05f, y),
-        size = Size(w * 0.90f, barH),
-        cornerRadius = CornerRadius(barH, barH),
     )
 }
 

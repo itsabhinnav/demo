@@ -1,6 +1,7 @@
 package com.test.design
 
 import android.app.Application
+import com.test.design.presentation.assistant.AssistantFaceConfig
 import org.osmdroid.config.Configuration
 
 /**
@@ -10,6 +11,7 @@ import org.osmdroid.config.Configuration
 class DesignApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        AssistantFaceConfig.install(this)
         Configuration.getInstance().apply {
             load(this@DesignApplication, getSharedPreferences(OSM_PREFS, MODE_PRIVATE))
             userAgentValue = packageName

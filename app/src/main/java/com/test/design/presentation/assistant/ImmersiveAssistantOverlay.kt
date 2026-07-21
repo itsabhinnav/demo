@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
@@ -95,9 +96,14 @@ fun ImmersiveAssistantOverlay(
     val wake = rememberAssistantWakeFeedback()
     val drivingUx = LocalDrivingUxState.current
     val highContrast = LocalAssistantHighContrast.current
+    val faceKind by AssistantFaceConfig.kind.collectAsStateWithLifecycle()
     val vehicleViewModel: VehicleViewModel = activityViewModel()
     val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
     val brandAccent = MaterialTheme.colorScheme.primary
+
+    LaunchedEffect(Unit) {
+        AssistantFaceConfig.install(context)
+    }
 
     var visible by remember { mutableStateOf(!awaitHotword) }
     var session by remember { mutableIntStateOf(if (!awaitHotword) 1 else 0) }
@@ -449,29 +455,32 @@ fun ImmersiveAssistantOverlay(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom,
                     ) {
-                        ImmersiveEyesFace(
-                            mood = mood,
-                            modifier = Modifier
-                                .size(faceSize)
-                                .offset {
-                                    IntOffset(
-                                        0,
-                                        (faceRise.value * risePx).roundToInt(),
-                                    )
-                                }
-                                .graphicsLayer {
-                                    val s = faceScale.value
-                                    scaleX = s
-                                    scaleY = s
-                                    alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                },
-                            gazeX = gazeX,
-                            gazeY = gazeY,
-                            mouthAmplitude = mouthAmplitude,
-                            brandGlow = brandGlow,
-                            highContrast = highContrast,
-                            gesture = gesture,
-                        )
+                        if (faceKind != AssistantFaceKind.None) {
+                            ConfigurableAssistantFace(
+                                mood = mood,
+                                kind = faceKind,
+                                modifier = Modifier
+                                    .width(faceSize)
+                                    .offset {
+                                        IntOffset(
+                                            0,
+                                            (faceRise.value * risePx).roundToInt(),
+                                        )
+                                    }
+                                    .graphicsLayer {
+                                        val s = faceScale.value
+                                        scaleX = s
+                                        scaleY = s
+                                        alpha = faceAlpha.value.coerceIn(0f, 1f)
+                                    },
+                                gazeX = gazeX,
+                                gazeY = gazeY,
+                                mouthAmplitude = mouthAmplitude,
+                                brandGlow = brandGlow,
+                                highContrast = highContrast,
+                                gesture = gesture,
+                            )
+                        }
                         // Transcript under the face, flush to the bottom of the activity.
                         ImmersiveTranscript(
                             text = transcript,
@@ -491,8 +500,8 @@ fun ImmersiveAssistantOverlay(
 }
 
 /**
- * Vertical stage: mostly clear top → soft darken at the bottom so the
- * underlying UI stays discernible while the face/transcript still read.
+ * Center-band stage: darken/blur only the middle ~40% width (soft 30–40–30),
+ * with the same gradual falloff used vertically — side gutters stay clear.
  */
 @Composable
 fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
@@ -500,6 +509,7 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
@@ -510,10 +520,23 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
                             1.0f to Color(0x990A0C10),
                         ),
                     ),
-                ),
+                )
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        brush = Brush.horizontalGradient(
+                            colorStops = AssistantCenterBandHorizontalStops,
+                        ),
+                        blendMode = BlendMode.DstIn,
+                    )
+                },
         )
-        // Light bottom-center pool — enough contrast for glyphs, map still visible.
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        // Light bottom-center pool — confined to the center band.
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
+        ) {
             val w = size.width
             val h = size.height
             drawRect(
@@ -525,8 +548,14 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
                         1.0f to Color.Transparent,
                     ),
                     center = Offset(w * 0.5f, h * 0.88f),
-                    radius = minOf(w * 0.42f, h * 0.36f),
+                    radius = minOf(w * 0.22f, h * 0.36f),
                 ),
+            )
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colorStops = AssistantCenterBandHorizontalStops,
+                ),
+                blendMode = BlendMode.DstIn,
             )
         }
     }
@@ -534,7 +563,7 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
 
 /**
  * Subtle bluish bottom-border glow as a true 2D gradient:
- * horizontal 0 → max → 0 across the width, soft fade upward from the edge.
+ * horizontal soft center band (30–40–30), soft fade upward from the edge.
  */
 @Composable
 fun ImmersiveBorderGlow(
@@ -553,16 +582,18 @@ fun ImmersiveBorderGlow(
         val bloomH = 64.dp.toPx()
         val top = h - bloomH
 
-        // Horizontal wash: transparent → blue → transparent.
+        // Horizontal wash: transparent gutters → center 40% glow.
         drawRect(
             brush = Brush.horizontalGradient(
                 colorStops = arrayOf(
                     0.00f to Color.Transparent,
-                    0.16f to blue.copy(alpha = 0.10f),
-                    0.34f to blue.copy(alpha = 0.28f),
+                    0.22f to Color.Transparent,
+                    0.30f to blue.copy(alpha = 0.10f),
+                    0.36f to blue.copy(alpha = 0.28f),
                     0.50f to blue.copy(alpha = 0.40f),
-                    0.66f to blue.copy(alpha = 0.28f),
-                    0.84f to blue.copy(alpha = 0.10f),
+                    0.64f to blue.copy(alpha = 0.28f),
+                    0.70f to blue.copy(alpha = 0.10f),
+                    0.78f to Color.Transparent,
                     1.00f to Color.Transparent,
                 ),
             ),

@@ -28,6 +28,14 @@ adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
   -n com.test.design/.presentation.assistant.VirtualAssistantActivity
 ```
 
+With a face override (persists):
+
+```bash
+adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
+  -n com.test.design/.presentation.assistant.VirtualAssistantActivity \
+  --es face eporo
+```
+
 Helper script (opens main first, then assistant):
 
 ```bash
@@ -48,6 +56,41 @@ adb shell am startservice \
 adb shell am startservice \
   -n com.test.design/.presentation.assistant.ImmersiveAssistantOverlayService \
   -a com.test.design.assistant.IMMERSIVE_STOP
+```
+
+## Swap face (live)
+
+Tokens: `none` | `eyes` | `eporo` | `droid` | `glyph`
+
+Aliases: `off`/`noface` → none · `immersive` → eyes · `eporp` → eporo · `classic` → glyph
+
+```bash
+# EPORO robot head
+adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
+  -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
+  --es face eporo
+
+# Immersive eyes
+adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
+  -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
+  --es face eyes
+
+# Transcript only (no face)
+adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
+  -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
+  --es face none
+
+# Log current face (logcat tag AssistantFace)
+adb shell am broadcast -a com.test.design.action.GET_ASSISTANT_FACE \
+  -n com.test.design/.presentation.assistant.AssistantFaceReceiver
+adb logcat -d -s AssistantFace:I | tail -n 3
+```
+
+Settings.Global (survives process; observed live when app is up):
+
+```bash
+adb shell settings put global design_assistant_face eporo
+adb shell settings get global design_assistant_face
 ```
 
 ## Other assistant surfaces
