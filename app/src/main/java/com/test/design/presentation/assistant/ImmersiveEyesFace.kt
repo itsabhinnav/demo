@@ -424,17 +424,17 @@ fun ImmersiveEyesFace(
                 center = Offset(cx, cy),
             )
 
-            // Fixed SemiCircle silhouette — tall enough that open mouths stay inside.
-            val shellW = faceR * 1.45f
-            val shellH = faceR * 1.08f
+            // Fixed SemiCircle silhouette — tall chin clearance for open / speaking mouths.
+            val shellW = faceR * 1.38f
+            val shellH = faceR * 1.42f
             val shellAlpha = auraAlphaForContrast(highContrast, 0.16f) * glow.coerceIn(0.25f, 1f)
             drawExpressiveFaceShell(
                 morphState = shellMorph,
                 bounds = Rect(
                     left = cx - shellW,
-                    top = cy - shellH * 0.72f,
+                    top = cy - shellH * 0.68f,
                     right = cx + shellW,
-                    bottom = cy + shellH * 0.55f,
+                    bottom = cy + shellH * 0.72f,
                 ),
                 color = brandGlow.copy(alpha = shellAlpha),
             )
