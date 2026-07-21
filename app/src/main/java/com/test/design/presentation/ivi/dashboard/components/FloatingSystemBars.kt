@@ -54,10 +54,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.climate.ClimateZone
 import com.test.design.presentation.ivi.climate.toDisplayTemperature
+import com.test.design.presentation.ivi.dashboard.FloatingSystemBarsVisibility
 import com.test.design.theme.CarDesignTokens
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -76,11 +78,26 @@ val FloatingChromeTopSpace = FloatingSystemBarEdgeInset + FloatingTopBarHeight
 /** Space reserved above the floating bottom bar (edge inset + bar height). */
 val FloatingChromeBottomSpace = FloatingSystemBarEdgeInset + FloatingBottomBarHeight
 
-fun Modifier.floatingSystemChromePadding(): Modifier =
-    padding(
-        top = FloatingChromeTopSpace,
-        bottom = FloatingChromeBottomSpace,
-    )
+/** Current top chrome inset — collapses to 0 when bars are hidden via adb. */
+@Composable
+fun rememberedFloatingChromeTopSpace(): Dp {
+    val visible by FloatingSystemBarsVisibility.visible.collectAsStateWithLifecycle()
+    return if (visible) FloatingChromeTopSpace else 0.dp
+}
+
+/** Current bottom chrome inset — collapses to 0 when bars are hidden via adb. */
+@Composable
+fun rememberedFloatingChromeBottomSpace(): Dp {
+    val visible by FloatingSystemBarsVisibility.visible.collectAsStateWithLifecycle()
+    return if (visible) FloatingChromeBottomSpace else 0.dp
+}
+
+@Composable
+fun Modifier.floatingSystemChromePadding(): Modifier {
+    val top = rememberedFloatingChromeTopSpace()
+    val bottom = rememberedFloatingChromeBottomSpace()
+    return padding(top = top, bottom = bottom)
+}
 
 private val FloatingBarShape = RoundedCornerShape(28.dp)
 private val GlassBarColor = Color(0xF01C1C1E)

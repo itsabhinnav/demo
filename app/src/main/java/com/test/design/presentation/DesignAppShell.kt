@@ -1,5 +1,10 @@
 package com.test.design.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +13,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +36,7 @@ import com.test.design.presentation.assistant.LocalAssistantHighContrast
 import com.test.design.presentation.assistant.LocalAssistantHighContrastUpdater
 import com.test.design.presentation.common.ScreenWithBackground
 import com.test.design.presentation.ivi.climate.ClimateViewModel
+import com.test.design.presentation.ivi.dashboard.FloatingSystemBarsVisibility
 import com.test.design.presentation.ivi.dashboard.components.FloatingBottomSystemBar
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarEdgeInset
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarInset
@@ -69,9 +76,15 @@ fun DesignAppShell(
     val themeMode by themeModeViewModel.themeMode.collectAsStateWithLifecycle()
     val assistantHighContrast by assistantAppearanceViewModel.highContrast.collectAsStateWithLifecycle()
     val climateState by climateViewModel.state.collectAsStateWithLifecycle()
+    val adbSystemBarsVisible by FloatingSystemBarsVisibility.visible.collectAsStateWithLifecycle()
+    val barsVisible = showFloatingSystemBars && adbSystemBarsVisible
 
     var hunVisible by remember { mutableStateOf(false) }
     var hunNotifications by remember { mutableStateOf(DemoHunNotifications) }
+
+    LaunchedEffect(barsVisible) {
+        if (!barsVisible) hunVisible = false
+    }
 
     AppTheme(
         themeMode = themeMode,
@@ -95,7 +108,12 @@ fun DesignAppShell(
             val body = @Composable {
                 Box(modifier = Modifier.fillMaxSize()) {
                     content()
-                    if (showFloatingSystemBars) {
+                    AnimatedVisibility(
+                        visible = barsVisible,
+                        enter = fadeIn() + slideInVertically { -it },
+                        exit = fadeOut() + slideOutVertically { -it },
+                        modifier = Modifier.align(Alignment.TopCenter),
+                    ) {
                         FloatingTopSystemBar(
                             onNotificationsClick = {
                                 if (hunNotifications.isEmpty()) {
@@ -104,14 +122,14 @@ fun DesignAppShell(
                                 hunVisible = !hunVisible
                             },
                             notificationCount = if (hunVisible) 0 else hunNotifications.size,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(
-                                    start = FloatingSystemBarInset,
-                                    end = FloatingSystemBarInset,
-                                    top = FloatingSystemBarEdgeInset,
-                                ),
+                            modifier = Modifier.padding(
+                                start = FloatingSystemBarInset,
+                                end = FloatingSystemBarInset,
+                                top = FloatingSystemBarEdgeInset,
+                            ),
                         )
+                    }
+                    if (barsVisible) {
                         HeadsUpNotificationHost(
                             visible = hunVisible,
                             notifications = hunNotifications,
@@ -131,6 +149,13 @@ fun DesignAppShell(
                                     top = FloatingSystemBarEdgeInset + 72.dp,
                                 ),
                         )
+                    }
+                    AnimatedVisibility(
+                        visible = barsVisible,
+                        enter = fadeIn() + slideInVertically { it },
+                        exit = fadeOut() + slideOutVertically { it },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    ) {
                         FloatingBottomSystemBar(
                             climateState = climateState,
                             onClimateEvent = climateViewModel::onEvent,
@@ -138,13 +163,11 @@ fun DesignAppShell(
                             onOpenSettings = onOpenSettings,
                             onOpenHome = onOpenHome,
                             onOpenAssistant = onOpenAssistant,
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(
-                                    start = FloatingSystemBarInset,
-                                    end = FloatingSystemBarInset,
-                                    bottom = FloatingSystemBarEdgeInset,
-                                ),
+                            modifier = Modifier.padding(
+                                start = FloatingSystemBarInset,
+                                end = FloatingSystemBarInset,
+                                bottom = FloatingSystemBarEdgeInset,
+                            ),
                         )
                     }
                 }

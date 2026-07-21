@@ -142,8 +142,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
             val sidebarWidthPx = with(density) { sidebarWidth.toPx() }
             val reveal = widgetsReveal.value
             val mapContentStart = mapChromeContentStart(sidebarWidth, reveal)
-            val chromeTop = FloatingChromeTopSpace + OverlayInset
-            val chromeBottom = FloatingChromeBottomSpace + OverlayInset
+            val chromeTop = rememberedFloatingChromeTopSpace() + OverlayInset
+            val chromeBottom = rememberedFloatingChromeBottomSpace() + OverlayInset
             val widgetsVisible = reveal > 0.02f
 
             // Left-rail hit target: edge strip when hidden, full sidebar chrome when shown.
