@@ -14,7 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -125,7 +127,7 @@ internal fun DrawScope.drawExpressiveFaceShell(
 internal fun DrawScope.drawExpressiveFaceShell(
     morphState: ExpressiveShellMorphState,
     bounds: Rect,
-    brush: androidx.compose.ui.graphics.Brush,
+    brush: Brush,
     style: DrawStyle = Fill,
 ) {
     drawExpressiveFaceShellPath(morphState, bounds) { path ->
@@ -137,7 +139,7 @@ internal fun DrawScope.drawExpressiveFaceShell(
 private inline fun DrawScope.drawExpressiveFaceShellPath(
     morphState: ExpressiveShellMorphState,
     bounds: Rect,
-    draw: DrawScope.(androidx.compose.ui.graphics.Path) -> Unit,
+    draw: DrawScope.(Path) -> Unit,
 ) {
     if (bounds.width <= 0f || bounds.height <= 0f) return
     val unit = morphState.morph.toPath(morphState.progress)
