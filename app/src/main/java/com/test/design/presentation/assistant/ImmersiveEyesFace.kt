@@ -538,30 +538,43 @@ fun ImmersiveEyesFace(
                 bottom = cy + shellH * 0.72f,
             )
 
-            // Subtle state glow behind the SemiCircle frame — color/strength follow mood.
-            val frameGlowStrength = auraAlphaForContrast(highContrast, 0.24f) *
+            // Soft radial gradient glow behind the frame — mood color, not a shaped fill.
+            val frameGlowStrength = auraAlphaForContrast(highContrast, 0.26f) *
                 glow.coerceIn(0.3f, 1.2f) *
                 stateGlowIntensity *
-                (0.72f + 0.28f * pulse)
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = Rect(
-                    left = shellBounds.left - shellW * 0.16f,
-                    top = shellBounds.top - shellH * 0.16f,
-                    right = shellBounds.right + shellW * 0.16f,
-                    bottom = shellBounds.bottom + shellH * 0.16f,
-                ),
-                color = stateGlowColor.copy(alpha = frameGlowStrength * 0.22f),
+                (0.70f + 0.30f * pulse)
+            val frameGlowCenter = Offset(
+                (shellBounds.left + shellBounds.right) * 0.5f,
+                (shellBounds.top + shellBounds.bottom) * 0.52f,
             )
-            drawExpressiveFaceShell(
-                morphState = shellMorph,
-                bounds = Rect(
-                    left = shellBounds.left - shellW * 0.08f,
-                    top = shellBounds.top - shellH * 0.08f,
-                    right = shellBounds.right + shellW * 0.08f,
-                    bottom = shellBounds.bottom + shellH * 0.08f,
+            val frameGlowR = maxOf(shellW, shellH) * (1.15f + 0.08f * pulse)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(
+                        0.0f to stateGlowColor.copy(alpha = frameGlowStrength * 0.42f),
+                        0.35f to stateGlowColor.copy(alpha = frameGlowStrength * 0.22f),
+                        0.65f to stateGlowColor.copy(alpha = frameGlowStrength * 0.08f),
+                        1.0f to Color.Transparent,
+                    ),
+                    center = frameGlowCenter,
+                    radius = frameGlowR,
                 ),
-                color = stateGlowColor.copy(alpha = frameGlowStrength * 0.38f),
+                radius = frameGlowR,
+                center = frameGlowCenter,
+            )
+            // Softer outer falloff so the bloom reads as light, not a hard plate.
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colorStops = arrayOf(
+                        0.0f to stateGlowColor.copy(alpha = frameGlowStrength * 0.12f),
+                        0.55f to stateGlowColor.copy(alpha = frameGlowStrength * 0.04f),
+                        1.0f to Color.Transparent,
+                    ),
+                    center = frameGlowCenter,
+                    radius = frameGlowR * 1.35f,
+                ),
+                radius = frameGlowR * 1.35f,
+                center = frameGlowCenter,
             )
 
             // Soft Gem rim plate — pale NOMI metal edge lifts the black face off the stage.
