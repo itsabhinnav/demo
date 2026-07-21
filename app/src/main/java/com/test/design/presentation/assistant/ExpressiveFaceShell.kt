@@ -115,11 +115,35 @@ internal fun DrawScope.drawExpressiveFaceShell(
     color: Color,
     style: DrawStyle = Fill,
 ) {
+    drawExpressiveFaceShellPath(morphState, bounds) { path ->
+        drawPath(path = path, color = color, style = style)
+    }
+}
+
+/** Brush fill variant — used for glossy white outer shells (e.g. Eporo). */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+internal fun DrawScope.drawExpressiveFaceShell(
+    morphState: ExpressiveShellMorphState,
+    bounds: Rect,
+    brush: androidx.compose.ui.graphics.Brush,
+    style: DrawStyle = Fill,
+) {
+    drawExpressiveFaceShellPath(morphState, bounds) { path ->
+        drawPath(path = path, brush = brush, style = style)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private inline fun DrawScope.drawExpressiveFaceShellPath(
+    morphState: ExpressiveShellMorphState,
+    bounds: Rect,
+    draw: DrawScope.(androidx.compose.ui.graphics.Path) -> Unit,
+) {
     if (bounds.width <= 0f || bounds.height <= 0f) return
     val unit = morphState.morph.toPath(morphState.progress)
     translate(left = bounds.left, top = bounds.top) {
         scale(scaleX = bounds.width, scaleY = bounds.height, pivot = Offset.Zero) {
-            drawPath(path = unit, color = color, style = style)
+            draw(unit)
         }
     }
 }

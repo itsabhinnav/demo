@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.launch
 
 val EporoShell = Color(0xFFF7F7F8)
@@ -40,10 +42,11 @@ val EporoGlowSoft = Color(0xFFB8A6FF)
 
 /**
  * EPORO / robot head — Compose Canvas architecture:
- * HeadShell → Visor → Eyes → BottomLightBar → GlossHighlights.
+ * HeadShell (Material Gem) → Visor → Eyes → BottomLightBar → GlossHighlights.
  * Same outer footprint as [DroidAssistantFace].
  */
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 fun EporoAssistantFace(
     mood: AssistantMood,
     modifier: Modifier = Modifier,
@@ -52,6 +55,16 @@ fun EporoAssistantFace(
     glowColor: Color = EporoGlow,
 ) {
     val pose = mood.toEporoPose()
+    // Material Gem silhouette for the pale white outer head shell.
+    val shellMorph = remember {
+        ExpressiveShellMorphState(
+            morph = Morph(
+                start = ExpressiveShellKind.Gem.toRoundedPolygon(),
+                end = ExpressiveShellKind.Gem.toRoundedPolygon(),
+            ),
+            progress = 1f,
+        )
+    }
     val eyeOpen = remember { Animatable(pose.eyeOpen) }
     val eyeGap = remember { Animatable(pose.eyeGap) }
     val lookX = remember { Animatable(pose.lookX) }
@@ -101,7 +114,7 @@ fun EporoAssistantFace(
         val cx = w * 0.5f
 
         rotate(degrees = tilt.value, pivot = Offset(cx, h * 0.48f)) {
-            drawHead(shellColor)
+            drawHead(shellMorph = shellMorph, shellColor = shellColor)
             drawVisor(visorColor)
             drawHighlights()
 
@@ -134,22 +147,30 @@ fun EporoAssistantFace(
     }
 }
 
-private fun DrawScope.drawHead(shellColor: Color) {
+private fun DrawScope.drawHead(
+    shellMorph: ExpressiveShellMorphState,
+    shellColor: Color,
+) {
     val w = size.width
     val h = size.height
-    drawRoundRect(
+    val bounds = Rect(
+        left = 0f,
+        top = 0f,
+        right = w,
+        bottom = h * 0.95f,
+    )
+    drawExpressiveFaceShell(
+        morphState = shellMorph,
+        bounds = bounds,
         brush = Brush.radialGradient(
             colors = listOf(
                 Color.White,
                 shellColor,
-                Color(0xFFE7E7E7),
+                EporoShellShade,
             ),
             center = Offset(w * 0.5f, h * 0.15f),
             radius = w,
         ),
-        topLeft = Offset.Zero,
-        size = Size(w, h * 0.95f),
-        cornerRadius = CornerRadius(w * 0.48f, w * 0.48f),
     )
 }
 
