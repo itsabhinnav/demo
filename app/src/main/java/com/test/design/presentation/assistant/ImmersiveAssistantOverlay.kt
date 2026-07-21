@@ -435,7 +435,7 @@ fun ImmersiveAssistantOverlay(
                     .fillMaxSize()
                     .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
             ) {
-                // Transparent top → very dark bottom; glow only along bottom edge.
+                // Transparent top → very dark bottom.
                 Box(Modifier.fillMaxSize()) {
                     ImmersiveBackdrop()
                     WeatherAmbientOverlay(
@@ -443,7 +443,6 @@ fun ImmersiveAssistantOverlay(
                         modifier = Modifier.fillMaxSize(),
                         tint = Color(0xFFB3E5FC),
                     )
-                    ImmersiveBorderGlow(glowColor = brandGlow)
                 }
 
                 BoxWithConstraints(
@@ -546,54 +545,6 @@ fun ImmersiveBackdrop(modifier: Modifier = Modifier) {
                 ),
             )
         }
-    }
-}
-
-/**
- * Soft bottom bloom only — no hard edge.
- * Peaks at bottom-center, fades to 0 left/right and upward.
- */
-@Composable
-fun ImmersiveBorderGlow(
-    modifier: Modifier = Modifier,
-    glowColor: Color = Color(0xFF8AB4F8),
-) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val cx = w * 0.5f
-        val blue = glowColor
-        // Tall soft oval sitting on the bottom edge so the hard diameter is off-screen.
-        val glowW = w * 0.72f
-        val glowH = 56.dp.toPx()
-        drawOval(
-            brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.0f to blue.copy(alpha = 0.45f),
-                    0.35f to blue.copy(alpha = 0.18f),
-                    0.70f to blue.copy(alpha = 0.05f),
-                    1.0f to Color.Transparent,
-                ),
-                center = Offset(cx, h),
-                radius = glowW * 0.55f,
-            ),
-            topLeft = Offset(cx - glowW * 0.5f, h - glowH),
-            size = Size(glowW, glowH * 2f),
-        )
-        // Wider, fainter halo for side fade.
-        drawOval(
-            brush = Brush.radialGradient(
-                colorStops = arrayOf(
-                    0.0f to blue.copy(alpha = 0.16f),
-                    0.55f to blue.copy(alpha = 0.04f),
-                    1.0f to Color.Transparent,
-                ),
-                center = Offset(cx, h + 4.dp.toPx()),
-                radius = w * 0.42f,
-            ),
-            topLeft = Offset(w * 0.05f, h - glowH * 1.35f),
-            size = Size(w * 0.90f, glowH * 2.4f),
-        )
     }
 }
 

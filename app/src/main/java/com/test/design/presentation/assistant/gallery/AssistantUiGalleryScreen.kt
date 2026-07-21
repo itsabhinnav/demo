@@ -29,11 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.ImmersiveBackdrop
-import com.test.design.presentation.assistant.ImmersiveBorderGlow
 
 /**
  * Semi-transparent assistant UI gallery — pick a chrome style and mood.
- * Uses the same radial stage + edge glow as [ImmersiveAssistantOverlay].
+ * Uses the same radial stage as [ImmersiveAssistantOverlay].
  */
 @Composable
 fun AssistantUiGalleryScreen(
@@ -46,7 +45,6 @@ fun AssistantUiGalleryScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         ImmersiveBackdrop()
-        ImmersiveBorderGlow()
 
         Box(
             modifier = Modifier
