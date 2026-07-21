@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
@@ -368,6 +369,13 @@ private fun AppLauncherCard(
         LauncherApp("Music", Icons.Default.MusicNote, null, Color(0xFFA3A3A3), DashboardWidget.Media),
         LauncherApp("Listen", Icons.Default.MusicNote, null, Color(0xFF1DB954), DashboardWidget.Media),
         LauncherApp("Watch", null, "N", Color(0xFFE50914), DashboardWidget.CustomizedMaterial),
+        LauncherApp(
+            "Assistant",
+            Icons.Default.AutoAwesome,
+            null,
+            Color(0xFF8AB4F8),
+            DashboardWidget.VirtualAssistant,
+        ),
     )
     val columns = 4
     val gap = 14.dp

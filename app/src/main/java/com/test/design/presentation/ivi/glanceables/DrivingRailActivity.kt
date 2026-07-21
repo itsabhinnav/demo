@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.cluster.ClusterUiState
+import com.test.design.presentation.assistant.VirtualAssistantActivity
 import com.test.design.presentation.ivi.climate.ClimateViewModel
 import com.test.design.presentation.ivi.map.MapIntents
 import com.test.design.presentation.ivi.media.MediaViewModel
@@ -72,6 +73,9 @@ class DrivingRailActivity : GlanceableActivity() {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             },
                         )
+                    },
+                    onOpenAssistant = {
+                        VirtualAssistantActivity.launch(this@DrivingRailActivity)
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.MusicNote
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.test.design.presentation.assistant.VirtualAssistantActivity
 import com.test.design.presentation.ivi.map.MapIntents
 
 /** Scalable UI `apps_glance` TaskPanel — launcher grid glanceable. */
@@ -47,10 +49,16 @@ class AppsGlanceActivity : GlanceableActivity() {
                         },
                     )
                 },
+                onOpenAssistant = { VirtualAssistantActivity.launch(this) },
                 modifier = Modifier.fillMaxSize(),
             )
         }
     }
+}
+
+private enum class LauncherTarget {
+    Dashboard,
+    Assistant,
 }
 
 private data class LauncherApp(
@@ -58,12 +66,14 @@ private data class LauncherApp(
     val icon: ImageVector?,
     val monogram: String? = null,
     val color: Color,
+    val target: LauncherTarget = LauncherTarget.Dashboard,
 )
 
 @Composable
 fun AppsGlance(
     onOpenDashboard: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenAssistant: () -> Unit = {},
 ) {
     val apps = listOf(
         LauncherApp("Search", null, "G", Color(0xFF4285F4)),
@@ -74,6 +84,12 @@ fun AppsGlance(
         LauncherApp("Music", Icons.Default.MusicNote, null, Color(0xFFA3A3A3)),
         LauncherApp("Listen", Icons.Default.MusicNote, null, Color(0xFF1DB954)),
         LauncherApp("Watch", null, "N", Color(0xFFE50914)),
+        LauncherApp(
+            label = "Assistant",
+            icon = Icons.Default.AutoAwesome,
+            color = Color(0xFF8AB4F8),
+            target = LauncherTarget.Assistant,
+        ),
     )
     val columns = 4
     val gap = 14.dp
@@ -100,7 +116,12 @@ fun AppsGlance(
                                     .size(tile)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(app.color.copy(alpha = 0.16f))
-                                    .clickable(onClick = onOpenDashboard),
+                                    .clickable(
+                                        onClick = when (app.target) {
+                                            LauncherTarget.Assistant -> onOpenAssistant
+                                            LauncherTarget.Dashboard -> onOpenDashboard
+                                        },
+                                    ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Box(
