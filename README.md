@@ -102,9 +102,13 @@ Or: `.cursor/scripts/launch-assistant.sh`
 
 ## Floating system bars (adb)
 
-Show/hide the in-app floating top/bottom bars while the demo is running:
+In-app floating top/bottom bars are **hidden by default**. Show them while the demo is running:
 
 ```bash
+adb shell am broadcast -a com.test.design.action.SHOW_SYSTEM_BARS \
+  -n com.test.design/.presentation.ivi.dashboard.FloatingSystemBarsReceiver
+
+# or toggle
 adb shell am broadcast -a com.test.design.action.TOGGLE_SYSTEM_BARS \
   -n com.test.design/.presentation.ivi.dashboard.FloatingSystemBarsReceiver
 ```

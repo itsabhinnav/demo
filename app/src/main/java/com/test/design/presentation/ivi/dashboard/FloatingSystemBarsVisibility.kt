@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
  * ([com.test.design.presentation.ivi.dashboard.components.FloatingTopSystemBar] /
  * [com.test.design.presentation.ivi.dashboard.components.FloatingBottomSystemBar]).
  *
- * Toggle via adb — see [FloatingSystemBarsReceiver].
+ * Hidden by default. Toggle via adb — see [FloatingSystemBarsReceiver].
  */
 object FloatingSystemBarsVisibility {
-    private val _visible = MutableStateFlow(true)
+    private val _visible = MutableStateFlow(false)
     val visible: StateFlow<Boolean> = _visible.asStateFlow()
 
     fun show() {

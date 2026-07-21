@@ -9,12 +9,13 @@ Show/hide the Compose floating top/bottom bars hosted by `DesignAppShell`
 # Install (or reinstall) debug APK
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 
-# Open the demo home (bars are visible by default)
+# Open the demo home (bars are hidden by default)
 adb shell am start -n com.test.design/.MainActivity
 ```
 
 The demo app process must be running. Bars only appear on hosts that use
-`DesignAppShell` with `showFloatingSystemBars = true` (e.g. `MainActivity`).
+`DesignAppShell` with `showFloatingSystemBars = true` (e.g. `MainActivity`)
+**and** after an adb show/toggle (hidden on cold start).
 
 ## Commands
 
@@ -55,6 +56,6 @@ Optional: `ANDROID_SERIAL=<device>` to target a specific device/emulator.
 
 ## Notes
 
-- Visibility is process-wide; restarting the app restores bars to **visible**.
-- Hiding bars also collapses chrome padding on driving home / dashboard so content can use the full panel.
+- Visibility is process-wide; bars start **hidden** and restarting the app restores **hidden**.
+- When hidden, chrome padding on driving home / dashboard collapses so content can use the full panel.
 - Map / assistant / glanceable activities already force bars off via `showFloatingSystemBars = false`; these broadcasts do not override that.
