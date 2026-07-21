@@ -83,18 +83,6 @@ internal fun fatigueMoodForText(text: String): AssistantMood? {
     }
 }
 
-/** Light weather intent → ambient kind for rain/snow stage layer. */
-internal fun weatherAmbientForText(text: String): WeatherAmbientKind? {
-    val t = text.lowercase()
-    return when {
-        listOf("snow", "blizzard", "flurries", "sleet").any { t.contains(it) } ->
-            WeatherAmbientKind.Snow
-        listOf("rain", "drizzle", "storm", "shower", "pouring").any { t.contains(it) } ->
-            WeatherAmbientKind.Rain
-        else -> null
-    }
-}
-
 /** Moods that count as a completed assistant answer for thumbs feedback. */
 internal fun isAnswerMood(mood: AssistantMood): Boolean = when (mood) {
     AssistantMood.Speaking,

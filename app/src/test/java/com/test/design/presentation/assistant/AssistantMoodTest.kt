@@ -194,8 +194,6 @@ class AssistantMoodTest {
         assertTrue(ImmersiveDialogueScript.all { it.text.isNotBlank() })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.User })
         assertTrue(ImmersiveDialogueScript.any { it.speaker == DialogueSpeaker.Assistant })
-        assertTrue(ImmersiveDialogueScript.any { it.weatherAmbient == WeatherAmbientKind.Snow })
-        assertTrue(ImmersiveDialogueScript.any { it.weatherAmbient == WeatherAmbientKind.Rain })
     }
 
     @Test

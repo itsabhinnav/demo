@@ -112,7 +112,6 @@ fun ImmersiveAssistantOverlay(
     var clusterHandOff by remember { mutableStateOf(false) }
     var liveSttActive by remember { mutableStateOf(false) }
     var sttBuffer by remember { mutableStateOf("") }
-    var weatherAmbient by remember { mutableStateOf<WeatherAmbientKind?>(null) }
     var showThumbs by remember { mutableStateOf(false) }
     var thumbsTick by remember { mutableIntStateOf(0) }
 
@@ -127,7 +126,6 @@ fun ImmersiveAssistantOverlay(
         clusterHandOff = false
         liveSttActive = false
         sttBuffer = ""
-        weatherAmbient = null
         showThumbs = false
         val gaze = gazeForSpeaker(DialogueSpeaker.User)
         gazeX = gaze.first
@@ -177,7 +175,6 @@ fun ImmersiveAssistantOverlay(
                         gesture = faceGestureForText(event.text)
                         // Keyword fatigue → Drowsy/Tired mood sink (sensor-ready).
                         mood = fatigueMoodForText(event.text) ?: AssistantMood.Listening
-                        weatherAmbientForText(event.text)?.let { weatherAmbient = it }
                     }
                 }
                 is AssistantSpeechEvent.Rms -> {
@@ -222,12 +219,6 @@ fun ImmersiveAssistantOverlay(
             }
             mood = beat.mood
             speaker = beat.speaker
-            // Weather ambient from beat tag, or keyword on user lines.
-            when {
-                beat.weatherAmbient != null -> weatherAmbient = beat.weatherAmbient
-                beat.speaker == DialogueSpeaker.User ->
-                    weatherAmbientForText(beat.text)?.let { weatherAmbient = it }
-            }
             // Keyword fatigue on scripted user lines (demo path).
             if (beat.speaker == DialogueSpeaker.User) {
                 fatigueMoodForText(beat.text)?.let { mood = it }
@@ -282,12 +273,6 @@ fun ImmersiveAssistantOverlay(
                 delay(beat.holdMs)
             }
 
-            // Fade weather after the spoken weather answer settles.
-            if (beat.weatherAmbient != null && isAnswerMood(beat.mood)) {
-                delay(400)
-                weatherAmbient = null
-            }
-
             gesture = FaceGesture.None
         }
 
@@ -297,7 +282,6 @@ fun ImmersiveAssistantOverlay(
             speaker = DialogueSpeaker.System
             transcript = "Mirrored to cluster · tap to dismiss"
             showThumbs = false
-            weatherAmbient = null
             runCatching {
                 context.startActivity(
                     Intent(context, DrivingStatusGlanceActivity::class.java).addFlags(
@@ -437,11 +421,6 @@ fun ImmersiveAssistantOverlay(
                 // Transparent top → very dark bottom; subtle bluish glow along bottom edge.
                 Box(Modifier.fillMaxSize()) {
                     ImmersiveBackdrop()
-                    WeatherAmbientOverlay(
-                        kind = weatherAmbient,
-                        modifier = Modifier.fillMaxSize(),
-                        tint = Color(0xFFB3E5FC),
-                    )
                     ImmersiveBorderGlow(glowColor = brandGlow)
                 }
 
@@ -655,7 +634,7 @@ fun notifyImmersiveAssistantHotword() {
 
 /**
  * Full emotion walk — listening → think → read → search → speak,
- * weather snow/rain ambience, happy / sad / excited / bored / drowsy / tired.
+ * happy / sad / excited / bored / drowsy / tired.
  */
 val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
     DialogueBeat(
@@ -735,14 +714,12 @@ val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
         text = "Reading the radar along your route…",
         mood = AssistantMood.Reading,
         holdMs = 2200,
-        weatherAmbient = WeatherAmbientKind.Snow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Light snow after midnight — roads should stay clear until then.",
         mood = AssistantMood.Speaking,
         holdMs = 3200,
-        weatherAmbient = WeatherAmbientKind.Snow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
@@ -755,7 +732,6 @@ val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
         text = "A soft drizzle around midday — nothing heavy.",
         mood = AssistantMood.Speaking,
         holdMs = 2800,
-        weatherAmbient = WeatherAmbientKind.Rain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.System,
