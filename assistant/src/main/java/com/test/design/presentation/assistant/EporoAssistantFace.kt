@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -77,6 +78,7 @@ fun EporoAssistantFace(
     val lookY = remember { Animatable(pose.lookY) }
     val tilt = remember { Animatable(pose.tilt) }
     val blink = remember { Animatable(1f) }
+    val currentMood by rememberUpdatedState(mood)
 
     LaunchedEffect(mood) {
         val p = mood.toEporoPose()
@@ -87,29 +89,26 @@ fun EporoAssistantFace(
         launch { tilt.animateTo(p.tilt, spring(dampingRatio = 0.8f)) }
     }
 
-    // Occasional blink — long idle gaps so it feels alive, not twitchy.
-    LaunchedEffect(mood) {
+    // Occasional blink. Keyed on Unit so dialogue mood hops don't reset the timer
+    // (LaunchedEffect(mood) was cancelling before the long gap elapsed).
+    LaunchedEffect(Unit) {
+        delay(Random.nextLong(1_200, 2_400))
         while (isActive) {
-            val gap = when (mood) {
-                AssistantMood.Drowsy, AssistantMood.Tired -> Random.nextLong(5_500, 10_000)
-                AssistantMood.Bored -> Random.nextLong(6_000, 11_000)
-                AssistantMood.Listening, AssistantMood.Speaking -> Random.nextLong(4_500, 8_500)
-                else -> Random.nextLong(5_000, 9_500)
-            }
-            delay(gap)
-            val closeTo = when (mood) {
+            val closeTo = when (currentMood) {
                 AssistantMood.Drowsy, AssistantMood.Tired -> 0.08f
-                else -> 0.06f
+                else -> 0.05f
             }
-            blink.animateTo(closeTo, tween(85))
-            delay(45)
-            blink.animateTo(1f, tween(130))
-            if (Random.nextFloat() < 0.22f) {
-                delay(110)
-                blink.animateTo(closeTo, tween(70))
-                delay(35)
-                blink.animateTo(1f, tween(120))
+            blink.snapTo(1f)
+            blink.animateTo(closeTo, tween(90))
+            delay(55)
+            blink.animateTo(1f, tween(150))
+            if (Random.nextFloat() < 0.28f) {
+                delay(100)
+                blink.animateTo(closeTo, tween(75))
+                delay(40)
+                blink.animateTo(1f, tween(140))
             }
+            delay(Random.nextLong(2_800, 5_500))
         }
     }
 
@@ -169,6 +168,7 @@ fun EporoAssistantFace(
     )
 
     // Reference is wider than tall (~1.15).
+    val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
     Canvas(
         modifier = modifier
             .aspectRatio(1.15f)
@@ -199,7 +199,6 @@ fun EporoAssistantFace(
             }
             val pulse = (0.9f + 0.1f * glowPhase).coerceIn(0.85f, 1f)
             val eyeR = (minOf(w, h) * 0.095f) * eyeOpen.value * pulse
-            val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
 
             drawEye(
                 center = Offset(w * (0.50f - gap) + gaze * eyeR, eyeY),
