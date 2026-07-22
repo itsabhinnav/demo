@@ -48,6 +48,10 @@ class AssistantMoodTest {
         assertTrue(happy.eyeWidth > drowsy.eyeWidth || happy.eyeHeight > drowsy.eyeHeight)
         assertTrue(drowsy.eyeHeight < happy.eyeHeight)
         assertTrue(AssistantMood.Excited.toEporoEyePose().eyeOpen >= 1f)
+        assertTrue(
+            AssistantMood.Listening.toEporoEyePose().ringPulse >
+                AssistantMood.Tired.toEporoEyePose().ringPulse,
+        )
     }
 
     @Test

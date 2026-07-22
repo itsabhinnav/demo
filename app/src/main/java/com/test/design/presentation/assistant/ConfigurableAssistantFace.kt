@@ -39,6 +39,7 @@ fun ConfigurableAssistantFace(
         AssistantFaceKind.Eporo -> EporoAssistantFace(
             mood = mood,
             modifier = modifier,
+            brandGlow = brandGlow,
             gazeX = gazeX,
             gazeY = gazeY,
             mouthAmplitude = mouthAmplitude,
