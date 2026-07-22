@@ -333,7 +333,6 @@ fun ImmersiveAssistantOverlay(
     LaunchedEffect(visible, session) {
         if (visible) {
             hasPresented = true
-            wake.play()
             if (immersiveEnteredSession != session) {
                 immersiveEnteredSession = session
                 faceRise.snapTo(1f)
@@ -344,6 +343,7 @@ fun ImmersiveAssistantOverlay(
 
                 backdropAlpha.animateTo(1f, tween(360, easing = FastOutSlowInEasing))
                 delay(60)
+                wake.play() // soft chime as the face starts sliding up
                 launch {
                     faceAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
                 }
@@ -361,7 +361,7 @@ fun ImmersiveAssistantOverlay(
                 transcriptAlpha.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
             }
         } else if (hasPresented) {
-            wake.playDismiss()
+            wake.playDismiss() // soft chime as the face starts sliding down
             transcriptAlpha.animateTo(0f, tween(160))
             launch {
                 faceAlpha.animateTo(0f, tween(320, easing = FastOutSlowInEasing))
