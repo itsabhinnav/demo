@@ -375,7 +375,7 @@ fun ImmersiveAssistantOverlay(
                             text = transcript,
                             speaker = speaker,
                             live = speaker == DialogueSpeaker.User &&
-                                (mood == AssistantMood.Listening || liveSttActive),
+                                mood == AssistantMood.Listening,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .graphicsLayer {
