@@ -144,9 +144,8 @@ fun ImmersiveAssistantOverlay(
     LaunchedEffect(presentation, visible) {
         if (visible) {
             onPresentationChanged(presentation)
-        } else {
-            onPresentationChanged(AssistantPresentation.Compact)
         }
+        // Compact (clears host blur) only after exit animation — see dismiss path below.
     }
 
     ImmersiveHotwordBridge(onSummon = { summon() })
@@ -328,7 +327,7 @@ fun ImmersiveAssistantOverlay(
         }
     }
 
-    val overlayAlpha = remember { Animatable(0f) }
+    val backdropAlpha = remember { Animatable(0f) }
     val faceRise = remember { Animatable(1f) } // 1 = below screen, 0 = settled
     val faceScale = remember { Animatable(0.88f) }
     val faceAlpha = remember { Animatable(0f) }
@@ -337,65 +336,64 @@ fun ImmersiveAssistantOverlay(
     var hasPresented by remember { mutableStateOf(false) }
     var immersiveEnteredSession by remember { mutableIntStateOf(-1) }
 
+    // Enter: blur first → face slides up. Exit: face slides down → blur hides.
     LaunchedEffect(visible, session) {
         if (visible) {
             hasPresented = true
             wake.play()
-            overlayAlpha.snapTo(0f)
-            overlayAlpha.animateTo(1f, tween(320, easing = FastOutSlowInEasing))
+            if (immersiveEnteredSession != session) {
+                immersiveEnteredSession = session
+                faceRise.snapTo(1f)
+                faceScale.snapTo(0.86f)
+                faceAlpha.snapTo(0f)
+                transcriptAlpha.snapTo(0f)
+                backdropAlpha.snapTo(0f)
+
+                backdropAlpha.animateTo(1f, tween(360, easing = FastOutSlowInEasing))
+                delay(60)
+                launch {
+                    faceAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+                }
+                launch {
+                    faceScale.animateTo(
+                        1f,
+                        spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
+                    )
+                }
+                faceRise.animateTo(
+                    0f,
+                    spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
+                )
+                delay(80)
+                transcriptAlpha.animateTo(1f, tween(340, easing = FastOutSlowInEasing))
+            }
         } else if (hasPresented) {
             wake.playDismiss()
+            transcriptAlpha.animateTo(0f, tween(160))
             launch {
-                transcriptAlpha.animateTo(0f, tween(180))
+                faceAlpha.animateTo(0f, tween(320, easing = FastOutSlowInEasing))
             }
-            launch {
-                faceAlpha.animateTo(0f, tween(280, easing = FastOutSlowInEasing))
-            }
-            launch {
-                faceRise.animateTo(
-                    0.35f,
-                    tween(320, easing = FastOutSlowInEasing),
-                )
-            }
-            overlayAlpha.animateTo(0f, tween(360, easing = FastOutSlowInEasing))
+            faceRise.animateTo(
+                1f,
+                tween(380, easing = FastOutSlowInEasing),
+            )
+            delay(40)
+            backdropAlpha.animateTo(0f, tween(320, easing = FastOutSlowInEasing))
             faceRise.snapTo(1f)
             faceScale.snapTo(0.88f)
             faceAlpha.snapTo(0f)
             transcriptAlpha.snapTo(0f)
             immersiveEnteredSession = -1
-            // Collapse host (clears Modifier.blur) after tap dismiss or session end.
+            onPresentationChanged(AssistantPresentation.Compact)
+            // Collapse host (clears Modifier.blur) after face + blur exit.
             onDismiss()
         }
     }
 
-    // Immersive face entrance — once per summon session.
-    LaunchedEffect(visible, session, presentation) {
-        if (!visible || presentation != AssistantPresentation.Immersive) return@LaunchedEffect
-        if (immersiveEnteredSession == session) return@LaunchedEffect
-        immersiveEnteredSession = session
-        faceRise.snapTo(1f)
-        faceScale.snapTo(0.86f)
-        faceAlpha.snapTo(0f)
-        transcriptAlpha.snapTo(0f)
-        launch {
-            faceAlpha.animateTo(1f, tween(420, easing = FastOutSlowInEasing))
-        }
-        launch {
-            faceScale.animateTo(
-                1f,
-                spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
-            )
-        }
-        faceRise.animateTo(
-            0f,
-            spring(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow),
-        )
-        delay(120)
-        transcriptAlpha.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
-    }
-
-    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.55f)
-    val showOverlay = visible || overlayAlpha.value > 0.02f
+    val brandGlow = rememberAssistantBrandGlow(mood, brandAccent).copy(alpha = 0.65f)
+    val showOverlay = visible ||
+        backdropAlpha.value > 0.02f ||
+        faceAlpha.value > 0.02f
 
     Box(
         modifier = modifier
