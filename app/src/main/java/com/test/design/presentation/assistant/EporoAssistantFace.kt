@@ -179,8 +179,6 @@ fun EporoAssistantFace(
                 radius = eyeR,
                 glow = glowColor,
             )
-
-            drawVisorSpecks()
         }
     }
 }
@@ -319,23 +317,6 @@ private fun DrawScope.drawEye(
         color = Color.White.copy(alpha = 0.9f),
         radius = radius * 0.1f,
         center = Offset(center.x, center.y + radius * 0.78f),
-    )
-}
-
-private fun DrawScope.drawVisorSpecks() {
-    val w = size.width
-    val h = size.height
-    val base = Offset(w * 0.68f, h * 0.62f)
-    drawCircle(Color.White.copy(alpha = 0.65f), radius = w * 0.006f, center = base)
-    drawCircle(
-        Color.White.copy(alpha = 0.5f),
-        radius = w * 0.005f,
-        center = base + Offset(w * 0.015f, h * 0.025f),
-    )
-    drawCircle(
-        Color.White.copy(alpha = 0.4f),
-        radius = w * 0.004f,
-        center = base + Offset(w * 0.028f, h * 0.048f),
     )
 }
 
