@@ -155,7 +155,7 @@ private fun DrawScope.drawHead(
         left = 0f,
         top = 0f,
         right = w,
-        bottom = h * 0.95f,
+        bottom = h,
     )
     drawExpressiveFaceShell(
         morphState = shellMorph,
@@ -188,21 +188,21 @@ private fun DrawScope.drawVisor(visorColor: Color) {
         )
         cubicTo(
             w * 0.88f, h * 0.44f,
-            w * 0.86f, h * 0.64f,
-            w * 0.76f, h * 0.72f,
+            w * 0.86f, h * 0.62f,
+            w * 0.76f, h * 0.68f,
         )
         cubicTo(
-            w * 0.66f, h * 0.77f,
-            w * 0.58f, h * 0.82f,
-            w * 0.50f, h * 0.82f,
+            w * 0.66f, h * 0.73f,
+            w * 0.58f, h * 0.76f,
+            w * 0.50f, h * 0.76f,
         )
         cubicTo(
-            w * 0.42f, h * 0.82f,
-            w * 0.34f, h * 0.77f,
-            w * 0.24f, h * 0.72f,
+            w * 0.42f, h * 0.76f,
+            w * 0.34f, h * 0.73f,
+            w * 0.24f, h * 0.68f,
         )
         cubicTo(
-            w * 0.14f, h * 0.64f,
+            w * 0.14f, h * 0.62f,
             w * 0.12f, h * 0.44f,
             w * 0.18f, h * 0.34f,
         )
@@ -219,7 +219,7 @@ private fun DrawScope.drawVisor(visorColor: Color) {
                 Color.Black.copy(alpha = 0.35f),
             ),
             startY = h * 0.22f,
-            endY = h * 0.82f,
+            endY = h * 0.76f,
         ),
     )
     // Elongated top specular.

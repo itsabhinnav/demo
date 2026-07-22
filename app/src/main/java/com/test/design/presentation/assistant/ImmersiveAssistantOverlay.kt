@@ -444,14 +444,14 @@ fun ImmersiveAssistantOverlay(
                     val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
                     val density = LocalDensity.current
                     val risePx = with(density) {
-                        (faceSize * 0.35f).toPx()
+                        (bandHeight * 0.95f).toPx()
                     }
 
                     Column(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .height(bandHeight),
+                            .padding(bottom = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom,
                     ) {
@@ -461,6 +461,8 @@ fun ImmersiveAssistantOverlay(
                                 kind = faceKind,
                                 modifier = Modifier
                                     .width(faceSize)
+                                    // Keep full face height — don't let the band squeeze/clip the chin.
+                                    .height(faceSize / 1.15f)
                                     .offset {
                                         IntOffset(
                                             0,
