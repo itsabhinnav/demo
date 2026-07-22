@@ -419,24 +419,23 @@ fun ImmersiveAssistantOverlay(
             ),
     ) {
         if (showOverlay) {
+            // Blur / dark stage — independent of face chrome.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = overlayAlpha.value.coerceIn(0f, 1f) },
+                    .graphicsLayer { alpha = backdropAlpha.value.coerceIn(0f, 1f) },
             ) {
-                // Transparent top → very dark bottom; subtle bluish glow along bottom edge.
-                Box(Modifier.fillMaxSize()) {
-                    ImmersiveBackdrop()
-                    ImmersiveBorderGlow(glowColor = brandGlow)
-                }
+                ImmersiveBackdrop()
+                ImmersiveBorderGlow(glowColor = brandGlow)
+            }
 
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .floatingSystemChromePadding()
-                        .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
-                ) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .floatingSystemChromePadding()
+                    .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
+            ) {
                     // Assistant chrome occupies ~1/4 of available height at the bottom.
                     val bandHeight = maxHeight * 0.25f
                     val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
@@ -493,7 +492,6 @@ fun ImmersiveAssistantOverlay(
                                 .padding(top = 8.dp),
                         )
                     }
-                }
             }
         }
     }
