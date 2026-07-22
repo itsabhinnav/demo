@@ -15,6 +15,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import kotlin.math.PI
+import kotlin.math.exp
 import kotlin.math.sin
 import kotlin.concurrent.thread
 
@@ -68,32 +69,38 @@ class AssistantWakeFeedback(
     }
 
     /**
-     * Soft two-note chime — rising on summon, falling on dismiss.
-     * Runs off the main thread; failures are swallowed.
+     * Two-strike instrumental bell (ding–dong up, dong–ding down).
+     * Additive inharmonic partials + exponential ring; off main thread.
      */
     private fun playSoftChime(ascending: Boolean) {
         thread(name = "assistant-chime", isDaemon = true) {
             var track: AudioTrack? = null
             try {
-                val sampleRate = 22_050
-                val durationMs = 220
+                val sampleRate = 44_100
+                val durationMs = 520
                 val n = sampleRate * durationMs / 1_000
                 val pcm = ShortArray(n)
-                // Soft pentatonic-ish tones: E5→G5 up, G5→E5 down.
-                val f0 = if (ascending) 659.25f else 783.99f
-                val f1 = if (ascending) 783.99f else 659.25f
-                val amp = 0.18 // keep quiet in cabin
+                // Handbell / door-chime pitches: C5 ↔ E5.
+                val note0Hz = if (ascending) 523.25 else 659.25
+                val note1Hz = if (ascending) 659.25 else 523.25
+                val strike1At = 0.0
+                val strike2At = 0.155
+                // amp, freq ratio (inharmonic), decay rate — tubular-bell-ish.
+                val partials = arrayOf(
+                    doubleArrayOf(1.00, 1.00, 3.2),
+                    doubleArrayOf(0.52, 2.01, 4.8),
+                    doubleArrayOf(0.34, 2.76, 6.2),
+                    doubleArrayOf(0.20, 4.07, 8.0),
+                    doubleArrayOf(0.10, 5.43, 10.5),
+                )
+                val master = 0.22 // quiet cabin level before track volume
                 for (i in 0 until n) {
                     val t = i.toDouble() / sampleRate
-                    val u = i.toDouble() / (n - 1).coerceAtLeast(1)
-                    val freq = f0 + (f1 - f0) * u
-                    // Short attack / longer release envelope.
-                    val env = when {
-                        u < 0.08 -> u / 0.08
-                        else -> (1.0 - (u - 0.08) / 0.92).coerceIn(0.0, 1.0)
-                    }
-                    val sample = sin(2.0 * PI * freq * t) * amp * env
-                    pcm[i] = (sample * Short.MAX_VALUE).toInt()
+                    var sample = 0.0
+                    sample += bellStrike(t, strike1At, note0Hz, partials)
+                    sample += bellStrike(t, strike2At, note1Hz, partials) * 0.92
+                    pcm[i] = (sample * master * Short.MAX_VALUE)
+                        .toInt()
                         .coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt())
                         .toShort()
                 }
@@ -113,10 +120,10 @@ class AssistantWakeFeedback(
                     .setTransferMode(AudioTrack.MODE_STATIC)
                     .setBufferSizeInBytes(n * 2)
                     .build()
-                track.setVolume(0.45f)
+                track.setVolume(0.55f)
                 track.write(pcm, 0, n)
                 track.play()
-                Thread.sleep((durationMs + 60).toLong())
+                Thread.sleep((durationMs + 80).toLong())
             } catch (_: Exception) {
             } finally {
                 try {
@@ -129,6 +136,28 @@ class AssistantWakeFeedback(
                 }
             }
         }
+    }
+
+    /** One struck partial stack: sharp attack, exponential metallic ring. */
+    private fun bellStrike(
+        t: Double,
+        strikeAt: Double,
+        fundamentalHz: Double,
+        partials: Array<DoubleArray>,
+    ): Double {
+        val age = t - strikeAt
+        if (age < 0.0) return 0.0
+        // ~4 ms attack so the hit reads as a mallet, not a beep.
+        val attack = if (age < 0.004) age / 0.004 else 1.0
+        var sum = 0.0
+        for (p in partials) {
+            val amp = p[0]
+            val ratio = p[1]
+            val decay = p[2]
+            val env = attack * exp(-decay * age)
+            sum += amp * env * sin(2.0 * PI * fundamentalHz * ratio * t)
+        }
+        return sum
     }
 }
 
