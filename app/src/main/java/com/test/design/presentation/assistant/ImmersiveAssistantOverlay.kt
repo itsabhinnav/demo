@@ -249,14 +249,9 @@ fun ImmersiveAssistantOverlay(
             }
 
             if (beat.speaker == DialogueSpeaker.User && !liveSttActive) {
-                // Simulated streaming STT — reveal text progressively.
-                transcript = ""
-                for (i in 1..beat.text.length) {
-                    if (!isActive || !visible) break
-                    transcript = beat.text.substring(0, i)
-                    delay((beat.holdMs / beat.text.length.coerceAtLeast(1)).coerceIn(18L, 55L))
-                }
-                delay(200)
+                // Show the full user line at once — no typewriter.
+                transcript = beat.text
+                delay(beat.holdMs.coerceIn(800L, 2_400L))
             } else if (shouldSpeakBeat(beat)) {
                 transcript = beat.text
                 // Speak every assistant line; mouth lip-sync tracks TTS when enabled.
@@ -627,8 +622,7 @@ private fun ImmersiveTranscript(
     AnimatedContent(
         targetState = text to speaker,
         transitionSpec = {
-            (fadeIn(tween(280)) + slideInVertically(tween(320)) { it / 4 }) togetherWith
-                (fadeOut(tween(180)) + slideOutVertically(tween(220)) { -it / 5 })
+            fadeIn(tween(160)) togetherWith fadeOut(tween(100))
         },
         label = "immersive_transcript",
         modifier = modifier,
