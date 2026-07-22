@@ -55,7 +55,7 @@ fun EporoAssistantFace(
     glowColor: Color = EporoGlow,
 ) {
     val pose = mood.toEporoPose()
-    // Fixed SemiCircle white outer plate.
+    // Fixed SemiCircle dark-gray outer plate.
     val shellMorph = remember {
         ExpressiveShellMorphState(
             morph = Morph(
@@ -173,7 +173,7 @@ private fun DrawScope.drawHead(
 }
 
 /** Organic Bézier visor — convex brow, blunt chin tab.
- * Thick white SemiCircle bezel so the frame reads in front of the black glass.
+ * Thick dark-gray SemiCircle bezel so the frame reads apart from the black glass.
  */
 private fun DrawScope.drawVisor(visorColor: Color) {
     val w = size.width
