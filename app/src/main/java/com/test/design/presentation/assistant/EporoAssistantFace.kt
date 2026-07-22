@@ -42,7 +42,7 @@ val EporoGlowSoft = Color(0xFFB8A6FF)
 
 /**
  * EPORO / robot head — Compose Canvas architecture:
- * HeadShell (SemiCircle) → Visor → Eyes → GlossHighlights.
+ * HeadShell (SemiCircle) → Visor → Eyes.
  * Same outer footprint as [DroidAssistantFace].
  */
 @Composable
@@ -116,7 +116,6 @@ fun EporoAssistantFace(
         rotate(degrees = tilt.value, pivot = Offset(cx, h * 0.48f)) {
             drawHead(shellMorph = shellMorph, shellColor = shellColor)
             drawVisor(visorColor)
-            drawHighlights()
 
             val gap = 0.24f * eyeGap.value
             val eyeY = h * (0.50f + lookY.value * 0.03f)
@@ -271,26 +270,6 @@ private fun DrawScope.drawEye(
         color = Color.White.copy(alpha = 0.9f),
         radius = radius * 0.1f,
         center = Offset(center.x, center.y + radius * 0.78f),
-    )
-}
-
-private fun DrawScope.drawHighlights() {
-    val w = size.width
-    val h = size.height
-    drawOval(
-        color = Color.White.copy(alpha = 0.7f),
-        topLeft = Offset(w * 0.40f, h * 0.07f),
-        size = Size(w * 0.20f, h * 0.08f),
-    )
-    drawOval(
-        color = Color.White.copy(alpha = 0.35f),
-        topLeft = Offset(w * 0.12f, h * 0.18f),
-        size = Size(w * 0.10f, h * 0.06f),
-    )
-    drawOval(
-        color = Color.White.copy(alpha = 0.22f),
-        topLeft = Offset(w * 0.72f, h * 0.16f),
-        size = Size(w * 0.09f, h * 0.05f),
     )
 }
 
