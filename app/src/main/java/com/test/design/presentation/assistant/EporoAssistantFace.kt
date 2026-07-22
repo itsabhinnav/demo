@@ -36,7 +36,8 @@ import kotlinx.coroutines.launch
 
 val EporoShell = Color(0xFF1C1D21)
 val EporoShellShade = Color(0xFF121316)
-val EporoVisor = Color(0xFF000000)
+val EporoVisor = Color.Black
+val EporoShellRim = Color(0xFF5A5C64)
 val EporoGlow = Color(0xFF9A7DFF)
 val EporoGlowSoft = Color(0xFFB8A6FF)
 
@@ -151,11 +152,13 @@ private fun DrawScope.drawHead(
 ) {
     val w = size.width
     val h = size.height
+    // Leave a hairline margin so the rim stroke is not clipped by the canvas edge.
+    val pad = minOf(w, h) * 0.018f
     val bounds = Rect(
-        left = 0f,
-        top = 0f,
-        right = w,
-        bottom = h,
+        left = pad,
+        top = pad,
+        right = w - pad,
+        bottom = h - pad,
     )
     drawExpressiveFaceShell(
         morphState = shellMorph,
@@ -170,16 +173,23 @@ private fun DrawScope.drawHead(
             radius = w,
         ),
     )
+    // Subtle rim — separates the dark frame from the immersive backdrop.
+    drawExpressiveFaceShell(
+        morphState = shellMorph,
+        bounds = bounds,
+        color = EporoShellRim.copy(alpha = 0.55f),
+        style = Stroke(width = 0.022f, cap = StrokeCap.Round),
+    )
 }
 
 /** Organic Bézier visor — convex brow, blunt chin tab.
- * Thick dark-gray SemiCircle bezel so the frame reads apart from the black glass.
+ * Full-black glass inset in the dark-gray SemiCircle bezel.
  */
 private fun DrawScope.drawVisor(visorColor: Color) {
     val w = size.width
     val h = size.height
     val p = Path().apply {
-        // ~18–20% inset from white SemiCircle shell for a clear frame rim.
+        // ~18–20% inset from SemiCircle shell for a clear frame rim.
         moveTo(w * 0.18f, h * 0.34f)
         cubicTo(
             w * 0.26f, h * 0.22f,
@@ -209,14 +219,14 @@ private fun DrawScope.drawVisor(visorColor: Color) {
         close()
     }
     drawPath(path = p, color = visorColor)
-    // Soft glass sheen.
+    // Very soft glass sheen — keeps the visor reading as full black.
     drawPath(
         path = p,
         brush = Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.14f),
+                Color.White.copy(alpha = 0.06f),
                 Color.Transparent,
-                Color.Black.copy(alpha = 0.35f),
+                Color.Black.copy(alpha = 0.45f),
             ),
             startY = h * 0.22f,
             endY = h * 0.76f,
@@ -224,7 +234,7 @@ private fun DrawScope.drawVisor(visorColor: Color) {
     )
     // Elongated top specular.
     drawRoundRect(
-        color = Color.White.copy(alpha = 0.55f),
+        color = Color.White.copy(alpha = 0.22f),
         topLeft = Offset(w * 0.44f, h * 0.28f),
         size = Size(w * 0.12f, h * 0.024f),
         cornerRadius = CornerRadius(h * 0.02f, h * 0.02f),
