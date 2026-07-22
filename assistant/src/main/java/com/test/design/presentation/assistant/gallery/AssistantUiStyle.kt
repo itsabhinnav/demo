@@ -67,4 +67,8 @@ enum class AssistantUiStyle(
         title = "EPORO",
         blurb = "SemiCircle shell · Bézier visor · glow eyes",
     ),
+    FusionFace(
+        title = "Fusion",
+        blurb = "EPORO glow eyes · Immersive mouth & moods",
+    ),
 }

@@ -12,6 +12,7 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("none"))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("eyes"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporo"))
+        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("fusion"))
         assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("droid"))
         assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("glyph"))
     }
@@ -22,6 +23,8 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("noface"))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("immersive"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporp"))
+        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("express"))
+        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("hybrid"))
         assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("bugdroid"))
         assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("classic"))
     }
@@ -46,6 +49,7 @@ class AssistantFaceKindTest {
         assertTrue(keys.contains("none"))
         assertTrue(keys.contains("eyes"))
         assertTrue(keys.contains("eporo"))
+        assertTrue(keys.contains("fusion"))
     }
 
     @Test

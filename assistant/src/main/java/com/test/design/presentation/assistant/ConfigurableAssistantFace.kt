@@ -40,6 +40,16 @@ fun ConfigurableAssistantFace(
             mood = mood,
             modifier = modifier,
         )
+        AssistantFaceKind.Fusion -> FusionAssistantFace(
+            mood = mood,
+            modifier = modifier,
+            gazeX = gazeX,
+            gazeY = gazeY,
+            mouthAmplitude = mouthAmplitude,
+            brandGlow = brandGlow,
+            highContrast = highContrast,
+            gesture = gesture,
+        )
         AssistantFaceKind.Droid -> DroidAssistantFace(
             mood = mood,
             modifier = modifier,
