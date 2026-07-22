@@ -82,8 +82,8 @@ fun EporoAssistantFace(
         launch { tilt.animateTo(p.tilt, spring(dampingRatio = 0.8f)) }
     }
 
-    val breath = rememberInfiniteTransition(label = "eporo_breath")
-    val glowPhase by breath.animateFloat(
+    val life = rememberInfiniteTransition(label = "eporo_breath")
+    val glowPhase by life.animateFloat(
         initialValue = 0.88f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -99,7 +99,7 @@ fun EporoAssistantFace(
         ),
         label = "eporo_glow",
     )
-    val scan by breath.animateFloat(
+    val scan by life.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -108,9 +108,47 @@ fun EporoAssistantFace(
         ),
         label = "eporo_scan",
     )
+    // Whole-head breath + idle float — mirrors ImmersiveEyesFace presence.
+    val shellBreath by life.animateFloat(
+        initialValue = 0.985f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2_800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "eporo_shell_breath",
+    )
+    val idleBob by life.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3_400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "eporo_idle_bob",
+    )
+    val idleSway by life.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4_600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "eporo_idle_sway",
+    )
 
     // Reference is wider than tall (~1.15).
-    Canvas(modifier = modifier.aspectRatio(1.15f)) {
+    Canvas(
+        modifier = modifier
+            .aspectRatio(1.15f)
+            .graphicsLayer {
+                val s = shellBreath
+                scaleX = s
+                scaleY = s
+                translationX = idleSway * 2.8f
+                translationY = idleBob * 4.2f
+            },
+    ) {
         val w = size.width
         val h = size.height
         val cx = w * 0.5f
