@@ -34,8 +34,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.launch
 
-val EporoShell = Color(0xFFF7F7F8)
-val EporoShellShade = Color(0xFFE7E7E7)
+val EporoShell = Color(0xFF3A3C42)
+val EporoShellShade = Color(0xFF2A2C30)
 val EporoVisor = Color(0xFF060606)
 val EporoGlow = Color(0xFF9A7DFF)
 val EporoGlowSoft = Color(0xFFB8A6FF)
@@ -162,7 +162,7 @@ private fun DrawScope.drawHead(
         bounds = bounds,
         brush = Brush.radialGradient(
             colors = listOf(
-                Color.White,
+                Color(0xFF4A4C52),
                 shellColor,
                 EporoShellShade,
             ),
