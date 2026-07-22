@@ -1,7 +1,8 @@
 package com.test.design.presentation.assistant
 
-import com.test.design.core.DrivingUxState
-import com.test.design.presentation.ivi.vehicle.VehicleUiState
+import com.test.design.assistant.api.AssistantCabinContext
+import com.test.design.presentation.assistant.backend.buildCabinBeats
+import com.test.design.presentation.assistant.backend.shouldHandOffToCluster
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -36,9 +37,14 @@ class AssistantFeaturesTest {
 
     @Test
     fun driveContextSuggestsChargerWhenBatteryLow() {
-        val beats = buildDriveContextBeats(
-            drivingUx = DrivingUxState.Driving,
-            vehicle = VehicleUiState(batteryPercent = 18, rangeMiles = 40),
+        val beats = buildCabinBeats(
+            AssistantCabinContext(
+                drivingUx = "Driving",
+                speedMph = 54,
+                gear = "D",
+                batteryPercent = 18,
+                rangeMiles = 40,
+            ),
         )
         assertTrue(beats.any { it.text.contains("Battery", ignoreCase = true) })
         assertTrue(beats.any { it.mood == AssistantMood.Speaking })
@@ -46,12 +52,17 @@ class AssistantFeaturesTest {
 
     @Test
     fun driveContextMarksRestrictedForClusterHandOff() {
-        assertTrue(shouldHandOffToCluster(DrivingUxState.Restricted))
-        assertTrue(shouldHandOffToCluster(DrivingUxState.Driving))
-        assertFalse(shouldHandOffToCluster(DrivingUxState.Parked))
-        val beats = buildDriveContextBeats(
-            drivingUx = DrivingUxState.Restricted,
-            vehicle = VehicleUiState(batteryPercent = 80, rangeMiles = 200),
+        assertTrue(shouldHandOffToCluster("Restricted"))
+        assertTrue(shouldHandOffToCluster("Driving"))
+        assertFalse(shouldHandOffToCluster("Parked"))
+        val beats = buildCabinBeats(
+            AssistantCabinContext(
+                drivingUx = "Restricted",
+                speedMph = 32,
+                gear = "D",
+                batteryPercent = 80,
+                rangeMiles = 200,
+            ),
         )
         assertTrue(beats.any { it.text.contains("glanceable", ignoreCase = true) })
     }

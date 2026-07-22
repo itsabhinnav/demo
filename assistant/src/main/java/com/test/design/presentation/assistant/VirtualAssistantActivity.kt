@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.test.design.presentation.DesignAppShell
 import kotlinx.coroutines.flow.collectLatest
 
 /**
@@ -71,11 +70,7 @@ class VirtualAssistantActivity : ComponentActivity() {
         }
 
         setContent {
-            DesignAppShell(
-                applySafeDrawingInsets = false,
-                showFloatingSystemBars = false,
-                showScreenBackground = false,
-            ) {
+            AssistantTheme(darkTheme = true) {
                 LaunchedEffect(micGranted) {
                     if (!micGranted) return@LaunchedEffect
                     hotwordDetections(this@VirtualAssistantActivity).collectLatest {

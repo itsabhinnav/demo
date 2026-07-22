@@ -11,7 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
-import com.test.design.presentation.DesignAppShell
+import com.test.design.presentation.assistant.AssistantTheme
 
 /**
  * Transparent host for the semi-transparent assistant UI gallery.
@@ -44,11 +44,7 @@ class AssistantUiGalleryActivity : ComponentActivity() {
             ?: AssistantUiStyle.VoicePlate
 
         setContent {
-            DesignAppShell(
-                applySafeDrawingInsets = false,
-                showFloatingSystemBars = false,
-                showScreenBackground = false,
-            ) {
+            AssistantTheme(darkTheme = true) {
                 AssistantUiGalleryScreen(
                     onClose = { finish() },
                     modifier = Modifier.fillMaxSize(),

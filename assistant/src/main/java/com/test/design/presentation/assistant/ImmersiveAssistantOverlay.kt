@@ -1,6 +1,5 @@
 package com.test.design.presentation.assistant
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -56,15 +55,16 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.test.design.core.DrivingUxState
-import com.test.design.core.LocalDrivingUxState
-import com.test.design.presentation.activityViewModel
-import com.test.design.presentation.ivi.dashboard.components.floatingSystemChromePadding
-import com.test.design.presentation.ivi.glanceables.DrivingStatusGlanceActivity
-import com.test.design.presentation.ivi.vehicle.VehicleViewModel
+import com.test.design.assistant.api.AssistantRuntime
+import com.test.design.assistant.api.AssistantSessionConfig
+import com.test.design.assistant.api.AssistantSessionEvent
+import com.test.design.assistant.api.AssistantSpeechInput
+import com.test.design.assistant.api.AssistantStartReason
+import com.test.design.presentation.assistant.backend.toUiGesture
+import com.test.design.presentation.assistant.backend.toUiMood
+import com.test.design.presentation.assistant.backend.toUiSpeaker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -82,21 +82,22 @@ fun ImmersiveAssistantOverlay(
     initialMood: AssistantMood = AssistantMood.Idle,
     awaitHotword: Boolean = true,
     onRequestHotwordListen: (() -> Unit)? = null,
+    @Suppress("UNUSED_PARAMETER")
     script: List<DialogueBeat> = ImmersiveDialogueScript,
     enableLiveSpeech: Boolean = true,
     enableTts: Boolean = true,
+    @Suppress("UNUSED_PARAMETER")
     onFeedback: (Boolean) -> Unit = {},
     onPresentationChanged: (AssistantPresentation) -> Unit = {},
     @Suppress("UNUSED_PARAMETER")
     onBubbleBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
+    val host = AssistantRuntime.requireHost()
+    val backend = AssistantRuntime.requireBackend()
     val wake = rememberAssistantWakeFeedback()
-    val drivingUx = LocalDrivingUxState.current
-    val highContrast = LocalAssistantHighContrast.current
+    val highContrast = LocalAssistantHighContrast.current || host.highContrastEyes()
     val faceKind by AssistantFaceConfig.kind.collectAsStateWithLifecycle()
-    val vehicleViewModel: VehicleViewModel = activityViewModel()
-    val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
     val brandAccent = MaterialTheme.colorScheme.primary
 
     LaunchedEffect(Unit) {
@@ -115,9 +116,6 @@ fun ImmersiveAssistantOverlay(
     var gazeY by remember { mutableStateOf<Float?>(0.05f) }
     var mouthAmplitude by remember { mutableStateOf<Float?>(null) }
     var gesture by remember { mutableStateOf(FaceGesture.None) }
-    var clusterHandOff by remember { mutableStateOf(false) }
-    var liveSttActive by remember { mutableStateOf(false) }
-    var sttBuffer by remember { mutableStateOf("") }
     var showThumbs by remember { mutableStateOf(false) }
     var thumbsTick by remember { mutableIntStateOf(0) }
 
@@ -129,13 +127,9 @@ fun ImmersiveAssistantOverlay(
         speaker = DialogueSpeaker.System
         gesture = FaceGesture.None
         mouthAmplitude = null
-        clusterHandOff = false
-        liveSttActive = false
-        sttBuffer = ""
         showThumbs = false
-        val gaze = gazeForSpeaker(DialogueSpeaker.User)
-        gazeX = gaze.first
-        gazeY = gaze.second
+        gazeX = -0.42f
+        gazeY = 0.05f
         visible = true
     }
 
@@ -143,12 +137,11 @@ fun ImmersiveAssistantOverlay(
         if (visible) {
             onPresentationChanged(presentation)
         }
-        // Compact (clears host blur) only after exit animation — see dismiss path below.
     }
 
     ImmersiveHotwordBridge(onSummon = { summon() })
 
-    // Live STT / RMS while the overlay is listening.
+    // Forward device STT into the backend (UI stays dumb).
     LaunchedEffect(visible, session, enableLiveSpeech) {
         if (!visible || !enableLiveSpeech) return@LaunchedEffect
         assistantSpeechEvents(context).collectLatest { event ->
@@ -157,149 +150,59 @@ fun ImmersiveAssistantOverlay(
                 AssistantSpeechEvent.Hotword -> {
                     if (!visible) summon()
                 }
-                is AssistantSpeechEvent.Partial -> {
-                    if (liveSttActive || speaker == DialogueSpeaker.User ||
-                        mood == AssistantMood.Listening
-                    ) {
-                        liveSttActive = true
-                        speaker = DialogueSpeaker.User
-                        mood = AssistantMood.Listening
-                        sttBuffer = event.text
-                        transcript = event.text
-                        val gaze = gazeForSpeaker(DialogueSpeaker.User)
-                        gazeX = gaze.first
-                        gazeY = gaze.second
-                    }
-                }
-                is AssistantSpeechEvent.Final -> {
-                    if (liveSttActive || mood == AssistantMood.Listening) {
-                        liveSttActive = true
-                        speaker = DialogueSpeaker.User
-                        sttBuffer = event.text
-                        transcript = event.text
-                        gesture = faceGestureForText(event.text)
-                        // Keyword fatigue → Drowsy/Tired mood sink (sensor-ready).
-                        mood = fatigueMoodForText(event.text) ?: AssistantMood.Listening
-                    }
-                }
-                is AssistantSpeechEvent.Rms -> {
-                    if (mood == AssistantMood.Listening) {
-                        // Micro gaze toward louder mic energy (cabin left bias).
-                        gazeX = -0.25f - event.normalized * 0.25f
-                        gazeY = -0.02f + event.normalized * 0.04f
-                    }
-                }
+                is AssistantSpeechEvent.Partial ->
+                    backend.onSpeechInput(AssistantSpeechInput.Partial(event.text))
+                is AssistantSpeechEvent.Final ->
+                    backend.onSpeechInput(AssistantSpeechInput.Final(event.text))
+                is AssistantSpeechEvent.Rms ->
+                    backend.onSpeechInput(AssistantSpeechInput.Rms(event.normalized))
             }
         }
     }
 
-    // Drive conversation once per summon — do not re-key on drivingUx / vehicleState
-    // or mid-session vehicle ticks restart the script in an endless loop.
+    // Collect backend events, then start session (avoids dropping early emits).
     LaunchedEffect(visible, session) {
-        if (!visible) return@LaunchedEffect
-        val contextBeats = buildDriveContextBeats(drivingUx, vehicleState)
-        val sessionScript = contextBeats + script
-        val handOff = shouldHandOffToCluster(drivingUx)
-
-        for (beat in sessionScript) {
-            if (!isActive || !visible) break
-
-            // If live STT already captured a user line matching this beat, skip typed replay.
-            if (beat.speaker == DialogueSpeaker.User &&
-                liveSttActive &&
-                sttBuffer.isNotBlank() &&
-                sttBuffer.contains(beat.text.take(12), ignoreCase = true)
-            ) {
-                gesture = faceGestureForText(sttBuffer)
-                delay(beat.holdMs.coerceAtMost(1200))
-                gesture = FaceGesture.None
-                continue
-            }
-
-            // Hide thumbs when the driver speaks again or we re-enter listening.
-            if (beat.speaker == DialogueSpeaker.User ||
-                beat.mood == AssistantMood.Listening
-            ) {
-                showThumbs = false
-            }
-            mood = beat.mood
-            speaker = beat.speaker
-            // Keyword fatigue on scripted user lines (demo path).
-            if (beat.speaker == DialogueSpeaker.User) {
-                fatigueMoodForText(beat.text)?.let { mood = it }
-            }
-            // Let Searching / Reading / Bored run built-in look loops; otherwise gaze speaker.
-            if (beat.mood == AssistantMood.Searching ||
-                beat.mood == AssistantMood.Reading ||
-                beat.mood == AssistantMood.Bored
-            ) {
-                gazeX = null
-                gazeY = null
-            } else {
-                val gaze = gazeForSpeaker(beat.speaker)
-                gazeX = gaze.first
-                gazeY = gaze.second
-            }
-            gesture = if (beat.speaker == DialogueSpeaker.User) {
-                faceGestureForText(beat.text)
-            } else {
-                FaceGesture.None
-            }
-
-            if (beat.speaker == DialogueSpeaker.User && !liveSttActive) {
-                // Show the full user line at once — no typewriter.
-                transcript = beat.text
-                delay(beat.holdMs.coerceIn(800L, 2_400L))
-            } else if (shouldSpeakBeat(beat)) {
-                transcript = beat.text
-                // Speak every assistant line; mouth lip-sync tracks TTS when enabled.
-                if (enableTts) {
-                    assistantUtteranceLipSync(context, beat.text, beat.holdMs).collect { amp ->
-                        mouthAmplitude = amp
+        if (!visible) {
+            backend.stopSession()
+            return@LaunchedEffect
+        }
+        launch {
+            backend.events.collect { event ->
+                when (event) {
+                    is AssistantSessionEvent.MoodChanged -> mood = event.mood.toUiMood()
+                    is AssistantSessionEvent.Transcript -> {
+                        transcript = event.text
+                        speaker = event.speaker.toUiSpeaker()
                     }
-                } else {
-                    simulatedLipSync(beat.holdMs).collect { amp ->
-                        mouthAmplitude = amp
+                    is AssistantSessionEvent.Gaze -> {
+                        gazeX = event.x
+                        gazeY = event.y
+                    }
+                    is AssistantSessionEvent.GestureChanged ->
+                        gesture = event.gesture.toUiGesture()
+                    is AssistantSessionEvent.MouthAmplitude -> mouthAmplitude = event.value
+                    is AssistantSessionEvent.ThumbsVisible -> {
+                        showThumbs = event.visible
+                        if (event.visible) thumbsTick += 1
+                    }
+                    is AssistantSessionEvent.PresentationHint -> Unit
+                    AssistantSessionEvent.RequestClusterHandOff -> host.openClusterHandOff()
+                    AssistantSessionEvent.SessionComplete -> {
+                        if (visible) visible = false
                     }
                 }
-                mouthAmplitude = null
-                // Post-answer thumbs — hidden in Restricted glance budget.
-                if (isAnswerMood(beat.mood) && drivingUx != DrivingUxState.Restricted) {
-                    showThumbs = true
-                    thumbsTick += 1
-                }
-            } else {
-                transcript = beat.text
-                delay(beat.holdMs)
             }
-
-            gesture = FaceGesture.None
         }
-
-        if (visible && handOff) {
-            clusterHandOff = true
-            mood = AssistantMood.Idle
-            speaker = DialogueSpeaker.System
-            transcript = "Mirrored to cluster · tap to dismiss"
-            showThumbs = false
-            runCatching {
-                context.startActivity(
-                    Intent(context, DrivingStatusGlanceActivity::class.java).addFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK,
-                    ),
-                )
-            }
-            delay(2200)
-        }
-
-        if (visible) {
-            delay(500)
-            // One demo cycle complete — dismiss (no auto-replay).
-            visible = false
-        }
+        backend.startSession(
+            reason = if (awaitHotword) AssistantStartReason.Hotword else AssistantStartReason.Dock,
+            cabin = host.cabinContext(),
+            config = AssistantSessionConfig(
+                enableTts = enableTts,
+                enableLiveSpeech = enableLiveSpeech,
+            ),
+        )
     }
 
-    // Auto-dismiss thumbs after ~4s or when listening resumes.
     LaunchedEffect(showThumbs, thumbsTick, mood) {
         if (!showThumbs) return@LaunchedEffect
         if (mood == AssistantMood.Listening) {
@@ -310,7 +213,6 @@ fun ImmersiveAssistantOverlay(
         showThumbs = false
     }
 
-    // Clear nod after thumbs-up feedback.
     LaunchedEffect(gesture) {
         if (gesture == FaceGesture.Nod || gesture == FaceGesture.Shake) {
             delay(700)
@@ -426,7 +328,7 @@ fun ImmersiveAssistantOverlay(
                 modifier = Modifier
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .floatingSystemChromePadding()
+                    .assistantChromePadding()
                     .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
             ) {
                     // Assistant chrome occupies ~1/4 of available height at the bottom.

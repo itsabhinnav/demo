@@ -32,6 +32,8 @@ import com.test.design.core.motion.MotionSchemeViewModel
 import com.test.design.core.theme.LocalThemeModeUpdater
 import com.test.design.core.theme.ThemeModeViewModel
 import com.test.design.presentation.assistant.AssistantAppearanceViewModel
+import com.test.design.presentation.assistant.DesignCabinContextStore
+import com.test.design.presentation.assistant.LocalAssistantChromeBottomSpace
 import com.test.design.presentation.assistant.LocalAssistantHighContrast
 import com.test.design.presentation.assistant.LocalAssistantHighContrastUpdater
 import com.test.design.presentation.common.ScreenWithBackground
@@ -41,8 +43,10 @@ import com.test.design.presentation.ivi.dashboard.components.FloatingBottomSyste
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarEdgeInset
 import com.test.design.presentation.ivi.dashboard.components.FloatingSystemBarInset
 import com.test.design.presentation.ivi.dashboard.components.FloatingTopSystemBar
+import com.test.design.presentation.ivi.dashboard.components.rememberedFloatingChromeBottomSpace
 import com.test.design.presentation.ivi.hun.DemoHunNotifications
 import com.test.design.presentation.ivi.hun.HeadsUpNotificationHost
+import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 import com.test.design.theme.AppTheme
 
 /** Host-scoped ViewModel (Activity or overlay Service ViewModelStoreOwner). */
@@ -72,11 +76,13 @@ fun DesignAppShell(
     val themeModeViewModel: ThemeModeViewModel = viewModel()
     val assistantAppearanceViewModel: AssistantAppearanceViewModel = viewModel()
     val climateViewModel: ClimateViewModel = activityViewModel()
+    val vehicleViewModel: VehicleViewModel = activityViewModel()
     val drivingState by drivingUxViewModel.drivingUxState.collectAsStateWithLifecycle()
     val motionScheme by motionSchemeViewModel.motionScheme.collectAsStateWithLifecycle()
     val themeMode by themeModeViewModel.themeMode.collectAsStateWithLifecycle()
     val assistantHighContrast by assistantAppearanceViewModel.highContrast.collectAsStateWithLifecycle()
     val climateState by climateViewModel.state.collectAsStateWithLifecycle()
+    val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
     val adbSystemBarsVisible by FloatingSystemBarsVisibility.visible.collectAsStateWithLifecycle()
     val barsVisible = showFloatingSystemBars && adbSystemBarsVisible
 
@@ -87,17 +93,24 @@ fun DesignAppShell(
         if (!barsVisible) hunVisible = false
     }
 
+    LaunchedEffect(drivingState, vehicleState) {
+        DesignCabinContextStore.publish(drivingState, vehicleState)
+    }
+
     AppTheme(
         themeMode = themeMode,
         drivingUxState = drivingState,
         appMotionScheme = motionScheme,
     ) {
+        val floatingChromeBottom = rememberedFloatingChromeBottomSpace()
+        val chromeBottom = if (barsVisible) floatingChromeBottom else 0.dp
         CompositionLocalProvider(
             LocalDrivingUxUpdater provides drivingUxViewModel::update,
             LocalMotionSchemeUpdater provides motionSchemeViewModel::update,
             LocalThemeModeUpdater provides themeModeViewModel::update,
             LocalAssistantHighContrast provides assistantHighContrast,
             LocalAssistantHighContrastUpdater provides assistantAppearanceViewModel::update,
+            LocalAssistantChromeBottomSpace provides chromeBottom,
         ) {
             val shellModifier = if (applySafeDrawingInsets) {
                 Modifier

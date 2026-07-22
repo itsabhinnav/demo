@@ -22,10 +22,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.test.design.core.DrivingUxState
-import com.test.design.core.motion.AppMotionScheme
-import com.test.design.core.theme.AppThemeMode
-import com.test.design.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -126,13 +122,8 @@ class ImmersiveAssistantOverlayService : LifecycleService(),
             v.setViewTreeSavedStateRegistryOwner(this)
             v.setViewTreeViewModelStoreOwner(this)
             v.compositionContext = recomposer
-            // Lean AppTheme host — DesignAppShell requires Activity SavedStateHandle factories.
             v.setContent {
-                AppTheme(
-                    themeMode = AppThemeMode.Dark,
-                    drivingUxState = DrivingUxState.Parked,
-                    appMotionScheme = AppMotionScheme.Expressive,
-                ) {
+                AssistantTheme(darkTheme = true) {
                     VirtualAssistantOverlay(
                         onDismiss = { stopSelf() },
                         modifier = Modifier.fillMaxSize(),

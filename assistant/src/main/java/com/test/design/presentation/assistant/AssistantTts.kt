@@ -26,7 +26,7 @@ internal fun shouldSpeakBeat(beat: DialogueBeat): Boolean =
 /**
  * Speaks [text] via TextToSpeech when an engine is available; otherwise silent lip-sync only.
  */
-internal fun assistantUtteranceLipSync(
+fun assistantUtteranceLipSync(
     context: Context,
     text: String,
     holdMs: Long,

@@ -35,7 +35,6 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.test.design.presentation.ivi.dashboard.components.rememberedFloatingChromeBottomSpace
 import kotlin.math.roundToInt
 
 /**
@@ -43,6 +42,7 @@ import kotlin.math.roundToInt
  * Non-blocking until the session morphs to immersive.
  *
  * Sits above the floating dock so it is not covered when system bars are visible.
+ * Bottom inset comes from [LocalAssistantChromeBottomSpace] (host-provided).
  */
 @Composable
 fun AssistantCornerBubble(
@@ -53,7 +53,7 @@ fun AssistantCornerBubble(
     onClick: (() -> Unit)? = null,
     onBoundsInRoot: ((left: Int, top: Int, right: Int, bottom: Int) -> Unit)? = null,
 ) {
-    val chromeBottom = rememberedFloatingChromeBottomSpace()
+    val chromeBottom = LocalAssistantChromeBottomSpace.current
     val pulse = rememberInfiniteTransition(label = "corner_bubble_pulse")
     val glowAlpha by pulse.animateFloat(
         initialValue = 0.35f,
