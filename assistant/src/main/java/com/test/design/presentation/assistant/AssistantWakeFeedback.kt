@@ -20,11 +20,11 @@ import kotlin.math.sin
 import kotlin.concurrent.thread
 
 /**
- * Soft haptics + gentle earcons for assistant presence (slide up / slide down).
+ * Soft haptics + flat melodic earcons for assistant presence (slide up / slide down).
  *
- * Chimes use [AudioTrack] with [AudioAttributes.USAGE_ASSISTANCE_SONIFICATION]
- * (not [android.media.ToneGenerator], which opens AUDIO_OUTPUT_FLAG_FAST tracks
- * that destabilize AAOS AVDs).
+ * Entry and exit use distinct motifs via [AudioTrack] with
+ * [AudioAttributes.USAGE_ASSISTANCE_SONIFICATION] (not [android.media.ToneGenerator],
+ * which opens AUDIO_OUTPUT_FLAG_FAST tracks that destabilize AAOS AVDs).
  */
 class AssistantWakeFeedback(
     private val context: Context,
@@ -32,12 +32,12 @@ class AssistantWakeFeedback(
 ) {
     fun play() {
         playHaptic(confirm = true)
-        playSoftChime(ascending = true)
+        playChime(entry = true)
     }
 
     fun playDismiss() {
         playHaptic(confirm = false)
-        playSoftChime(ascending = false)
+        playChime(entry = false)
     }
 
     private fun playHaptic(confirm: Boolean) {
@@ -69,36 +69,50 @@ class AssistantWakeFeedback(
     }
 
     /**
-     * Two-strike instrumental bell (ding–dong up, dong–ding down).
-     * Additive inharmonic partials + exponential ring; off main thread.
+     * Flat melodic earcons — soft harmonic partials (kalimba-like), not a clang.
+     * Entry and exit use different motifs so summon ≠ dismiss.
      */
-    private fun playSoftChime(ascending: Boolean) {
+    private fun playChime(entry: Boolean) {
         thread(name = "assistant-chime", isDaemon = true) {
             var track: AudioTrack? = null
             try {
                 val sampleRate = 44_100
-                val durationMs = 520
+                // Entry: rising G4–B4–D5 major (welcome). Exit: falling A4–E4 fifth (settle).
+                val notesHz: DoubleArray
+                val strikesAt: DoubleArray
+                val noteGains: DoubleArray
+                val durationMs: Int
+                if (entry) {
+                    notesHz = doubleArrayOf(392.00, 493.88, 587.33)
+                    strikesAt = doubleArrayOf(0.00, 0.14, 0.28)
+                    noteGains = doubleArrayOf(1.00, 0.90, 0.82)
+                    durationMs = 680
+                } else {
+                    notesHz = doubleArrayOf(440.00, 329.63)
+                    strikesAt = doubleArrayOf(0.00, 0.20)
+                    noteGains = doubleArrayOf(1.00, 0.88)
+                    durationMs = 620
+                }
+                // Flat / mellow: fundamental-led harmonics, highs heavily damped.
+                val partials = arrayOf(
+                    doubleArrayOf(1.00, 1.0, 2.4),
+                    doubleArrayOf(0.28, 2.0, 4.0),
+                    doubleArrayOf(0.08, 3.0, 6.5),
+                )
                 val n = sampleRate * durationMs / 1_000
                 val pcm = ShortArray(n)
-                // Handbell / door-chime pitches: C5 ↔ E5.
-                val note0Hz = if (ascending) 523.25 else 659.25
-                val note1Hz = if (ascending) 659.25 else 523.25
-                val strike1At = 0.0
-                val strike2At = 0.155
-                // amp, freq ratio (inharmonic), decay rate — tubular-bell-ish.
-                val partials = arrayOf(
-                    doubleArrayOf(1.00, 1.00, 3.2),
-                    doubleArrayOf(0.52, 2.01, 4.8),
-                    doubleArrayOf(0.34, 2.76, 6.2),
-                    doubleArrayOf(0.20, 4.07, 8.0),
-                    doubleArrayOf(0.10, 5.43, 10.5),
-                )
-                val master = 0.22 // quiet cabin level before track volume
+                val master = 0.20
                 for (i in 0 until n) {
                     val t = i.toDouble() / sampleRate
                     var sample = 0.0
-                    sample += bellStrike(t, strike1At, note0Hz, partials)
-                    sample += bellStrike(t, strike2At, note1Hz, partials) * 0.92
+                    for (ni in notesHz.indices) {
+                        sample += softTone(
+                            t = t,
+                            strikeAt = strikesAt[ni],
+                            fundamentalHz = notesHz[ni],
+                            partials = partials,
+                        ) * noteGains[ni]
+                    }
                     pcm[i] = (sample * master * Short.MAX_VALUE)
                         .toInt()
                         .coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt())
@@ -120,7 +134,7 @@ class AssistantWakeFeedback(
                     .setTransferMode(AudioTrack.MODE_STATIC)
                     .setBufferSizeInBytes(n * 2)
                     .build()
-                track.setVolume(0.55f)
+                track.setVolume(0.50f)
                 track.write(pcm, 0, n)
                 track.play()
                 Thread.sleep((durationMs + 80).toLong())
@@ -138,8 +152,8 @@ class AssistantWakeFeedback(
         }
     }
 
-    /** One struck partial stack: sharp attack, exponential metallic ring. */
-    private fun bellStrike(
+    /** Soft struck tone: gentle attack, mellow harmonic ring. */
+    private fun softTone(
         t: Double,
         strikeAt: Double,
         fundamentalHz: Double,
@@ -147,8 +161,8 @@ class AssistantWakeFeedback(
     ): Double {
         val age = t - strikeAt
         if (age < 0.0) return 0.0
-        // ~4 ms attack so the hit reads as a mallet, not a beep.
-        val attack = if (age < 0.004) age / 0.004 else 1.0
+        // Softer ~12 ms attack — flatter, less percussive clang.
+        val attack = if (age < 0.012) age / 0.012 else 1.0
         var sum = 0.0
         for (p in partials) {
             val amp = p[0]
