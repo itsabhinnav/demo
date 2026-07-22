@@ -55,6 +55,7 @@ import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.ImmersiveEyesFace
+import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
@@ -119,12 +120,12 @@ private fun EporoFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier)
                 style = MaterialTheme.typography.labelLarge,
             )
             Spacer(Modifier.height(6.dp))
-            Text(
+            LiveInputText(
                 text = prompt,
                 color = Color(0xFFF1F3F4),
+                live = mood == AssistantMood.Listening,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 28.dp),
             )
         }
@@ -209,12 +210,12 @@ private fun ImmersiveEyesUi(mood: AssistantMood, prompt: String, modifier: Modif
                 modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(28.dp))
-            Text(
+            LiveInputText(
                 text = prompt,
                 color = Color(0xFFF8F9FA),
+                live = mood == AssistantMood.Listening,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp),
             )
         }

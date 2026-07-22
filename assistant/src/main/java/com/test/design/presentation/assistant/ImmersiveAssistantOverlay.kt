@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -48,12 +47,8 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.assistant.api.AssistantRuntime
 import com.test.design.assistant.api.AssistantSessionConfig
@@ -379,6 +374,8 @@ fun ImmersiveAssistantOverlay(
                         ImmersiveTranscript(
                             text = transcript,
                             speaker = speaker,
+                            live = speaker == DialogueSpeaker.User &&
+                                (mood == AssistantMood.Listening || liveSttActive),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .graphicsLayer {
@@ -517,38 +514,31 @@ fun ImmersiveBorderGlow(
 private fun ImmersiveTranscript(
     text: String,
     speaker: DialogueSpeaker,
+    live: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    // Crossfade only when the speaker role changes; word motion lives in LiveInputText.
     AnimatedContent(
-        targetState = text to speaker,
+        targetState = speaker,
         transitionSpec = {
-            fadeIn(tween(160)) togetherWith fadeOut(tween(100))
+            fadeIn(tween(180)) togetherWith fadeOut(tween(120))
         },
-        label = "immersive_transcript",
+        label = "immersive_transcript_speaker",
         modifier = modifier,
-    ) { (line, who) ->
-        if (line.isBlank()) {
-            Box(modifier = Modifier.height(34.dp))
-        } else {
-            val bodyColor = when (who) {
-                DialogueSpeaker.User -> Color(0xFFD2E3FC)
-                DialogueSpeaker.Assistant -> Color(0xFFF8F9FA)
-                DialogueSpeaker.System -> Color(0xFFBDC1C6)
-            }
-            Text(
-                text = line,
-                color = bodyColor,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            )
+    ) { who ->
+        val bodyColor = when (who) {
+            DialogueSpeaker.User -> Color(0xFFD2E3FC)
+            DialogueSpeaker.Assistant -> Color(0xFFF8F9FA)
+            DialogueSpeaker.System -> Color(0xFFBDC1C6)
         }
+        LiveInputText(
+            text = text,
+            color = bodyColor,
+            live = live && who == DialogueSpeaker.User,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        )
     }
 }
 
