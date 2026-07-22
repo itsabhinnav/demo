@@ -51,8 +51,175 @@ private val PoseSpring = spring<Float>(
 )
 
 /**
- * Fusion persona — EPORO shell + glow-ring eyes with Immersive expression range
- * (mouth, blush, gaze loops, gestures, lip-sync).
+ * Fusion expression map — more dramatic eye morphs + spacing than Immersive,
+ * mouth only for clear emotional / speaking states.
+ */
+internal data class FusionEyePose(
+    val eyeOpen: Float = 1f,
+    val eyeWidth: Float = 1f,
+    val eyeHeight: Float = 1f,
+    /** Half-distance scale — higher = farther apart. */
+    val eyeGap: Float = 1f,
+    val lookX: Float = 0f,
+    val lookY: Float = 0f,
+    val tilt: Float = 0f,
+    val faceGlow: Float = 0.7f,
+    /** >0.35 happy arcs · <−0.25 sleepy dashes · else morphing glow rings. */
+    val eyeStyle: Float = 0f,
+    val mouthCurve: Float = 0f,
+    val mouthOpen: Float = 0f,
+    val mouthVisible: Float = 0f,
+    val blinkSpeed: Float = 1f,
+    val blush: Float = 0f,
+)
+
+private val FusionBase = FusionEyePose(
+    eyeOpen = 1.0f,
+    eyeWidth = 1.05f,
+    eyeHeight = 1.0f,
+    eyeGap = 1.0f,
+    eyeStyle = 0f,
+    faceGlow = 0.55f,
+    mouthCurve = 0f,
+    mouthOpen = 0f,
+    mouthVisible = 0f,
+    blush = 0f,
+    tilt = 0f,
+    blinkSpeed = 0.9f,
+)
+
+internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
+    AssistantMood.Idle -> FusionBase
+    AssistantMood.Listening -> FusionBase.copy(
+        eyeOpen = 1.12f,
+        eyeWidth = 1.08f,
+        eyeHeight = 1.12f,
+        eyeGap = 1.18f, // alert — eyes farther
+        faceGlow = 0.78f,
+        lookY = -0.06f,
+        blush = 0.1f,
+        blinkSpeed = 1.1f,
+    )
+    AssistantMood.Speaking -> FusionBase.copy(
+        eyeOpen = 1.06f,
+        eyeWidth = 1.1f,
+        eyeHeight = 1.02f,
+        eyeGap = 1.06f,
+        mouthCurve = 0.45f,
+        mouthOpen = 0.48f,
+        mouthVisible = 1f,
+        faceGlow = 0.72f,
+        tilt = 1f,
+    )
+    AssistantMood.Thinking -> FusionBase.copy(
+        eyeOpen = 0.96f,
+        eyeWidth = 1.02f,
+        eyeHeight = 0.88f,
+        eyeGap = 0.82f, // focused — eyes closer
+        lookX = 0.24f,
+        lookY = -0.1f,
+        tilt = 5f,
+        faceGlow = 0.58f,
+    )
+    AssistantMood.Reading -> FusionBase.copy(
+        eyeOpen = 1.0f,
+        eyeWidth = 1.14f,
+        eyeHeight = 0.86f,
+        eyeGap = 0.88f,
+        lookX = 0.3f,
+        lookY = 0.06f,
+        faceGlow = 0.52f,
+    )
+    AssistantMood.Searching -> FusionBase.copy(
+        eyeOpen = 1.1f,
+        eyeWidth = 1.06f,
+        eyeHeight = 1.08f,
+        eyeGap = 1.22f, // scanning — wide set
+        faceGlow = 0.7f,
+        tilt = 1.5f,
+        blinkSpeed = 1.2f,
+    )
+    AssistantMood.Happy -> FusionBase.copy(
+        eyeOpen = 0.92f,
+        eyeWidth = 1.32f,
+        eyeHeight = 0.62f, // squint smile
+        eyeGap = 1.1f,
+        eyeStyle = 0.72f, // glow ^ arcs
+        mouthCurve = 0.88f,
+        mouthOpen = 0.06f,
+        mouthVisible = 0.95f,
+        blush = 0.48f,
+        faceGlow = 0.82f,
+        tilt = -2.5f,
+    )
+    AssistantMood.Excited -> FusionBase.copy(
+        eyeOpen = 1.22f,
+        eyeWidth = 1.2f,
+        eyeHeight = 1.18f, // big round rings
+        eyeGap = 1.32f, // farthest
+        eyeStyle = 0.15f,
+        mouthCurve = 0.95f,
+        mouthOpen = 0.38f,
+        mouthVisible = 1f,
+        blush = 0.38f,
+        faceGlow = 0.9f,
+        tilt = -3.5f,
+        blinkSpeed = 1.3f,
+    )
+    AssistantMood.Sad -> FusionBase.copy(
+        eyeOpen = 0.78f,
+        eyeWidth = 1.2f,
+        eyeHeight = 0.82f,
+        eyeGap = 0.72f, // closest — withdrawn
+        lookY = 0.16f,
+        mouthCurve = -0.75f,
+        mouthOpen = 0.04f,
+        mouthVisible = 0.85f,
+        faceGlow = 0.38f,
+        tilt = 4f,
+        blinkSpeed = 0.65f,
+    )
+    AssistantMood.Bored -> FusionBase.copy(
+        eyeOpen = 0.68f,
+        eyeWidth = 1.28f,
+        eyeHeight = 0.58f, // flat half-lids
+        eyeGap = 1.14f,
+        lookX = 0.34f,
+        lookY = 0.08f,
+        eyeStyle = -0.15f,
+        faceGlow = 0.36f,
+        tilt = 2.5f,
+        blinkSpeed = 0.5f,
+    )
+    AssistantMood.Drowsy -> FusionBase.copy(
+        eyeOpen = 0.42f,
+        eyeWidth = 1.3f,
+        eyeHeight = 0.42f,
+        eyeGap = 0.86f,
+        lookY = 0.12f,
+        eyeStyle = -0.55f, // sleepy dashes
+        faceGlow = 0.3f,
+        tilt = 2.5f,
+        blinkSpeed = 0.38f,
+    )
+    AssistantMood.Tired -> FusionBase.copy(
+        eyeOpen = 0.55f,
+        eyeWidth = 1.24f,
+        eyeHeight = 0.52f,
+        eyeGap = 0.9f,
+        lookY = 0.14f,
+        eyeStyle = -0.4f,
+        mouthCurve = -0.3f,
+        mouthVisible = 0.45f, // faint weary line
+        faceGlow = 0.28f,
+        tilt = 3f,
+        blinkSpeed = 0.35f,
+    )
+}
+
+/**
+ * Fusion persona — EPORO shell + glow-ring eyes with Immersive-style expression morphs
+ * (shape, spacing, selective mouth, blush, gaze, gestures, lip-sync).
  */
 @Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
@@ -69,7 +236,7 @@ fun FusionAssistantFace(
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
 ) {
-    val target = mood.toImmersiveEyePose()
+    val target = mood.toFusionEyePose()
     val shellMorph = remember {
         ExpressiveShellMorphState(
             morph = Morph(
@@ -87,6 +254,7 @@ fun FusionAssistantFace(
     val lookY = remember { Animatable(target.lookY) }
     val tilt = remember { Animatable(target.tilt) }
     val faceGlow = remember { Animatable(target.faceGlow) }
+    val eyeStyle = remember { Animatable(target.eyeStyle) }
     val mouthCurve = remember { Animatable(target.mouthCurve) }
     val mouthOpen = remember { Animatable(target.mouthOpen) }
     val mouthVisible = remember { Animatable(target.mouthVisible) }
@@ -106,6 +274,7 @@ fun FusionAssistantFace(
         launch { lookY.animateTo(gazeY ?: target.lookY, PoseSpring) }
         launch { tilt.animateTo(target.tilt, PoseSpring) }
         launch { faceGlow.animateTo((target.faceGlow * glowBoost).coerceAtMost(1.2f), PoseSpring) }
+        launch { eyeStyle.animateTo(target.eyeStyle, PoseSpring) }
         launch { mouthCurve.animateTo(target.mouthCurve, PoseSpring) }
         launch { mouthVisible.animateTo(target.mouthVisible, PoseSpring) }
         launch { blush.animateTo(target.blush, PoseSpring) }
@@ -173,12 +342,22 @@ fun FusionAssistantFace(
         delay(Random.nextLong(1_200, 2_400))
         while (isActive) {
             val speed = currentTarget.blinkSpeed.coerceIn(0.25f, 1.6f)
+            val gapMs = when (currentMood) {
+                AssistantMood.Drowsy, AssistantMood.Tired -> Random.nextLong(2_200, 4_000)
+                AssistantMood.Excited, AssistantMood.Listening -> Random.nextLong(2_400, 4_200)
+                else -> Random.nextLong(2_800, 5_200)
+            }
             val closeTo = when (currentMood) {
                 AssistantMood.Drowsy -> 0.06f
                 AssistantMood.Tired -> 0.08f
                 else -> 0.05f
             }
             blink.snapTo(1f)
+            if (currentTarget.eyeStyle > 0.55f) {
+                // Happy arcs don't blink the same way — skip to next gap.
+                delay((gapMs / speed).toLong().coerceAtLeast(800L))
+                continue
+            }
             blink.animateTo(closeTo, tween((90 / speed).toInt().coerceAtLeast(40)))
             delay((50 / speed).toLong().coerceAtLeast(20L))
             blink.animateTo(1f, tween((140 / speed).toInt().coerceAtLeast(60)))
@@ -193,12 +372,7 @@ fun FusionAssistantFace(
                 delay(35)
                 blink.animateTo(1f, tween(130))
             }
-            val gap = when (currentMood) {
-                AssistantMood.Drowsy, AssistantMood.Tired -> Random.nextLong(2_200, 4_000)
-                AssistantMood.Excited, AssistantMood.Listening -> Random.nextLong(2_400, 4_200)
-                else -> Random.nextLong(2_800, 5_200)
-            }
-            delay((gap / speed).toLong().coerceAtLeast(800L))
+            delay((gapMs / speed).toLong().coerceAtLeast(800L))
         }
     }
 
@@ -337,20 +511,21 @@ fun FusionAssistantFace(
             drawFusionHead(shellMorph = shellMorph, shellColor = shellColor, glow = glow)
             drawFusionVisor(visorColor)
 
-            val open = (eyeOpen.value * blinkOpen).coerceIn(0.05f, 1.15f)
-            // Immersive gap scale → Eporo visor spacing.
-            val gap = 0.18f * eyeGap.value.coerceIn(1f, 1.8f)
-            val eyeY = h * (0.48f + lookY.value * 0.04f)
-            val gaze = lookX.value * side * 0.012f
-            val pulse = (0.9f + 0.1f * glowPhase).coerceIn(0.85f, 1f)
-            val baseR = side * 0.078f * pulse
-            val rx = baseR * eyeWidth.value.coerceIn(0.8f, 1.35f)
-            val ry = (baseR * eyeHeight.value.coerceIn(0.45f, 1.15f) * open)
-                .coerceAtLeast(baseR * 0.08f)
+            val open = (eyeOpen.value * blinkOpen).coerceIn(0.05f, 1.2f)
+            // Wider dynamic spacing — Sad ~0.72 closer, Excited ~1.32 farther.
+            val gap = 0.152f * eyeGap.value.coerceIn(0.65f, 1.45f)
+            val eyeY = h * (0.48f + lookY.value * 0.05f)
+            val gaze = lookX.value * side * 0.018f
+            val pulse = (0.88f + 0.12f * glowPhase).coerceIn(0.82f, 1f)
+            val baseR = side * 0.082f * pulse
+            val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+            val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                .coerceAtLeast(baseR * 0.06f)
+            val style = eyeStyle.value
 
             if (blush.value > 0.04f) {
                 val blushA = 0.22f * blush.value
-                val bx = w * gap * 0.85f
+                val bx = w * gap * 0.9f
                 drawCircle(
                     Color(0xFFFF9BB0).copy(alpha = blushA),
                     side * 0.055f,
@@ -369,6 +544,7 @@ fun FusionAssistantFace(
                 radiusY = ry,
                 glow = eyeTint,
                 open = blinkOpen,
+                style = style,
             )
             drawFusionEye(
                 center = Offset(w * (0.50f + gap) + gaze, eyeY),
@@ -376,12 +552,14 @@ fun FusionAssistantFace(
                 radiusY = ry,
                 glow = eyeTint,
                 open = blinkOpen,
+                style = style,
             )
 
             val speaking = mouthAmplitude != null ||
                 mood == AssistantMood.Speaking ||
                 mood == AssistantMood.Excited
-            if (mouthVisible.value > 0.08f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
+            // Mouth only when the pose asks for it (happy / sad / speaking / …).
+            if (mouthVisible.value > 0.2f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
                 drawFusionMouth(
                     center = Offset(cx, h * 0.66f),
                     faceR = side * 0.42f,
@@ -463,57 +641,130 @@ private fun DrawScope.drawFusionVisor(visorColor: Color) {
     )
 }
 
-/** EPORO glow-ring eyes — elliptical so Immersive width/height moods read clearly. */
+/** EPORO glow eyes — morph ring / arc / dash shapes like Immersive. */
 private fun DrawScope.drawFusionEye(
     center: Offset,
     radiusX: Float,
     radiusY: Float,
     glow: Color,
     open: Float,
+    style: Float,
 ) {
     val rx = radiusX.coerceAtLeast(1f)
-    val ry = radiusY.coerceAtLeast(rx * 0.08f)
-    scale(scaleX = 1f, scaleY = open.coerceIn(0.05f, 1.2f), pivot = center) {
-        val bloom = maxOf(rx, ry)
-        drawIntoCanvas { canvas ->
-            val paint = Paint().asFrameworkPaint().apply {
-                isAntiAlias = true
-                color = glow.copy(alpha = 0.45f * open.coerceIn(0.2f, 1f)).toArgb()
-                maskFilter = BlurMaskFilter(bloom * 0.9f, BlurMaskFilter.Blur.NORMAL)
+    val ry = radiusY.coerceAtLeast(rx * 0.06f)
+    when {
+        style > 0.35f -> {
+            // Happy ^ arcs with EPORO bloom.
+            val lift = 0.55f + 0.55f * style.coerceIn(0.35f, 1f)
+            val path = Path().apply {
+                moveTo(center.x - rx * 1.75f, center.y + ry * 0.35f)
+                quadraticTo(
+                    center.x,
+                    center.y - ry * lift,
+                    center.x + rx * 1.75f,
+                    center.y + ry * 0.35f,
+                )
             }
-            canvas.nativeCanvas.drawOval(
-                center.x - rx * 1.55f,
-                center.y - ry * 1.55f,
-                center.x + rx * 1.55f,
-                center.y + ry * 1.55f,
-                paint,
+            drawIntoCanvas { canvas ->
+                val fw = Paint().asFrameworkPaint()
+                fw.isAntiAlias = true
+                fw.color = glow.copy(alpha = 0.4f).toArgb()
+                fw.maskFilter = BlurMaskFilter(rx * 0.85f, BlurMaskFilter.Blur.NORMAL)
+                fw.strokeWidth = rx * 0.55f
+                fw.strokeCap = android.graphics.Paint.Cap.ROUND
+                fw.style = android.graphics.Paint.Style.STROKE
+                canvas.nativeCanvas.drawPath(
+                    android.graphics.Path().apply {
+                        moveTo(center.x - rx * 1.75f, center.y + ry * 0.35f)
+                        quadTo(
+                            center.x,
+                            center.y - ry * lift,
+                            center.x + rx * 1.75f,
+                            center.y + ry * 0.35f,
+                        )
+                    },
+                    fw,
+                )
+            }
+            drawPath(
+                path,
+                glow.copy(alpha = 0.98f),
+                style = Stroke(width = rx * 0.48f, cap = StrokeCap.Round),
             )
         }
-        drawOval(
-            brush = Brush.radialGradient(
-                colors = listOf(glow.copy(alpha = 0.35f), Color.Transparent),
-                center = center,
-                radius = bloom * 1.7f,
-            ),
-            topLeft = Offset(center.x - rx * 1.7f, center.y - ry * 1.7f),
-            size = Size(rx * 3.4f, ry * 3.4f),
-        )
-        drawOval(
-            color = glow.copy(alpha = 0.98f),
-            topLeft = Offset(center.x - rx, center.y - ry),
-            size = Size(rx * 2f, ry * 2f),
-            style = Stroke(width = minOf(rx, ry) * 0.38f, cap = StrokeCap.Round),
-        )
-        drawOval(
-            color = Color.Black,
-            topLeft = Offset(center.x - rx * 0.58f, center.y - ry * 0.58f),
-            size = Size(rx * 1.16f, ry * 1.16f),
-        )
-        drawCircle(
-            color = Color.White.copy(alpha = 0.9f),
-            radius = minOf(rx, ry) * 0.12f,
-            center = Offset(center.x, center.y + ry * 0.72f),
-        )
+        style < -0.25f -> {
+            // Sleepy glow dashes — flattened rings.
+            val flatten = (-style).coerceIn(0.25f, 1f)
+            val dashW = rx * (1.35f + 0.45f * flatten)
+            val dashH = (ry * (1f - 0.55f * flatten) * open.coerceIn(0.15f, 1f))
+                .coerceAtLeast(rx * 0.12f)
+            drawIntoCanvas { canvas ->
+                val paint = Paint().asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    color = glow.copy(alpha = 0.4f).toArgb()
+                    maskFilter = BlurMaskFilter(dashW * 0.55f, BlurMaskFilter.Blur.NORMAL)
+                }
+                canvas.nativeCanvas.drawOval(
+                    center.x - dashW * 1.35f,
+                    center.y - dashH * 1.35f,
+                    center.x + dashW * 1.35f,
+                    center.y + dashH * 1.35f,
+                    paint,
+                )
+            }
+            drawRoundRect(
+                color = glow.copy(alpha = 0.96f),
+                topLeft = Offset(center.x - dashW, center.y - dashH),
+                size = Size(dashW * 2f, dashH * 2f),
+                cornerRadius = CornerRadius(dashH, dashH),
+            )
+        }
+        else -> {
+            // Morphing glow rings — width/height express the mood.
+            scale(scaleX = 1f, scaleY = open.coerceIn(0.05f, 1.2f), pivot = center) {
+                val bloom = maxOf(rx, ry)
+                drawIntoCanvas { canvas ->
+                    val paint = Paint().asFrameworkPaint().apply {
+                        isAntiAlias = true
+                        color = glow.copy(alpha = 0.45f * open.coerceIn(0.2f, 1f)).toArgb()
+                        maskFilter = BlurMaskFilter(bloom * 0.9f, BlurMaskFilter.Blur.NORMAL)
+                    }
+                    canvas.nativeCanvas.drawOval(
+                        center.x - rx * 1.55f,
+                        center.y - ry * 1.55f,
+                        center.x + rx * 1.55f,
+                        center.y + ry * 1.55f,
+                        paint,
+                    )
+                }
+                drawOval(
+                    brush = Brush.radialGradient(
+                        colors = listOf(glow.copy(alpha = 0.35f), Color.Transparent),
+                        center = center,
+                        radius = bloom * 1.7f,
+                    ),
+                    topLeft = Offset(center.x - rx * 1.7f, center.y - ry * 1.7f),
+                    size = Size(rx * 3.4f, ry * 3.4f),
+                )
+                val strokeW = minOf(rx, ry) * 0.38f
+                drawOval(
+                    color = glow.copy(alpha = 0.98f),
+                    topLeft = Offset(center.x - rx, center.y - ry),
+                    size = Size(rx * 2f, ry * 2f),
+                    style = Stroke(width = strokeW, cap = StrokeCap.Round),
+                )
+                drawOval(
+                    color = Color.Black,
+                    topLeft = Offset(center.x - rx * 0.55f, center.y - ry * 0.55f),
+                    size = Size(rx * 1.1f, ry * 1.1f),
+                )
+                drawCircle(
+                    color = Color.White.copy(alpha = 0.9f),
+                    radius = minOf(rx, ry) * 0.12f,
+                    center = Offset(center.x, center.y + ry * 0.7f),
+                )
+            }
+        }
     }
 }
 

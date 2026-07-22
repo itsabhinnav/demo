@@ -66,6 +66,66 @@ class AssistantMoodTest {
     }
 
     @Test
+    fun fusionEyePoseMorphsShapeAndSpacingByMood() {
+        AssistantMood.entries.forEach { mood ->
+            val pose = mood.toFusionEyePose()
+            assertTrue(pose.eyeOpen in 0.2f..1.4f)
+            assertTrue(pose.eyeWidth in 0.7f..1.5f)
+            assertTrue(pose.eyeHeight in 0.3f..1.4f)
+            assertTrue(pose.eyeGap in 0.65f..1.45f)
+            assertTrue(pose.mouthVisible in 0f..1f)
+            assertTrue(pose.eyeStyle in -1.1f..1.1f)
+        }
+        // Closer when sad / thinking; farther when excited / searching.
+        assertTrue(
+            AssistantMood.Sad.toFusionEyePose().eyeGap <
+                AssistantMood.Idle.toFusionEyePose().eyeGap,
+        )
+        assertTrue(
+            AssistantMood.Thinking.toFusionEyePose().eyeGap <
+                AssistantMood.Listening.toFusionEyePose().eyeGap,
+        )
+        assertTrue(
+            AssistantMood.Excited.toFusionEyePose().eyeGap >
+                AssistantMood.Idle.toFusionEyePose().eyeGap,
+        )
+        assertTrue(
+            AssistantMood.Searching.toFusionEyePose().eyeGap >
+                AssistantMood.Reading.toFusionEyePose().eyeGap,
+        )
+        // Squint happy vs big excited rings.
+        assertTrue(
+            AssistantMood.Happy.toFusionEyePose().eyeHeight <
+                AssistantMood.Excited.toFusionEyePose().eyeHeight,
+        )
+        assertTrue(AssistantMood.Happy.toFusionEyePose().eyeStyle > 0.35f)
+        assertTrue(AssistantMood.Drowsy.toFusionEyePose().eyeStyle < -0.25f)
+    }
+
+    @Test
+    fun fusionMouthOnlyOnExpressiveMoods() {
+        val withMouth = setOf(
+            AssistantMood.Happy,
+            AssistantMood.Sad,
+            AssistantMood.Speaking,
+            AssistantMood.Excited,
+            AssistantMood.Tired,
+        )
+        AssistantMood.entries.forEach { mood ->
+            val visible = mood.toFusionEyePose().mouthVisible
+            if (mood in withMouth) {
+                assertTrue("$mood should show mouth", visible > 0.2f)
+            } else {
+                assertTrue("$mood should hide mouth", visible <= 0.2f)
+            }
+        }
+        assertTrue(
+            AssistantMood.Happy.toFusionEyePose().mouthCurve >
+                AssistantMood.Sad.toFusionEyePose().mouthCurve,
+        )
+    }
+
+    @Test
     fun immersiveEyePoseConveysEmotionShapes() {
         AssistantMood.entries.forEach { mood ->
             val pose = mood.toImmersiveEyePose()
