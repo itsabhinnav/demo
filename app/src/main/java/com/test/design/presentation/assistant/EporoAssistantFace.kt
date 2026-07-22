@@ -29,10 +29,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.graphics.shapes.Morph
+import kotlin.random.Random
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 val EporoShell = Color(0xFF1C1D21)
@@ -72,6 +76,7 @@ fun EporoAssistantFace(
     val lookX = remember { Animatable(pose.lookX) }
     val lookY = remember { Animatable(pose.lookY) }
     val tilt = remember { Animatable(pose.tilt) }
+    val blink = remember { Animatable(1f) }
 
     LaunchedEffect(mood) {
         val p = mood.toEporoPose()
@@ -80,6 +85,32 @@ fun EporoAssistantFace(
         launch { lookX.animateTo(p.lookX, spring(dampingRatio = 0.78f)) }
         launch { lookY.animateTo(p.lookY, spring(dampingRatio = 0.78f)) }
         launch { tilt.animateTo(p.tilt, spring(dampingRatio = 0.8f)) }
+    }
+
+    // Occasional blink — long idle gaps so it feels alive, not twitchy.
+    LaunchedEffect(mood) {
+        while (isActive) {
+            val gap = when (mood) {
+                AssistantMood.Drowsy, AssistantMood.Tired -> Random.nextLong(5_500, 10_000)
+                AssistantMood.Bored -> Random.nextLong(6_000, 11_000)
+                AssistantMood.Listening, AssistantMood.Speaking -> Random.nextLong(4_500, 8_500)
+                else -> Random.nextLong(5_000, 9_500)
+            }
+            delay(gap)
+            val closeTo = when (mood) {
+                AssistantMood.Drowsy, AssistantMood.Tired -> 0.08f
+                else -> 0.06f
+            }
+            blink.animateTo(closeTo, tween(85))
+            delay(45)
+            blink.animateTo(1f, tween(130))
+            if (Random.nextFloat() < 0.22f) {
+                delay(110)
+                blink.animateTo(closeTo, tween(70))
+                delay(35)
+                blink.animateTo(1f, tween(120))
+            }
+        }
     }
 
     val life = rememberInfiniteTransition(label = "eporo_breath")
@@ -168,16 +199,19 @@ fun EporoAssistantFace(
             }
             val pulse = (0.9f + 0.1f * glowPhase).coerceIn(0.85f, 1f)
             val eyeR = (minOf(w, h) * 0.095f) * eyeOpen.value * pulse
+            val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
 
             drawEye(
                 center = Offset(w * (0.50f - gap) + gaze * eyeR, eyeY),
                 radius = eyeR,
                 glow = glowColor,
+                open = blinkOpen,
             )
             drawEye(
                 center = Offset(w * (0.50f + gap) + gaze * eyeR, eyeY),
                 radius = eyeR,
                 glow = glowColor,
+                open = blinkOpen,
             )
         }
     }
@@ -282,42 +316,45 @@ private fun DrawScope.drawEye(
     center: Offset,
     radius: Float,
     glow: Color,
+    open: Float = 1f,
 ) {
-    // Soft bloom via BlurMaskFilter.
-    drawIntoCanvas { canvas ->
-        val paint = Paint().asFrameworkPaint().apply {
-            isAntiAlias = true
-            color = glow.copy(alpha = 0.45f).toArgb()
-            maskFilter = BlurMaskFilter(radius * 0.9f, BlurMaskFilter.Blur.NORMAL)
+    // Vertical squash reads as an eyelid blink; bloom softens with openness.
+    scale(scaleX = 1f, scaleY = open, pivot = center) {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().asFrameworkPaint().apply {
+                isAntiAlias = true
+                color = glow.copy(alpha = 0.45f * open.coerceIn(0.2f, 1f)).toArgb()
+                maskFilter = BlurMaskFilter(radius * 0.9f, BlurMaskFilter.Blur.NORMAL)
+            }
+            canvas.nativeCanvas.drawCircle(center.x, center.y, radius * 1.55f, paint)
         }
-        canvas.nativeCanvas.drawCircle(center.x, center.y, radius * 1.55f, paint)
-    }
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(glow.copy(alpha = 0.35f), Color.Transparent),
-            center = center,
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(glow.copy(alpha = 0.35f), Color.Transparent),
+                center = center,
+                radius = radius * 1.7f,
+            ),
             radius = radius * 1.7f,
-        ),
-        radius = radius * 1.7f,
-        center = center,
-    )
-    drawCircle(
-        color = glow.copy(alpha = 0.98f),
-        radius = radius,
-        center = center,
-        style = Stroke(width = radius * 0.32f, cap = StrokeCap.Round),
-    )
-    drawCircle(
-        color = Color.Black,
-        radius = radius * 0.58f,
-        center = center,
-    )
-    // Specular on bottom of ring.
-    drawCircle(
-        color = Color.White.copy(alpha = 0.9f),
-        radius = radius * 0.1f,
-        center = Offset(center.x, center.y + radius * 0.78f),
-    )
+            center = center,
+        )
+        drawCircle(
+            color = glow.copy(alpha = 0.98f),
+            radius = radius,
+            center = center,
+            style = Stroke(width = radius * 0.32f, cap = StrokeCap.Round),
+        )
+        drawCircle(
+            color = Color.Black,
+            radius = radius * 0.58f,
+            center = center,
+        )
+        // Specular on bottom of ring.
+        drawCircle(
+            color = Color.White.copy(alpha = 0.9f),
+            radius = radius * 0.1f,
+            center = Offset(center.x, center.y + radius * 0.78f),
+        )
+    }
 }
 
 internal data class EporoPose(
