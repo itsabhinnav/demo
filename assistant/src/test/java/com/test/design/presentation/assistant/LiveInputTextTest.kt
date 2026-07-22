@@ -31,4 +31,14 @@ class LiveInputTextTest {
         val next = liveInputTokens("On it — thinking")
         assertEquals(0, liveInputSharedPrefixCount(previous, next))
     }
+
+    @Test
+    fun tokenAlphaRisesSmoothlyAcrossFadeWindow() {
+        assertEquals(0f, liveInputTokenAlpha(0, 0f), 0.001f)
+        assertTrue(liveInputTokenAlpha(0, 0.8f) in 0.2f..0.8f)
+        assertEquals(1f, liveInputTokenAlpha(0, 2f), 0.001f)
+        // Overlapping edge: next token already easing in before previous settles.
+        assertTrue(liveInputTokenAlpha(1, 1.2f) > 0f)
+        assertTrue(liveInputTokenAlpha(1, 1.2f) < liveInputTokenAlpha(0, 1.2f))
+    }
 }

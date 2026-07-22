@@ -1,6 +1,7 @@
 package com.test.design.presentation.assistant
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -15,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,7 +30,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
+
+/** Soft emphasized curve — ease out without a hard settle. */
+private val LiveRevealEasing = CubicBezierEasing(0.2f, 0.0f, 0.0f, 1.0f)
+
+/** How many tokens the fade edge spans (overlap = fluid wave, not staccato). */
+private const val RevealFadeWindow = 1.6f
 
 /**
  * Tokenize [text] into reveal units for Google Assistant Live–style streaming.
@@ -63,9 +68,17 @@ internal fun liveInputSharedPrefixCount(previous: List<String>, next: List<Strin
 }
 
 /**
- * Live-input transcript: stable prefix, soft fade on new words, optional
- * breathing shimmer on the trailing token while speech is still forming —
- * the same feel as Google Assistant / Gemini Live captions.
+ * Smoothstep opacity for token [index] given continuous [reveal] progress.
+ * Tokens blend across [RevealFadeWindow] so several words ease in together.
+ */
+internal fun liveInputTokenAlpha(index: Int, reveal: Float): Float {
+    val t = ((reveal - index) / RevealFadeWindow).coerceIn(0f, 1f)
+    return t * t * (3f - 2f * t)
+}
+
+/**
+ * Live-input transcript: one continuous reveal progress (not stepped per word),
+ * stable-prefix growth for STT, soft trailing breath while listening.
  */
 @Composable
 fun LiveInputText(
@@ -79,117 +92,84 @@ fun LiveInputText(
     maxLines: Int = 1,
 ) {
     val tokens = remember(text) { liveInputTokens(text) }
-    var settledCount by remember { mutableIntStateOf(0) }
     var committedText by remember { mutableStateOf("") }
-    val incomingAlpha = remember { Animatable(1f) }
+    val reveal = remember { Animatable(0f) }
 
     LaunchedEffect(text) {
         val nextTokens = liveInputTokens(text)
         val prevTokens = liveInputTokens(committedText)
         val shared = liveInputSharedPrefixCount(prevTokens, nextTokens)
+        val target = nextTokens.size.toFloat()
 
         when {
             text.isBlank() -> {
-                settledCount = 0
+                reveal.snapTo(0f)
                 committedText = ""
-                incomingAlpha.snapTo(1f)
             }
 
-            // Prefix-stable growth (live STT partials) — fade only new tokens.
-            shared == prevTokens.size && nextTokens.size >= prevTokens.size &&
-                committedText.isNotEmpty() -> {
-                var i = shared
-                settledCount = shared
-                while (i < nextTokens.size) {
-                    incomingAlpha.snapTo(0.14f)
-                    settledCount = i
-                    incomingAlpha.animateTo(
-                        1f,
-                        tween(durationMillis = 200, easing = FastOutSlowInEasing),
-                    )
-                    i += 1
-                    settledCount = i
-                    committedText = nextTokens.take(i).joinToString("")
+            // Prefix-stable growth / light correction — retarget without rewinding.
+            committedText.isNotEmpty() && shared > 0 -> {
+                val floor = shared.toFloat()
+                when {
+                    reveal.value > target -> reveal.snapTo(target)
+                    reveal.value < floor -> reveal.snapTo(floor)
                 }
-                committedText = text
-            }
-
-            // Mid-utterance correction that keeps a shared stem.
-            shared > 0 && committedText.isNotEmpty() -> {
-                settledCount = shared
-                committedText = nextTokens.take(shared).joinToString("")
-                var i = shared
-                while (i < nextTokens.size) {
-                    incomingAlpha.snapTo(0.14f)
-                    settledCount = i
-                    incomingAlpha.animateTo(
-                        1f,
-                        tween(durationMillis = 200, easing = FastOutSlowInEasing),
+                val delta = (target - reveal.value).coerceAtLeast(0f)
+                if (delta > 0.001f) {
+                    val duration = (160 + (delta * 110f).toInt()).coerceIn(160, 480)
+                    reveal.animateTo(
+                        target,
+                        tween(durationMillis = duration, easing = FastOutSlowInEasing),
                     )
-                    i += 1
-                    settledCount = i
-                    committedText = nextTokens.take(i).joinToString("")
-                }
-                committedText = text
-            }
-
-            // Fresh line — soft word cascade like Live replies.
-            else -> {
-                settledCount = 0
-                committedText = ""
-                incomingAlpha.snapTo(0.1f)
-                if (nextTokens.isEmpty()) {
-                    incomingAlpha.snapTo(1f)
                 } else {
-                    for (i in nextTokens.indices) {
-                        incomingAlpha.snapTo(0.12f)
-                        settledCount = i
-                        incomingAlpha.animateTo(
-                            1f,
-                            tween(durationMillis = 170, easing = FastOutSlowInEasing),
-                        )
-                        settledCount = i + 1
-                        committedText = nextTokens.take(i + 1).joinToString("")
-                        if (i < nextTokens.lastIndex) delay(36)
-                    }
+                    reveal.snapTo(target)
                 }
                 committedText = text
+            }
+
+            // Fresh line — single continuous wipe across all tokens.
+            else -> {
+                reveal.snapTo(0f)
+                if (target <= 0f) {
+                    committedText = text
+                } else {
+                    val duration = (260 + nextTokens.size * 55).coerceIn(260, 780)
+                    reveal.animateTo(
+                        target,
+                        tween(durationMillis = duration, easing = LiveRevealEasing),
+                    )
+                    committedText = text
+                }
             }
         }
     }
 
-    val shimmer = if (live && tokens.isNotEmpty()) {
-        val transition = rememberInfiniteTransition(label = "live_input_shimmer")
-        val pulse by transition.animateFloat(
-            initialValue = 0.55f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(880, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "live_trailing_pulse",
-        )
-        pulse
-    } else {
-        1f
-    }
+    // Always remember the transition (Compose rules); gate with [live] multiplier.
+    val breathTransition = rememberInfiniteTransition(label = "live_input_breath")
+    val breath by breathTransition.animateFloat(
+        initialValue = 0.82f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1_400, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "live_trailing_breath",
+    )
+    val trailingMul = if (live && tokens.isNotEmpty()) breath else 1f
 
     if (text.isBlank()) {
         Box(modifier = modifier.height(34.dp))
         return
     }
 
+    val progress = reveal.value
     val annotated = buildAnnotatedString {
         tokens.forEachIndexed { index, token ->
-            val base = when {
-                index < settledCount -> 1f
-                index == settledCount -> incomingAlpha.value
-                else -> 0f
+            var a = liveInputTokenAlpha(index, progress)
+            if (live && index == tokens.lastIndex && a > 0.92f) {
+                a *= trailingMul
             }
-            val trailing =
-                if (live && index == tokens.lastIndex && index < settledCount) shimmer else 1f
-            val a = (base * trailing).coerceIn(0f, 1f)
-            withStyle(SpanStyle(color = color.copy(alpha = color.alpha * a))) {
+            withStyle(SpanStyle(color = color.copy(alpha = color.alpha * a.coerceIn(0f, 1f)))) {
                 append(token)
             }
         }
