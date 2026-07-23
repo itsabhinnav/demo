@@ -13,14 +13,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.assistant.AssistantTokens
 
-/** Shared semi-transparent surfaces for every gallery variant. */
+/** Shared opaque surfaces for every gallery variant. */
 internal object AssistantUiChrome {
-    /** Blackish glass — high enough opacity that glyphs stay crisp. */
-    val Glass = AssistantTokens.Surface
-    val GlassLight = AssistantTokens.SurfaceTop
+    /** Solid blackish plates — fully opaque for all gallery styles. */
+    val Glass = Color(0xFF121418)
+    val GlassLight = Color(0xFF1A1C20)
     val GlassEdge = Color.White.copy(alpha = 0.16f)
-    /** Dims the world behind so chrome / face are the focus. */
-    val Scrim = AssistantTokens.Scrim
+    /** Opaque stage fill (no see-through to content behind the gallery). */
+    val Scrim = Color(0xFF101014)
     val Accent = AssistantTokens.Accent
     val AccentSoft = AssistantTokens.PanelGlow
     val OnGlass = AssistantTokens.OnSurface
@@ -37,15 +37,14 @@ internal fun GlassSurface(
     Box(
         modifier = modifier
             .clip(shape)
-            // Solid blackish base first, then a slight vertical wash.
-            .background(AssistantUiChrome.Glass, shape)
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        AssistantUiChrome.GlassLight.copy(alpha = 0.55f),
-                        Color.Transparent,
+                        AssistantUiChrome.GlassLight,
+                        AssistantUiChrome.Glass,
                     ),
                 ),
+                shape,
             )
             .border(1.dp, AssistantUiChrome.GlassEdge, shape),
         content = { content() },

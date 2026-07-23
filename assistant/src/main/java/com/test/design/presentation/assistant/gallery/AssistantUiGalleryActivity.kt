@@ -14,7 +14,7 @@ import androidx.core.view.WindowCompat
 import com.test.design.presentation.assistant.AssistantTheme
 
 /**
- * Transparent host for the semi-transparent assistant UI gallery.
+ * Opaque host for the assistant UI gallery.
  *
  * ADB:
  * ```
@@ -26,7 +26,7 @@ class AssistantUiGalleryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+        window.setBackgroundDrawable(ColorDrawable(AndroidColor.parseColor("#0B0C10")))
         window.setDimAmount(0f)
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         // Explicitly clear blur-behind — theme must not enable it (emulator SF crash).
@@ -35,8 +35,8 @@ class AssistantUiGalleryActivity : ComponentActivity() {
             window.attributes = window.attributes.apply { blurBehindRadius = 0 }
         }
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.dark(AndroidColor.parseColor("#0B0C10")),
+            navigationBarStyle = SystemBarStyle.dark(AndroidColor.parseColor("#0B0C10")),
         )
 
         val initial = intent?.getStringExtra(EXTRA_STYLE)

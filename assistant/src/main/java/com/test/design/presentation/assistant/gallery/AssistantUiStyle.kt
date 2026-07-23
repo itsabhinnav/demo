@@ -1,7 +1,7 @@
 package com.test.design.presentation.assistant.gallery
 
 /**
- * Catalog of semi-transparent voice-assistant chrome styles.
+ * Catalog of voice-assistant chrome styles (opaque gallery stage).
  */
 enum class AssistantUiStyle(
     val title: String,

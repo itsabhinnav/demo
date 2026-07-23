@@ -1,5 +1,6 @@
 package com.test.design.presentation.assistant.gallery
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -20,20 +21,41 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.assistant.AssistantMood
-import com.test.design.presentation.assistant.ImmersiveBackdrop
 import com.test.design.presentation.assistant.ImmersiveBorderGlow
+import kotlinx.coroutines.delay
+
+private val GalleryMoodCycle = listOf(
+    AssistantMood.Idle,
+    AssistantMood.Listening,
+    AssistantMood.Speaking,
+    AssistantMood.Thinking,
+    AssistantMood.Happy,
+    AssistantMood.Sad,
+    AssistantMood.Excited,
+    AssistantMood.Bored,
+    AssistantMood.Drowsy,
+    AssistantMood.Tired,
+    AssistantMood.Searching,
+)
+
+/** Fully opaque stage behind every gallery chrome style. */
+private val GalleryStageTop = Color(0xFF1A1C22)
+private val GalleryStageBottom = Color(0xFF0B0C10)
 
 /**
- * Semi-transparent assistant UI gallery — pick a chrome style and mood.
- * Uses the same radial stage + bottom border glow as [ImmersiveAssistantOverlay].
+ * Assistant UI gallery — pick a chrome style and mood.
+ * Stage background is always opaque; moods auto-advance every 2 seconds.
  */
 @Composable
 fun AssistantUiGalleryScreen(
@@ -44,8 +66,22 @@ fun AssistantUiGalleryScreen(
     var style by rememberSaveable { mutableStateOf(initialStyle) }
     var mood by rememberSaveable { mutableStateOf(AssistantMood.Listening) }
 
+    LaunchedEffect(mood) {
+        delay(2_000)
+        val index = GalleryMoodCycle.indexOf(mood).coerceAtLeast(0)
+        mood = GalleryMoodCycle[(index + 1) % GalleryMoodCycle.size]
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
-        ImmersiveBackdrop()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(GalleryStageTop, GalleryStageBottom),
+                    ),
+                ),
+        )
         ImmersiveBorderGlow()
 
         Box(
@@ -75,7 +111,7 @@ fun AssistantUiGalleryScreen(
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = style.title,
                             style = MaterialTheme.typography.titleMedium,
@@ -124,19 +160,7 @@ fun AssistantUiGalleryScreen(
                         .padding(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    listOf(
-                        AssistantMood.Idle,
-                        AssistantMood.Listening,
-                        AssistantMood.Speaking,
-                        AssistantMood.Thinking,
-                        AssistantMood.Happy,
-                        AssistantMood.Sad,
-                        AssistantMood.Excited,
-                        AssistantMood.Bored,
-                        AssistantMood.Drowsy,
-                        AssistantMood.Tired,
-                        AssistantMood.Searching,
-                    ).forEach { entry ->
+                    GalleryMoodCycle.forEach { entry ->
                         FilterChip(
                             selected = mood == entry,
                             onClick = { mood = entry },

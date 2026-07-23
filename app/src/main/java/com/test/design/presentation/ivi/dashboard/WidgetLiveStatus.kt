@@ -33,7 +33,7 @@ fun DashboardWidget.liveStatus(
         "Simulated · ${state.batteryPercent}% · ${state.rangeMiles} mi · $charge"
     } ?: subtitle
     DashboardWidget.VirtualAssistant -> "Eyes · STT · TTS lip-sync · cluster hand-off"
-    DashboardWidget.AssistantGallery -> "Chrome styles · moods · glass previews"
+    DashboardWidget.AssistantGallery -> "Chrome styles · moods · opaque stage · auto-cycle"
     DashboardWidget.MaterialComponents -> "Browse Material 3 components"
     DashboardWidget.CustomizedMaterial -> "OEM brand system preview"
     DashboardWidget.Settings -> "Driving UX · Motion Studio · Display"

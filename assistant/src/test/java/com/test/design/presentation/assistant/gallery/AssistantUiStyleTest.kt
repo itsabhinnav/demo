@@ -7,7 +7,7 @@ import org.junit.Test
 class AssistantUiStyleTest {
 
     @Test
-    fun atLeastTwelveSemiTransparentStyles() {
+    fun atLeastTwelveOpaqueGalleryStyles() {
         assertTrue(AssistantUiStyle.entries.size >= 12)
     }
 

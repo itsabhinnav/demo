@@ -69,7 +69,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Renders one semi-transparent assistant chrome style for the given mood.
+ * Renders one opaque-stage assistant chrome style for the given mood.
  */
 @Composable
 fun AssistantUiVariant(
@@ -321,9 +321,9 @@ private fun ImmersiveEyesUi(mood: AssistantMood, prompt: String, modifier: Modif
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0x44101820),
-                        Color(0xCC0A0C10),
-                        Color(0xF2050608),
+                        Color(0xFF101820),
+                        Color(0xFF0A0C10),
+                        Color(0xFF050608),
                     ),
                 ),
             ),
@@ -355,9 +355,9 @@ private fun ImmersiveGlowUi(mood: AssistantMood, prompt: String, modifier: Modif
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0x44101820),
-                        Color(0xCC0A0C10),
-                        Color(0xF2050608),
+                        Color(0xFF101820),
+                        Color(0xFF0A0C10),
+                        Color(0xFF050608),
                     ),
                 ),
             ),
