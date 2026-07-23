@@ -20,11 +20,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -347,9 +346,8 @@ fun ImmersiveAssistantOverlay(
                                 mood = mood,
                                 kind = faceKind,
                                 modifier = Modifier
-                                    .width(faceSize)
-                                    // Keep full face height — don't let the band squeeze/clip the chin.
-                                    .height(faceSize / 1.15f)
+                                    // Square footprint — matches Immersive eyes canvas.
+                                    .size(faceSize)
                                     .offset {
                                         IntOffset(
                                             0,

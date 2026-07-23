@@ -167,11 +167,11 @@ fun EporoAssistantFace(
         label = "eporo_idle_sway",
     )
 
-    // Reference is wider than tall (~1.15).
+    // Same square footprint as ImmersiveEyesFace.
     val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
     Canvas(
         modifier = modifier
-            .aspectRatio(1.15f)
+            .aspectRatio(1f)
             .graphicsLayer {
                 val s = shellBreath
                 scaleX = s

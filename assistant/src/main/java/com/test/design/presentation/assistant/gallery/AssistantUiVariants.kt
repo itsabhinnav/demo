@@ -119,7 +119,7 @@ private fun FusionFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FusionAssistantFace(
                 mood = mood,
-                modifier = Modifier.width(148.dp),
+                modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(20.dp))
             Text(
@@ -158,7 +158,7 @@ private fun FusionGlowFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FusionGlowAssistantFace(
                 mood = mood,
-                modifier = Modifier.width(148.dp),
+                modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(20.dp))
             Text(
@@ -197,7 +197,7 @@ private fun FusionEyesFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FusionEyesAssistantFace(
                 mood = mood,
-                modifier = Modifier.width(148.dp),
+                modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(20.dp))
             Text(
@@ -236,7 +236,7 @@ private fun EporoFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             EporoAssistantFace(
                 mood = mood,
-                modifier = Modifier.width(148.dp),
+                modifier = Modifier.size(228.dp),
             )
             Spacer(Modifier.height(20.dp))
             Text(
@@ -271,7 +271,7 @@ private fun DroidFaceUi(mood: AssistantMood, modifier: Modifier) {
         DroidAssistantFace(
             glyph = selected,
             shellMood = mood,
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(228.dp),
         )
         Spacer(Modifier.height(16.dp))
         LazyVerticalGrid(

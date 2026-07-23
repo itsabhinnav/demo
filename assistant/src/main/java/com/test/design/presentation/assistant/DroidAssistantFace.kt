@@ -55,9 +55,8 @@ fun DroidAssistantFace(
     shellMood: AssistantMood = AssistantMood.Idle,
 ) {
     val shellMorph = rememberExpressiveShellMorph(shellMood)
-    // Slightly tall so antennae + full dome + chin margin fit without clipping mouths.
-    Canvas(modifier = modifier.aspectRatio(0.92f)) {
-        val side = min(size.width, size.height * 0.92f)
+    Canvas(modifier = modifier.aspectRatio(1f)) {
+        val side = min(size.width, size.height)
         val cx = size.width * 0.5f
         val headR = side * 0.42f
         // Flat chin near bottom — leave padding so stroke mouths stay inside the dome.

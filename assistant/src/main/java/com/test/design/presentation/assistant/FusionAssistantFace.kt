@@ -487,7 +487,7 @@ fun FusionAssistantFace(
 
     Canvas(
         modifier = modifier
-            .aspectRatio(1.15f)
+            .aspectRatio(1f)
             .graphicsLayer {
                 val s = shellBreath
                 scaleX = s
