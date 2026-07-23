@@ -140,17 +140,17 @@ internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
         blinkSpeed = 1.2f,
     )
     AssistantMood.Happy -> FusionBase.copy(
-        eyeOpen = 0.92f,
-        eyeWidth = 1.32f,
-        eyeHeight = 0.62f, // squint smile
-        eyeGap = 1.1f,
-        eyeStyle = 0.72f, // glow ^ arcs
-        mouthCurve = 0.88f,
-        mouthOpen = 0.06f,
-        mouthVisible = 0.95f,
-        blush = 0.48f,
-        faceGlow = 0.82f,
-        tilt = -2.5f,
+        eyeOpen = 0.96f,
+        eyeWidth = 1.16f,
+        eyeHeight = 0.82f, // soft squint — still glow rings, not full arcs
+        eyeGap = 1.06f,
+        eyeStyle = 0.12f,
+        mouthCurve = 0.55f,
+        mouthOpen = 0.04f,
+        mouthVisible = 0.75f,
+        blush = 0.28f,
+        faceGlow = 0.72f,
+        tilt = -1.5f,
     )
     AssistantMood.Excited -> FusionBase.copy(
         eyeOpen = 1.22f,
@@ -192,28 +192,26 @@ internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
         blinkSpeed = 0.5f,
     )
     AssistantMood.Drowsy -> FusionBase.copy(
-        eyeOpen = 0.42f,
-        eyeWidth = 1.3f,
-        eyeHeight = 0.42f,
-        eyeGap = 0.86f,
-        lookY = 0.12f,
-        eyeStyle = -0.55f, // sleepy dashes
-        faceGlow = 0.3f,
-        tilt = 2.5f,
-        blinkSpeed = 0.38f,
+        eyeOpen = 0.72f,
+        eyeWidth = 1.14f,
+        eyeHeight = 0.7f, // gently heavy lids — no dash swap
+        eyeGap = 0.94f,
+        lookY = 0.08f,
+        eyeStyle = -0.12f,
+        faceGlow = 0.4f,
+        tilt = 1.5f,
+        blinkSpeed = 0.55f,
     )
     AssistantMood.Tired -> FusionBase.copy(
-        eyeOpen = 0.55f,
-        eyeWidth = 1.24f,
-        eyeHeight = 0.52f,
-        eyeGap = 0.9f,
-        lookY = 0.14f,
-        eyeStyle = -0.4f,
-        mouthCurve = -0.3f,
-        mouthVisible = 0.45f, // faint weary line
-        faceGlow = 0.28f,
-        tilt = 3f,
-        blinkSpeed = 0.35f,
+        eyeOpen = 0.78f,
+        eyeWidth = 1.12f,
+        eyeHeight = 0.76f,
+        eyeGap = 0.96f,
+        lookY = 0.08f,
+        eyeStyle = -0.08f,
+        faceGlow = 0.36f,
+        tilt = 1.8f,
+        blinkSpeed = 0.5f,
     )
 }
 

@@ -93,13 +93,20 @@ class AssistantMoodTest {
             AssistantMood.Searching.toFusionEyePose().eyeGap >
                 AssistantMood.Reading.toFusionEyePose().eyeGap,
         )
-        // Squint happy vs big excited rings.
+        // Soft squint happy vs big excited rings — stay in glow-ring style.
         assertTrue(
             AssistantMood.Happy.toFusionEyePose().eyeHeight <
                 AssistantMood.Excited.toFusionEyePose().eyeHeight,
         )
-        assertTrue(AssistantMood.Happy.toFusionEyePose().eyeStyle > 0.35f)
-        assertTrue(AssistantMood.Drowsy.toFusionEyePose().eyeStyle < -0.25f)
+        assertTrue(AssistantMood.Happy.toFusionEyePose().eyeStyle in -0.2f..0.3f)
+        assertTrue(
+            AssistantMood.Drowsy.toFusionEyePose().eyeOpen <
+                AssistantMood.Idle.toFusionEyePose().eyeOpen,
+        )
+        assertTrue(
+            AssistantMood.Tired.toFusionEyePose().eyeHeight <
+                AssistantMood.Listening.toFusionEyePose().eyeHeight,
+        )
     }
 
     @Test
@@ -109,7 +116,6 @@ class AssistantMoodTest {
             AssistantMood.Sad,
             AssistantMood.Speaking,
             AssistantMood.Excited,
-            AssistantMood.Tired,
         )
         AssistantMood.entries.forEach { mood ->
             val visible = mood.toFusionEyePose().mouthVisible
