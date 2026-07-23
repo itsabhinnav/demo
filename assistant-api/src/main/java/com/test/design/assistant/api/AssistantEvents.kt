@@ -23,6 +23,9 @@ sealed interface AssistantSessionEvent {
 
     data class ThumbsVisible(val visible: Boolean) : AssistantSessionEvent
 
+    /** Weather / climate context glyph for Fusion Eyes; null clears. */
+    data class ContextGlyph(val glyph: AssistantContextGlyph?) : AssistantSessionEvent
+
     data class PresentationHint(val hint: AssistantPresentationHint) : AssistantSessionEvent
 
     /** Host should mirror a glanceable status to the cluster. */

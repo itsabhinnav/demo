@@ -65,6 +65,8 @@ data class AssistantBeat(
     val text: String,
     val mood: AssistantMoodId,
     val holdMs: Long = 2_200L,
+    /** Optional weather / climate glance icon for Fusion Eyes. */
+    val contextGlyph: AssistantContextGlyph? = null,
 )
 
 /** Per-session knobs from the UI host (mic / TTS). */

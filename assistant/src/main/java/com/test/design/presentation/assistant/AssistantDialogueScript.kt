@@ -1,14 +1,18 @@
 package com.test.design.presentation.assistant
 
+import com.test.design.assistant.api.AssistantContextGlyph
+
 /**
  * One beat in the simulated user ↔ assistant conversation.
  * [mood] drives the side persona while the line is active.
+ * [contextGlyph] optionally shows a weather / climate glance icon (Fusion Eyes).
  */
 data class DialogueBeat(
     val speaker: DialogueSpeaker,
     val text: String,
     val mood: AssistantMood,
     val holdMs: Long = 2200L,
+    val contextGlyph: AssistantContextGlyph? = null,
 )
 
 enum class DialogueSpeaker { User, Assistant, System }

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.test.design.presentation.assistant.AssistantFace
+import com.test.design.presentation.assistant.AssistantFaceKind
 import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.AssistantPresence
 import com.test.design.presentation.assistant.DroidAssistantFace
@@ -53,12 +54,16 @@ import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.FusionAssistantFace
-import com.test.design.presentation.assistant.FusionEyesAssistantFace
 import com.test.design.presentation.assistant.FusionGlowAssistantFace
+import com.test.design.presentation.assistant.ImmersiveAssistantBottomChrome
+import com.test.design.presentation.assistant.ImmersiveBackdrop
+import com.test.design.presentation.assistant.ImmersiveBorderGlow
+import com.test.design.presentation.assistant.ImmersiveDialogueScript
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
 import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.VoiceWaveform
+import com.test.design.presentation.assistant.contextGlyphGaze
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
 import kotlin.math.PI
@@ -176,41 +181,41 @@ private fun FusionGlowFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 private fun FusionEyesFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1C22),
-                        Color(0xFF0B0C10),
-                    ),
-                ),
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            FusionEyesAssistantFace(
-                mood = mood,
-                modifier = Modifier.size(228.dp),
-            )
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = mood.label,
-                color = mood.glowColor,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Spacer(Modifier.height(6.dp))
-            LiveInputText(
-                text = prompt,
-                color = Color(0xFFF1F3F4),
-                live = mood == AssistantMood.Listening,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 28.dp),
-            )
-        }
+    // Exact ImmersiveAssistantOverlay bottom chrome clone — drives ImmersiveDialogueScript.
+    var beatIndex by rememberSaveable { mutableIntStateOf(0) }
+    val script = ImmersiveDialogueScript
+    val beat = script[beatIndex % script.size]
+
+    LaunchedEffect(beatIndex) {
+        delay(script[beatIndex % script.size].holdMs)
+        beatIndex = (beatIndex + 1) % script.size
+    }
+
+    val glyphGaze = contextGlyphGaze()
+    val hasGlyph = beat.contextGlyph != null
+    val gazeX = if (hasGlyph) glyphGaze.first else null
+    val gazeY = if (hasGlyph) glyphGaze.second else null
+
+    Box(modifier = modifier.fillMaxSize()) {
+        ImmersiveBackdrop()
+        ImmersiveBorderGlow(glowColor = beat.mood.glowColor.copy(alpha = 0.55f))
+        ImmersiveAssistantBottomChrome(
+            mood = beat.mood,
+            faceKind = AssistantFaceKind.FusionEyes,
+            transcript = beat.text,
+            speaker = beat.speaker,
+            gazeX = gazeX,
+            gazeY = gazeY,
+            brandGlow = beat.mood.glowColor.copy(alpha = 0.65f),
+            contextGlyph = beat.contextGlyph,
+            showFace = true,
+            faceRise = 0f,
+            faceScale = 1f,
+            faceAlpha = 1f,
+            transcriptAlpha = 1f,
+        )
     }
 }
 

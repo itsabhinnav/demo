@@ -77,6 +77,6 @@ enum class AssistantUiStyle(
     ),
     FusionEyesFace(
         title = "Fusion eyes",
-        blurb = "Fusion shell · Immersive pale capsule eyes",
+        blurb = "Overlay clone · weather & climate context glyphs",
     ),
 }

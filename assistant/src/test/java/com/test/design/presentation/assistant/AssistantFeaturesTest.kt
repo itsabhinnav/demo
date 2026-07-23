@@ -1,6 +1,7 @@
 package com.test.design.presentation.assistant
 
 import com.test.design.assistant.api.AssistantCabinContext
+import com.test.design.assistant.api.AssistantContextGlyph
 import com.test.design.presentation.assistant.backend.buildCabinBeats
 import com.test.design.presentation.assistant.backend.shouldHandOffToCluster
 import org.junit.Assert.assertEquals
@@ -127,5 +128,27 @@ class AssistantFeaturesTest {
         assertFalse(isAnswerMood(AssistantMood.Thinking))
         assertFalse(isAnswerMood(AssistantMood.Reading))
         assertFalse(isAnswerMood(AssistantMood.Listening))
+    }
+
+    @Test
+    fun immersiveScriptTagsWeatherAndClimateGlyphs() {
+        val snow = ImmersiveDialogueScript.filter {
+            it.text.contains("snow", ignoreCase = true)
+        }
+        assertTrue(snow.isNotEmpty())
+        assertTrue(snow.any { it.contextGlyph == AssistantContextGlyph.WeatherSnow })
+
+        val rain = ImmersiveDialogueScript.filter {
+            it.text.contains("rain", ignoreCase = true) ||
+                it.text.contains("drizzle", ignoreCase = true)
+        }
+        assertTrue(rain.any { it.contextGlyph == AssistantContextGlyph.WeatherLightRain })
+
+        val climate = ImmersiveDialogueScript.filter {
+            it.contextGlyph == AssistantContextGlyph.ClimateAc ||
+                it.contextGlyph == AssistantContextGlyph.ClimateDefrost ||
+                it.contextGlyph == AssistantContextGlyph.ClimateThermostat
+        }
+        assertTrue(climate.size >= 3)
     }
 }

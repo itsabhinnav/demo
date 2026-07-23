@@ -14,6 +14,7 @@ import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.DialogueBeat
 import com.test.design.presentation.assistant.DialogueSpeaker
 import com.test.design.presentation.assistant.ImmersiveDialogueScript
+import com.test.design.presentation.assistant.contextGlyphGaze
 import com.test.design.presentation.assistant.faceGestureForText
 import com.test.design.presentation.assistant.fatigueMoodForText
 import com.test.design.presentation.assistant.gazeForSpeaker
@@ -162,9 +163,13 @@ class DemoAssistantBackend(
             emitAll(
                 AssistantSessionEvent.MoodChanged(mood.toMoodId()),
                 AssistantSessionEvent.Transcript(beat.text, beat.speaker.toApiSpeaker()),
+                AssistantSessionEvent.ContextGlyph(beat.contextGlyph),
             )
 
-            if (beat.mood == AssistantMood.Searching ||
+            if (beat.contextGlyph != null) {
+                val glance = contextGlyphGaze()
+                emitAll(AssistantSessionEvent.Gaze(glance.first, glance.second))
+            } else if (beat.mood == AssistantMood.Searching ||
                 beat.mood == AssistantMood.Reading ||
                 beat.mood == AssistantMood.Bored
             ) {
@@ -210,6 +215,7 @@ class DemoAssistantBackend(
                     "Mirrored to cluster · tap to dismiss",
                     AssistantSpeaker.System,
                 ),
+                AssistantSessionEvent.ContextGlyph(null),
                 AssistantSessionEvent.ThumbsVisible(false),
             )
             delay(2_200)

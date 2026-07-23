@@ -54,6 +54,7 @@ import com.test.design.assistant.api.AssistantSessionConfig
 import com.test.design.assistant.api.AssistantSessionEvent
 import com.test.design.assistant.api.AssistantSpeechInput
 import com.test.design.assistant.api.AssistantStartReason
+import com.test.design.assistant.api.AssistantContextGlyph
 import com.test.design.presentation.assistant.backend.toUiGesture
 import com.test.design.presentation.assistant.backend.toUiMood
 import com.test.design.presentation.assistant.backend.toUiSpeaker
@@ -112,6 +113,8 @@ fun ImmersiveAssistantOverlay(
     var gesture by remember { mutableStateOf(FaceGesture.None) }
     var showThumbs by remember { mutableStateOf(false) }
     var thumbsTick by remember { mutableIntStateOf(0) }
+    var contextGlyph by remember { mutableStateOf<AssistantContextGlyph?>(null) }
+    var glyphGazeActive by remember { mutableStateOf(false) }
 
     fun summon() {
         session += 1
@@ -122,6 +125,8 @@ fun ImmersiveAssistantOverlay(
         gesture = FaceGesture.None
         mouthAmplitude = null
         showThumbs = false
+        contextGlyph = null
+        glyphGazeActive = false
         gazeX = -0.42f
         gazeY = 0.05f
         visible = true
@@ -179,6 +184,10 @@ fun ImmersiveAssistantOverlay(
                         showThumbs = event.visible
                         if (event.visible) thumbsTick += 1
                     }
+                    is AssistantSessionEvent.ContextGlyph -> {
+                        contextGlyph = event.glyph
+                        glyphGazeActive = event.glyph != null
+                    }
                     is AssistantSessionEvent.PresentationHint -> Unit
                     AssistantSessionEvent.RequestClusterHandOff -> host.openClusterHandOff()
                     AssistantSessionEvent.SessionComplete -> {
@@ -214,6 +223,12 @@ fun ImmersiveAssistantOverlay(
                 gesture = FaceGesture.None
             }
         }
+    }
+
+    LaunchedEffect(contextGlyph, glyphGazeActive) {
+        if (!glyphGazeActive || contextGlyph == null) return@LaunchedEffect
+        delay(800)
+        glyphGazeActive = false
     }
 
     val backdropAlpha = remember { Animatable(0f) }
@@ -318,71 +333,38 @@ fun ImmersiveAssistantOverlay(
                 ImmersiveBorderGlow(glowColor = brandGlow)
             }
 
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .assistantChromePadding()
-                    .padding(start = 32.dp, top = 16.dp, end = 32.dp, bottom = 0.dp),
-            ) {
-                    // Assistant chrome occupies ~1/4 of available height at the bottom.
-                    val bandHeight = maxHeight * 0.25f
-                    val faceSize = (bandHeight * 0.64f).coerceIn(88.dp, 148.dp)
-                    val density = LocalDensity.current
-                    val risePx = with(density) {
-                        (bandHeight * 0.95f).toPx()
-                    }
+            val glyphGaze = contextGlyphGaze()
+            val effectiveGazeX =
+                if (faceKind == AssistantFaceKind.FusionEyes && glyphGazeActive && contextGlyph != null) {
+                    glyphGaze.first
+                } else {
+                    gazeX
+                }
+            val effectiveGazeY =
+                if (faceKind == AssistantFaceKind.FusionEyes && glyphGazeActive && contextGlyph != null) {
+                    glyphGaze.second
+                } else {
+                    gazeY
+                }
 
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom,
-                    ) {
-                        if (faceKind != AssistantFaceKind.None) {
-                            ConfigurableAssistantFace(
-                                mood = mood,
-                                kind = faceKind,
-                                modifier = Modifier
-                                    // Square footprint — matches Immersive eyes canvas.
-                                    .size(faceSize)
-                                    .offset {
-                                        IntOffset(
-                                            0,
-                                            (faceRise.value * risePx).roundToInt(),
-                                        )
-                                    }
-                                    .graphicsLayer {
-                                        val s = faceScale.value
-                                        scaleX = s
-                                        scaleY = s
-                                        alpha = faceAlpha.value.coerceIn(0f, 1f)
-                                    },
-                                gazeX = gazeX,
-                                gazeY = gazeY,
-                                mouthAmplitude = mouthAmplitude,
-                                brandGlow = brandGlow,
-                                highContrast = highContrast,
-                                gesture = gesture,
-                            )
-                        }
-                        // Transcript under the face, flush to the bottom of the activity.
-                        ImmersiveTranscript(
-                            text = transcript,
-                            speaker = speaker,
-                            live = speaker == DialogueSpeaker.User &&
-                                mood == AssistantMood.Listening,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .graphicsLayer {
-                                    alpha = transcriptAlpha.value.coerceIn(0f, 1f)
-                                }
-                                .padding(top = 8.dp),
-                        )
-                    }
-            }
+            ImmersiveAssistantBottomChrome(
+                mood = mood,
+                faceKind = faceKind,
+                transcript = transcript,
+                speaker = speaker,
+                gazeX = effectiveGazeX,
+                gazeY = effectiveGazeY,
+                mouthAmplitude = mouthAmplitude,
+                brandGlow = brandGlow,
+                highContrast = highContrast,
+                gesture = gesture,
+                contextGlyph = contextGlyph,
+                showFace = faceKind != AssistantFaceKind.None,
+                faceRise = faceRise.value,
+                faceScale = faceScale.value,
+                faceAlpha = faceAlpha.value,
+                transcriptAlpha = transcriptAlpha.value,
+            )
         }
     }
 }
@@ -509,7 +491,7 @@ fun ImmersiveBorderGlow(
 }
 
 @Composable
-private fun ImmersiveTranscript(
+fun ImmersiveTranscript(
     text: String,
     speaker: DialogueSpeaker,
     live: Boolean,
@@ -626,36 +608,70 @@ val ImmersiveDialogueScript: List<DialogueBeat> = listOf(
         text = "Will it snow tonight?",
         mood = AssistantMood.Listening,
         holdMs = 2200,
+        contextGlyph = AssistantContextGlyph.WeatherSnow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Thinking through the overnight forecast…",
         mood = AssistantMood.Thinking,
         holdMs = 2000,
+        contextGlyph = AssistantContextGlyph.WeatherCloudy,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Reading the radar along your route…",
         mood = AssistantMood.Reading,
         holdMs = 2200,
+        contextGlyph = AssistantContextGlyph.WeatherCloudy,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Light snow after midnight — roads should stay clear until then.",
         mood = AssistantMood.Speaking,
         holdMs = 3200,
+        contextGlyph = AssistantContextGlyph.WeatherSnow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "And will it rain tomorrow?",
         mood = AssistantMood.Listening,
         holdMs = 2000,
+        contextGlyph = AssistantContextGlyph.WeatherLightRain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "A soft drizzle around midday — nothing heavy.",
         mood = AssistantMood.Speaking,
         holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.WeatherLightRain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "Make the cabin a bit cooler",
+        mood = AssistantMood.Listening,
+        holdMs = 2000,
+        contextGlyph = AssistantContextGlyph.ClimateThermostat,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Dropping to 20° — AC on, gentle airflow.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.ClimateAc,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "And clear the windshield",
+        mood = AssistantMood.Listening,
+        holdMs = 1800,
+        contextGlyph = AssistantContextGlyph.ClimateDefrost,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Front defrost is on — glass should clear in a minute.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.ClimateDefrost,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.System,
