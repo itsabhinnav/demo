@@ -11,6 +11,7 @@ class AssistantFaceKindTest {
     fun parsesCanonicalKeys() {
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("none"))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("eyes"))
+        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("glow"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporo"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("fusion"))
         assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("droid"))
@@ -22,6 +23,8 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("off"))
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("noface"))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("immersive"))
+        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("aura"))
+        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("purple_eyes"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporp"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("express"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("hybrid"))
@@ -33,6 +36,7 @@ class AssistantFaceKindTest {
     fun ignoresCaseAndWhitespace() {
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("  EPORO "))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("Eyes"))
+        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("Glow"))
     }
 
     @Test
@@ -48,6 +52,7 @@ class AssistantFaceKindTest {
         assertEquals(keys.size, keys.toSet().size)
         assertTrue(keys.contains("none"))
         assertTrue(keys.contains("eyes"))
+        assertTrue(keys.contains("glow"))
         assertTrue(keys.contains("eporo"))
         assertTrue(keys.contains("fusion"))
     }

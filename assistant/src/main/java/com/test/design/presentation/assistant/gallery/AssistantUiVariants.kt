@@ -56,6 +56,7 @@ import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.FusionAssistantFace
 import com.test.design.presentation.assistant.ImmersiveEyesFace
+import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
 import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
@@ -89,6 +90,7 @@ fun AssistantUiVariant(
         AssistantUiStyle.WaveFaceCombo -> WaveFaceComboUi(mood, prompt, modifier)
         AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, modifier)
         AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, modifier)
+        AssistantUiStyle.ImmersiveGlow -> ImmersiveGlowUi(mood, prompt, modifier)
         AssistantUiStyle.DroidFace -> DroidFaceUi(mood, modifier)
         AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, modifier)
         AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, modifier)
@@ -247,6 +249,40 @@ private fun ImmersiveEyesUi(mood: AssistantMood, prompt: String, modifier: Modif
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ImmersiveEyesFace(
+                mood = mood,
+                modifier = Modifier.size(228.dp),
+            )
+            Spacer(Modifier.height(28.dp))
+            LiveInputText(
+                text = prompt,
+                color = Color(0xFFF8F9FA),
+                live = mood == AssistantMood.Listening,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ImmersiveGlowUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0x44101820),
+                        Color(0xCC0A0C10),
+                        Color(0xF2050608),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ImmersiveGlowEyesFace(
                 mood = mood,
                 modifier = Modifier.size(228.dp),
             )

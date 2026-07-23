@@ -59,6 +59,10 @@ enum class AssistantUiStyle(
         title = "Immersive eyes",
         blurb = "Full-screen gradient · eyes · transcript",
     ),
+    ImmersiveGlow(
+        title = "Immersive glow",
+        blurb = "Immersive face · EPORO purple glow rings",
+    ),
     DroidFace(
         title = "Droid face",
         blurb = "Expressive shell morph · Bugdroid glyphs",

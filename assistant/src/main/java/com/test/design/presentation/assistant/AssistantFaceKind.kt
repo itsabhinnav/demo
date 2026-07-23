@@ -23,6 +23,10 @@ enum class AssistantFaceKind(
         adbKey = "eyes",
         label = "Immersive eyes",
     ),
+    ImmersiveGlow(
+        adbKey = "glow",
+        label = "Immersive glow",
+    ),
     Eporo(
         adbKey = "eporo",
         label = "EPORO",
@@ -53,6 +57,7 @@ enum class AssistantFaceKind(
             return when (key) {
                 "off", "noface", "no_face", "hidden", "blank" -> None
                 "immersive", "immersive_eyes", "eye", "orb" -> ImmersiveEyes
+                "immersive_glow", "glow_eyes", "aura", "ring", "purple_eyes" -> ImmersiveGlow
                 "eporp", "robot" -> Eporo
                 "express", "hybrid", "eporo_immersive", "eporo_eyes" -> Fusion
                 "bugdroid", "android" -> Droid

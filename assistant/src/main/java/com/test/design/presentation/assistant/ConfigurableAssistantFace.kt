@@ -36,6 +36,16 @@ fun ConfigurableAssistantFace(
             highContrast = highContrast,
             gesture = gesture,
         )
+        AssistantFaceKind.ImmersiveGlow -> ImmersiveGlowEyesFace(
+            mood = mood,
+            modifier = modifier,
+            gazeX = gazeX,
+            gazeY = gazeY,
+            mouthAmplitude = mouthAmplitude,
+            brandGlow = brandGlow,
+            highContrast = highContrast,
+            gesture = gesture,
+        )
         AssistantFaceKind.Eporo -> EporoAssistantFace(
             mood = mood,
             modifier = modifier,

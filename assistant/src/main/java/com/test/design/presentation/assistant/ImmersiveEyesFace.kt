@@ -1,5 +1,6 @@
 package com.test.design.presentation.assistant
 
+import android.graphics.BlurMaskFilter
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -23,12 +24,16 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -208,6 +213,8 @@ private val PoseSpring = spring<Float>(
  * @param brandGlow OEM / Material accent for soft pulse / parallax halo
  * @param highContrast sunlight-safe glyph rendering
  * @param gesture nod / shake micro-expressions for yes/no
+ * @param eyeGlow when non-null, capsule eyes use this EPORO-style purple glow ring
+ *   (same shape / blink / morph as Immersive — only the ring tint + bloom change)
  */
 @Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
@@ -220,6 +227,7 @@ fun ImmersiveEyesFace(
     brandGlow: Color = Color(0xFF8AB4F8),
     highContrast: Boolean = false,
     gesture: FaceGesture = FaceGesture.None,
+    eyeGlow: Color? = null,
 ) {
     val target = mood.toImmersiveEyePose()
     // Fixed SemiCircle shell — matte black face fill.
@@ -437,6 +445,12 @@ fun ImmersiveEyesFace(
         // Feature scale only — no drawn shell / black disk.
         val faceR = side * 0.36f * breath
         val glyph = eyeFillForContrast(highContrast)
+        val eyeRing = when {
+            eyeGlow != null && highContrast -> eyeFillForContrast(true)
+            eyeGlow != null -> eyeGlow
+            else -> glyph
+        }
+        val glowEyes = eyeGlow != null
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bobY = idleBob * faceR * 0.058f
         val swayX = idleSway * faceR * 0.02f
@@ -572,8 +586,8 @@ fun ImmersiveEyesFace(
 
                 // Keep capsule eyes for all moods (clamp out of arc/dash branches).
                 val capsuleStyle = eyeStyle.value.coerceIn(-0.2f, 0.25f)
-                drawNomiGlyphEye(left, barW, barH, capsuleStyle, glyph)
-                drawNomiGlyphEye(right, barW, barH, capsuleStyle, glyph)
+                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeRing, glowEyes)
+                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeRing, glowEyes)
 
                 val speaking = mouthAmplitude != null ||
                     mood == AssistantMood.Speaking ||
@@ -601,6 +615,7 @@ private fun DrawScope.drawNomiGlyphEye(
     height: Float,
     style: Float,
     color: Color,
+    glowRing: Boolean = false,
 ) {
     val w = width.coerceAtLeast(1.5f)
     // Allow short capsules — do not force taller-than-wide.
@@ -617,6 +632,29 @@ private fun DrawScope.drawNomiGlyphEye(
                     center.y + h * 0.25f,
                 )
             }
+            if (glowRing) {
+                drawIntoCanvas { canvas ->
+                    val fw = Paint().asFrameworkPaint()
+                    fw.isAntiAlias = true
+                    fw.color = color.copy(alpha = 0.4f).toArgb()
+                    fw.maskFilter = BlurMaskFilter(w * 1.1f, BlurMaskFilter.Blur.NORMAL)
+                    fw.strokeWidth = w * 1.45f
+                    fw.strokeCap = android.graphics.Paint.Cap.ROUND
+                    fw.style = android.graphics.Paint.Style.STROKE
+                    canvas.nativeCanvas.drawPath(
+                        android.graphics.Path().apply {
+                            moveTo(center.x - w * 1.85f, center.y + h * 0.25f)
+                            quadTo(
+                                center.x,
+                                center.y - h * (0.65f + 0.45f * style),
+                                center.x + w * 1.85f,
+                                center.y + h * 0.25f,
+                            )
+                        },
+                        fw,
+                    )
+                }
+            }
             drawPath(path, color, style = Stroke(width = w * 1.45f, cap = StrokeCap.Round))
         }
         style < -0.25f -> {
@@ -624,6 +662,23 @@ private fun DrawScope.drawNomiGlyphEye(
             val flatten = (-style).coerceIn(0.25f, 1f)
             val dashW = w * (1.6f + 0.5f * flatten)
             val dashH = (h * (1f - 0.55f * flatten)).coerceAtLeast(w * 0.95f)
+            if (glowRing) {
+                val bloomArgb = color.copy(alpha = 0.4f).toArgb()
+                drawIntoCanvas { canvas ->
+                    val paint = Paint().asFrameworkPaint().apply {
+                        isAntiAlias = true
+                        this.color = bloomArgb
+                        maskFilter = BlurMaskFilter(dashW * 0.55f, BlurMaskFilter.Blur.NORMAL)
+                    }
+                    canvas.nativeCanvas.drawOval(
+                        center.x - dashW * 1.35f,
+                        center.y - dashH * 0.85f,
+                        center.x + dashW * 1.35f,
+                        center.y + dashH * 0.85f,
+                        paint,
+                    )
+                }
+            }
             drawRoundRect(
                 color = color,
                 topLeft = Offset(center.x - dashW, center.y - dashH * 0.5f),
@@ -632,23 +687,50 @@ private fun DrawScope.drawNomiGlyphEye(
             )
         }
         else -> {
-            // Hollow pill-in-pill (Eporo-like ring) — outer stroke + dark core.
+            // Hollow pill-in-pill — Immersive capsule shape; optional EPORO purple bloom.
             val bloomR = maxOf(w, h) * 1.85f
-            drawOval(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        color.copy(alpha = 0.16f),
-                        Color.Transparent,
+            if (glowRing) {
+                val bloomArgb = color.copy(alpha = 0.45f).toArgb()
+                drawIntoCanvas { canvas ->
+                    val paint = Paint().asFrameworkPaint().apply {
+                        isAntiAlias = true
+                        this.color = bloomArgb
+                        maskFilter = BlurMaskFilter(bloomR * 0.48f, BlurMaskFilter.Blur.NORMAL)
+                    }
+                    canvas.nativeCanvas.drawOval(
+                        center.x - w * 1.55f,
+                        center.y - h * 1.55f,
+                        center.x + w * 1.55f,
+                        center.y + h * 1.55f,
+                        paint,
+                    )
+                }
+                drawOval(
+                    brush = Brush.radialGradient(
+                        colors = listOf(color.copy(alpha = 0.35f), Color.Transparent),
+                        center = center,
+                        radius = bloomR,
                     ),
-                    center = center,
-                    radius = bloomR,
-                ),
-                topLeft = Offset(center.x - bloomR, center.y - bloomR),
-                size = Size(bloomR * 2f, bloomR * 2f),
-            )
+                    topLeft = Offset(center.x - bloomR, center.y - bloomR),
+                    size = Size(bloomR * 2f, bloomR * 2f),
+                )
+            } else {
+                drawOval(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            color.copy(alpha = 0.16f),
+                            Color.Transparent,
+                        ),
+                        center = center,
+                        radius = bloomR,
+                    ),
+                    topLeft = Offset(center.x - bloomR, center.y - bloomR),
+                    size = Size(bloomR * 2f, bloomR * 2f),
+                )
+            }
             val strokeW = minOf(w, h) * 0.42f
             drawRoundRect(
-                color = color.copy(alpha = 0.96f),
+                color = color.copy(alpha = 0.98f),
                 topLeft = Offset(center.x - w, center.y - h),
                 size = Size(w * 2f, h * 2f),
                 cornerRadius = CornerRadius(w, w),
@@ -664,13 +746,42 @@ private fun DrawScope.drawNomiGlyphEye(
             )
             // Specular on the lower ring arc.
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.55f),
+                color = Color.White.copy(alpha = if (glowRing) 0.9f else 0.55f),
                 topLeft = Offset(center.x - w * 0.18f, center.y + h * 0.52f),
                 size = Size(w * 0.36f, h * 0.14f),
                 cornerRadius = CornerRadius(w * 0.2f, w * 0.2f),
             )
         }
     }
+}
+
+/**
+ * Immersive face + EPORO / Fusion purple glow rings on the same capsule eyes.
+ * Shell, mouth, blink, gaze, and mood morphs are identical to [ImmersiveEyesFace].
+ */
+@Composable
+fun ImmersiveGlowEyesFace(
+    mood: AssistantMood,
+    modifier: Modifier = Modifier,
+    gazeX: Float? = null,
+    gazeY: Float? = null,
+    mouthAmplitude: Float? = null,
+    brandGlow: Color = EporoGlow,
+    highContrast: Boolean = false,
+    gesture: FaceGesture = FaceGesture.None,
+    eyeGlow: Color = EporoGlow,
+) {
+    ImmersiveEyesFace(
+        mood = mood,
+        modifier = modifier,
+        gazeX = gazeX,
+        gazeY = gazeY,
+        mouthAmplitude = mouthAmplitude,
+        brandGlow = brandGlow,
+        highContrast = highContrast,
+        gesture = gesture,
+        eyeGlow = eyeGlow,
+    )
 }
 
 private fun DrawScope.drawNomiGlyphMouth(
