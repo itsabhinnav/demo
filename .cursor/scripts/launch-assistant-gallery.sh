@@ -18,4 +18,4 @@ fi
 
 echo "Opening assistant UI gallery${STYLE:+ ($STYLE)}…"
 adb "${SERIAL_ARGS[@]}" shell am start "${ARGS[@]}"
-echo "Styles: VoicePlate FaceOnly WaveformCenter OrbGlow CapsuleFace StatusBar SideRail EqualizerBars ListeningRings CornerBubble WaveFaceCombo AmbientPill"
+echo "Styles: VoicePlate FaceOnly WaveformCenter OrbGlow CapsuleFace SideRail EqualizerBars ListeningRings CornerBubble WaveFaceCombo AmbientPill ImmersiveEyes ImmersiveGlow DroidFace EporoFace FusionFace FusionGlowFace FusionEyesFace"

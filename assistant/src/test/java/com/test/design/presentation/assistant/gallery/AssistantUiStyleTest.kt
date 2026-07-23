@@ -19,7 +19,7 @@ class AssistantUiStyleTest {
         assertTrue(titles.contains("Waveform"))
         assertTrue(titles.contains("Orb"))
         assertTrue(titles.contains("Capsule face"))
-        assertTrue(titles.contains("Bar"))
+        assertTrue(!titles.contains("Bar"))
         assertTrue(titles.contains("Side rail"))
         assertTrue(titles.contains("Equalizer"))
         assertTrue(titles.contains("Listening rings"))

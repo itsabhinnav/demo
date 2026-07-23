@@ -27,10 +27,6 @@ enum class AssistantUiStyle(
         title = "Capsule face",
         blurb = "Wide geometric glyph capsule",
     ),
-    StatusBar(
-        title = "Bar",
-        blurb = "Thin status strip + meter",
-    ),
     SideRail(
         title = "Side rail",
         blurb = "Trailing translucent rail",
@@ -65,7 +61,7 @@ enum class AssistantUiStyle(
     ),
     DroidFace(
         title = "Droid face",
-        blurb = "Expressive shell morph · Bugdroid glyphs",
+        blurb = "Single Bugdroid · morphs through all glyphs",
     ),
     EporoFace(
         title = "EPORO",

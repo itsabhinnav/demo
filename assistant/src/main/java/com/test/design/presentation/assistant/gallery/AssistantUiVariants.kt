@@ -13,10 +13,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,15 +22,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,10 +61,9 @@ import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
-import com.test.design.presentation.assistant.toDroidFaceGlyph
 import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.sin
+import kotlinx.coroutines.delay
 
 /**
  * Renders one opaque-stage assistant chrome style for the given mood.
@@ -84,7 +81,6 @@ fun AssistantUiVariant(
         AssistantUiStyle.WaveformCenter -> WaveformCenterUi(mood, modifier)
         AssistantUiStyle.OrbGlow -> OrbGlowUi(mood, modifier)
         AssistantUiStyle.CapsuleFace -> CapsuleFaceUi(mood, modifier)
-        AssistantUiStyle.StatusBar -> StatusBarUi(mood, prompt, modifier)
         AssistantUiStyle.SideRail -> SideRailUi(mood, prompt, modifier)
         AssistantUiStyle.EqualizerBars -> EqualizerBarsUi(mood, modifier)
         AssistantUiStyle.ListeningRings -> ListeningRingsUi(mood, modifier)
@@ -258,57 +254,54 @@ private fun EporoFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier)
 }
 
 @Composable
-private fun DroidFaceUi(mood: AssistantMood, modifier: Modifier) {
-    val selected = mood.toDroidFaceGlyph()
-    Column(
+private fun DroidFaceUi(@Suppress("UNUSED_PARAMETER") mood: AssistantMood, modifier: Modifier) {
+    val glyphs = DroidFaceGlyph.entries
+    var glyphIndex by rememberSaveable { mutableIntStateOf(0) }
+    val glyph = glyphs[glyphIndex % glyphs.size]
+    // Cycle shell silhouettes so the expressive morph travels with every glyph.
+    val shellMoods = listOf(
+        AssistantMood.Idle,
+        AssistantMood.Listening,
+        AssistantMood.Speaking,
+        AssistantMood.Happy,
+        AssistantMood.Thinking,
+        AssistantMood.Sad,
+        AssistantMood.Excited,
+        AssistantMood.Drowsy,
+    )
+    val shellMood = shellMoods[glyphIndex % shellMoods.size]
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1_600)
+            glyphIndex = (glyphIndex + 1) % glyphs.size
+        }
+    }
+
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .background(Color.White),
+        contentAlignment = Alignment.Center,
     ) {
-        Spacer(Modifier.height(56.dp))
-        DroidAssistantFace(
-            glyph = selected,
-            shellMood = mood,
-            modifier = Modifier.size(228.dp),
-        )
-        Spacer(Modifier.height(16.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(6),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            contentPadding = PaddingValues(bottom = 72.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(DroidFaceGlyph.entries) { glyph ->
-                val isSelected = glyph == selected
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .then(
-                            if (isSelected) {
-                                Modifier
-                                    .border(
-                                        width = 2.dp,
-                                        color = DroidGlyph,
-                                        shape = RoundedCornerShape(12.dp),
-                                    )
-                                    .padding(2.dp)
-                            } else {
-                                Modifier
-                            },
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    DroidAssistantFace(
-                        glyph = glyph,
-                        modifier = Modifier.fillMaxSize(0.92f),
-                    )
-                }
-            }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            DroidAssistantFace(
+                glyph = glyph,
+                shellMood = shellMood,
+                modifier = Modifier.size(228.dp),
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = glyph.name,
+                color = DroidGlyph,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "${glyphIndex + 1} / ${glyphs.size}",
+                color = Color(0xFF5F6368),
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
@@ -499,42 +492,6 @@ private fun CapsuleFaceUi(mood: AssistantMood, modifier: Modifier) {
             audioAmplitude = if (mood == AssistantMood.Speaking) 0.55f else 0.15f,
             modifier = Modifier.padding(bottom = 32.dp),
         )
-    }
-}
-
-@Composable
-private fun StatusBarUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        GlassSurface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-                .height(56.dp),
-            corner = 16.dp,
-        ) {
-            Row(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Box(
-                    Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(mood.glowColor),
-                )
-                Text(
-                    text = prompt,
-                    color = AssistantUiChrome.OnGlass,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                )
-                AmplitudeMeter(mood = mood, modifier = Modifier.width(72.dp).height(18.dp))
-            }
-        }
     }
 }
 

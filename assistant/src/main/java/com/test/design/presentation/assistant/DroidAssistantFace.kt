@@ -1,8 +1,16 @@
 package com.test.design.presentation.assistant
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -17,6 +25,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -55,6 +64,23 @@ fun DroidAssistantFace(
     shellMood: AssistantMood = AssistantMood.Idle,
 ) {
     val shellMorph = rememberExpressiveShellMorph(shellMood)
+    var fromGlyph by remember { mutableStateOf(glyph) }
+    var toGlyph by remember { mutableStateOf(glyph) }
+    val glyphProgress = remember { Animatable(1f) }
+
+    LaunchedEffect(glyph) {
+        if (glyph == toGlyph && glyphProgress.value == 1f) return@LaunchedEffect
+        fromGlyph = toGlyph
+        toGlyph = glyph
+        glyphProgress.snapTo(0f)
+        glyphProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 520, easing = FastOutSlowInEasing),
+        )
+        fromGlyph = glyph
+    }
+
+    val progress = glyphProgress.value
     Canvas(modifier = modifier.aspectRatio(1f)) {
         val side = min(size.width, size.height)
         val cx = size.width * 0.5f
@@ -76,14 +102,45 @@ fun DroidAssistantFace(
             bounds = shellBounds,
             color = bodyColor,
         )
-        drawDroidGlyph(
-            glyph = glyph,
-            cx = cx,
-            chinY = chinY,
-            headR = headR,
-            color = glyphColor,
-            knockout = bodyColor,
-        )
+        // Cross-morph glyphs: outgoing shrinks/fades while incoming grows in.
+        if (progress < 1f && fromGlyph != toGlyph) {
+            val outScale = 1f - 0.18f * progress
+            val inScale = 0.82f + 0.18f * progress
+            val pivot = Offset(cx, faceCy)
+            withTransform({
+                scale(scaleX = outScale, scaleY = outScale, pivot = pivot)
+            }) {
+                drawDroidGlyph(
+                    glyph = fromGlyph,
+                    cx = cx,
+                    chinY = chinY,
+                    headR = headR,
+                    color = glyphColor.copy(alpha = (1f - progress).coerceIn(0f, 1f)),
+                    knockout = bodyColor,
+                )
+            }
+            withTransform({
+                scale(scaleX = inScale, scaleY = inScale, pivot = pivot)
+            }) {
+                drawDroidGlyph(
+                    glyph = toGlyph,
+                    cx = cx,
+                    chinY = chinY,
+                    headR = headR,
+                    color = glyphColor.copy(alpha = progress.coerceIn(0f, 1f)),
+                    knockout = bodyColor,
+                )
+            }
+        } else {
+            drawDroidGlyph(
+                glyph = toGlyph,
+                cx = cx,
+                chinY = chinY,
+                headR = headR,
+                color = glyphColor,
+                knockout = bodyColor,
+            )
+        }
     }
 }
 
