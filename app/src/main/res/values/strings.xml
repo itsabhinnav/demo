@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Design</string>
-    <string name="map_activity_name">Maps</string>
+    <string name="app_name">Assist Bot</string>
     <string name="assistant_activity_name">Assistant</string>
 </resources>

@@ -22,9 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Design"
+rootProject.name = "AssistBot"
 include(":app")
 include(":assistant-api")
 include(":assistant")
-include(":scalable-ui-rro")
-include(":framework-scalable-rro")

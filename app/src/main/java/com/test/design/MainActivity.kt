@@ -1,6 +1,7 @@
 package com.test.design
 
 import android.content.Intent
+import android.graphics.Color as AndroidColor
 import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.ViewTreeObserver
@@ -8,36 +9,34 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import android.graphics.Color as AndroidColor
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.navigation.compose.rememberNavController
-import com.test.design.navigation.AppDestination
-import com.test.design.navigation.AppNavHost
-import com.test.design.presentation.DesignAppShell
 import com.test.design.presentation.assistant.ImmersiveAssistantOverlayService
-import com.test.design.presentation.ivi.dashboard.DashboardEvent
-import com.test.design.presentation.ivi.dashboard.DashboardViewModel
-import com.test.design.presentation.ivi.dashboard.FloatingSystemBarsVisibility
-import com.test.design.presentation.ivi.dashboard.model.DashboardWidget
-import com.test.design.presentation.ivi.map.EXTRA_OPEN_DASHBOARD
+import com.test.design.presentation.assistant.VirtualAssistantActivity
+import com.test.design.presentation.assistant.gallery.AssistantUiGalleryActivity
+import com.test.design.presentation.assistant.overlay.AssistantOverlayBootstrapActivity
 
 class MainActivity : ComponentActivity() {
 
-    private var openDashboardRequest = mutableStateOf(false)
-    private val dashboardViewModel: DashboardViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FloatingSystemBarsVisibility.hide()
 
-        // Keep the activity buffer opaque — transparent BLAST buffers read as a black screen
-        // on the AAOS emulator (screencap pixels were RGBA 0,0,0,0).
         window.setFormat(PixelFormat.OPAQUE)
         window.setBackgroundDrawableResource(R.color.canvas_background)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -46,47 +45,21 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
         )
 
-        openDashboardRequest.value = intent.getBooleanExtra(EXTRA_OPEN_DASHBOARD, false)
-
         setContent {
-            val shouldOpenDashboard by openDashboardRequest
-            val navController = rememberNavController()
-
-            DesignAppShell(
-                applySafeDrawingInsets = true,
-                showFloatingSystemBars = true,
-                onOpenApps = {
-                    navController.navigate(AppDestination.Dashboard) {
-                        launchSingleTop = true
-                    }
-                },
-                onOpenSettings = {
-                    dashboardViewModel.onEvent(
-                        DashboardEvent.WidgetTapped(DashboardWidget.Settings),
-                    )
-                    val route = navController.currentBackStackEntry?.destination?.route
-                    if (route == AppDestination.Dashboard) return@DesignAppShell
-                    navController.navigate(AppDestination.DrivingHome) {
-                        popUpTo(AppDestination.DrivingHome) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
-                onOpenHome = {
-                    dashboardViewModel.onEvent(DashboardEvent.CollapseWidget)
-                    navController.navigate(AppDestination.DrivingHome) {
-                        popUpTo(AppDestination.DrivingHome) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                },
-                onOpenAssistant = {
-                    ImmersiveAssistantOverlayService.show(this@MainActivity)
-                },
-            ) {
-                AppNavHost(
-                    navController = navController,
-                    openDashboardOnStart = shouldOpenDashboard,
-                    onDashboardOpened = { openDashboardRequest.value = false },
-                    modifier = Modifier.fillMaxSize(),
+            MaterialTheme(colorScheme = darkColorScheme()) {
+                AssistBotHome(
+                    onOpenAssistant = {
+                        VirtualAssistantActivity.launch(this)
+                    },
+                    onOpenGallery = {
+                        startActivity(Intent(this, AssistantUiGalleryActivity::class.java))
+                    },
+                    onOpenOverlay = {
+                        startActivity(Intent(this, AssistantOverlayBootstrapActivity::class.java))
+                    },
+                    onShowImmersive = {
+                        ImmersiveAssistantOverlayService.show(this)
+                    },
                 )
             }
         }
@@ -105,14 +78,50 @@ class MainActivity : ComponentActivity() {
             }
         })
     }
+}
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        openDashboardRequest.value = intent.getBooleanExtra(EXTRA_OPEN_DASHBOARD, false)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
+@Composable
+private fun AssistBotHome(
+    onOpenAssistant: () -> Unit,
+    onOpenGallery: () -> Unit,
+    onOpenOverlay: () -> Unit,
+    onShowImmersive: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1C1E22))
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = "Assist Bot",
+            style = MaterialTheme.typography.headlineLarge,
+            color = Color.White,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Assistant · gallery · overlay",
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color(0xFFE0E3E8),
+        )
+        Spacer(Modifier.height(32.dp))
+        val buttonMod = Modifier.widthIn(min = 280.dp)
+        Button(onClick = onOpenAssistant, modifier = buttonMod) {
+            Text("Open assistant")
+        }
+        Spacer(Modifier.height(12.dp))
+        Button(onClick = onOpenGallery, modifier = buttonMod) {
+            Text("UI gallery")
+        }
+        Spacer(Modifier.height(12.dp))
+        Button(onClick = onShowImmersive, modifier = buttonMod) {
+            Text("Immersive overlay")
+        }
+        Spacer(Modifier.height(12.dp))
+        Button(onClick = onOpenOverlay, modifier = buttonMod) {
+            Text("Legacy overlay")
+        }
     }
 }

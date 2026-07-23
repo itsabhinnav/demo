@@ -4,7 +4,6 @@
     <!-- Used by Material Symbols vector drawables (android:tint="?attr/colorControlNormal"). -->
     <attr name="colorControlNormal" format="color|reference" />
 
-    <!-- Dark window chrome by default (Compose still honors Light/System from Settings). -->
     <style name="Theme.Design" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/canvas_background</item>
         <item name="android:colorBackground">@color/canvas_background</item>
@@ -13,13 +12,11 @@
         <item name="android:colorControlNormal">@color/control_normal</item>
         <item name="colorControlNormal">@color/control_normal</item>
         <item name="android:forceDarkAllowed">false</item>
-        <!-- Avoid stuck starting_reveal splash covering a black buffer on AAOS emulator. -->
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowShowWallpaper">false</item>
     </style>
 
-    <!-- Scalable UI TaskPanel hosts — transparent so content behind shows through. -->
     <style name="Theme.Design.Panel" parent="Theme.Design">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackground">@android:color/transparent</item>
@@ -40,7 +37,6 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:enforceStatusBarContrast">false</item>
         <item name="android:enforceNavigationBarContrast">false</item>
-        <!-- No windowBlurBehind* — crashes SurfaceFlinger on emulators; Compose scrim dims. -->
     </style>
 
     <!--

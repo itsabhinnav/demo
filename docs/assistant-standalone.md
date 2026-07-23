@@ -7,10 +7,10 @@ The immersive assistant is split so UI/session chrome never depends on IVI vehic
 | Module | Role |
 |--------|------|
 | `:assistant-api` | Pure contracts: `AssistantBackend`, `AssistantHost`, session events/models. No Compose. |
-| `:assistant` | Face UI, overlay service, demo backend, STT/TTS adapters. Depends only on `:assistant-api`. |
-| `:app` | Implements `AssistantHost` (`DesignAssistantHost`), installs runtime in `DesignApplication`, publishes cabin context from `DesignAppShell`. |
+| `:assistant` | Face UI, overlay service, demo backend, STT/TTS adapters, UI gallery. Depends only on `:assistant-api`. |
+| `:app` | Implements `AssistantHost` (`DesignAssistantHost`), installs runtime in `DesignApplication`. |
 
-## Wiring today
+## Wiring
 
 ```kotlin
 AssistantRuntime.install(
@@ -21,16 +21,16 @@ AssistantRuntime.install(
 
 `ImmersiveAssistantOverlay` collects `AssistantBackend.events` and forwards mic input via `onSpeechInput`. Swap `DemoAssistantBackend` for a remote/LLM client without touching Compose.
 
-## Standalone APK path
+Publish cabin facts from the host:
 
-1. New application module depends on `:assistant` (+ `:assistant-api` transitively).
-2. Implement `AssistantHost` (cabin snapshot + optional cluster hand-off).
-3. Call `AssistantRuntime.install(host, backend)` in `Application.onCreate`.
-4. Launch `VirtualAssistantActivity` / `ImmersiveAssistantOverlayService` (move manifest entries from `:app` when ready).
-5. Provide `LocalAssistantChromeBottomSpace` if the host has a floating dock; default is `0.dp`.
+```kotlin
+DesignCabinContextStore.publish(
+    AssistantCabinContext(speedMph = 42, gear = "D", batteryPercent = 78),
+)
+```
 
 ## Keep decoupled
 
-- Do not import `VehicleViewModel`, `DrivingUxState`, or `DesignAppShell` from `:assistant`.
+- Do not import vehicle ViewModels from `:assistant`.
 - Cabin facts cross the boundary only as `AssistantCabinContext` strings/numbers.
-- Theme via `AssistantTheme` inside the assistant module; host OEM theme is optional.
+- Theme via `AssistantTheme` inside the assistant module.
