@@ -11,7 +11,7 @@ import android.util.Log
  * ```
  * adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
- *   --es face eporo
+ *   --es face fusion
  *
  * adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
@@ -21,11 +21,11 @@ import android.util.Log
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver
  * ```
  *
- * Face tokens: `none` | `eyes` | `eporo` | `droid` | `glyph`
+ * Face tokens: `none` | `eyes` | `eporo` | `fusion` | `droid` | `glyph` (default: `fusion`)
  *
  * Also:
  * ```
- * adb shell settings put global design_assistant_face eporo
+ * adb shell settings put global design_assistant_face fusion
  * adb shell settings get global design_assistant_face
  * ```
  */

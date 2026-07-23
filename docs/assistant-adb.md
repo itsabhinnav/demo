@@ -33,7 +33,7 @@ With a face override (persists):
 ```bash
 adb shell am start -a com.test.design.action.OPEN_ASSISTANT \
   -n com.test.design/.presentation.assistant.VirtualAssistantActivity \
-  --es face eporo
+  --es face fusion
 ```
 
 Helper script (opens main first, then assistant):
@@ -94,7 +94,7 @@ adb logcat -d -s AssistantFace:I | tail -n 3
 Settings.Global (survives process; observed live when app is up):
 
 ```bash
-adb shell settings put global design_assistant_face eporo
+adb shell settings put global design_assistant_face fusion
 adb shell settings get global design_assistant_face
 ```
 

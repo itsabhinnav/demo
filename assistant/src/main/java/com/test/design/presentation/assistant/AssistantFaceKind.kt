@@ -7,7 +7,7 @@ package com.test.design.presentation.assistant
  * ```
  * adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
- *   --es face eporo
+ *   --es face fusion
  * ```
  */
 enum class AssistantFaceKind(
@@ -42,7 +42,7 @@ enum class AssistantFaceKind(
     ;
 
     companion object {
-        val Default: AssistantFaceKind = Eporo
+        val Default: AssistantFaceKind = Fusion
 
         /** Accepts canonical keys plus common aliases (`off`, `immersive`, `classic`, …). */
         fun parse(raw: String?): AssistantFaceKind? {

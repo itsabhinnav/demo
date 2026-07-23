@@ -53,7 +53,7 @@ class AssistantFaceKindTest {
     }
 
     @Test
-    fun defaultIsEporo() {
-        assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.Default)
+    fun defaultIsFusion() {
+        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.Default)
     }
 }
