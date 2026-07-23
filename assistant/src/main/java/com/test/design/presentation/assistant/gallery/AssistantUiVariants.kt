@@ -55,6 +55,7 @@ import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.FusionAssistantFace
+import com.test.design.presentation.assistant.FusionEyesAssistantFace
 import com.test.design.presentation.assistant.FusionGlowAssistantFace
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
@@ -96,6 +97,7 @@ fun AssistantUiVariant(
         AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, modifier)
         AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, modifier)
         AssistantUiStyle.FusionGlowFace -> FusionGlowFaceUi(mood, prompt, modifier)
+        AssistantUiStyle.FusionEyesFace -> FusionEyesFaceUi(mood, prompt, modifier)
     }
 }
 
@@ -155,6 +157,45 @@ private fun FusionGlowFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             FusionGlowAssistantFace(
+                mood = mood,
+                modifier = Modifier.width(148.dp),
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = mood.label,
+                color = mood.glowColor,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.height(6.dp))
+            LiveInputText(
+                text = prompt,
+                color = Color(0xFFF1F3F4),
+                live = mood == AssistantMood.Listening,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 28.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FusionEyesFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1A1C22),
+                        Color(0xFF0B0C10),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            FusionEyesAssistantFace(
                 mood = mood,
                 modifier = Modifier.width(148.dp),
             )

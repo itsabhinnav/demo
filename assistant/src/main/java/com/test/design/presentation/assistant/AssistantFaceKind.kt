@@ -39,6 +39,10 @@ enum class AssistantFaceKind(
         adbKey = "fusionglow",
         label = "Fusion glow",
     ),
+    FusionEyes(
+        adbKey = "fusioneyes",
+        label = "Fusion eyes",
+    ),
     Droid(
         adbKey = "droid",
         label = "Droid",
@@ -65,6 +69,7 @@ enum class AssistantFaceKind(
                 "eporp", "robot" -> Eporo
                 "express", "hybrid", "eporo_immersive", "eporo_eyes" -> Fusion
                 "fusion_glow", "glow_fusion", "fusion_capsule", "capsule_fusion" -> FusionGlow
+                "fusion_eyes", "eyes_fusion", "fusion_immersive", "fusion_black" -> FusionEyes
                 "bugdroid", "android" -> Droid
                 "classic", "assistant", "face" -> Glyph
                 else -> null

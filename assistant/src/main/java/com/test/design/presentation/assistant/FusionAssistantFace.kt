@@ -216,11 +216,23 @@ internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
 }
 
 /**
+ * Eye glyph mode for Fusion-family faces.
+ */
+enum class FusionEyeMode {
+    /** Original Fusion oval purple glow rings. */
+    OvalGlow,
+    /** Immersive-glow purple capsule rings. */
+    ImmersiveGlow,
+    /** Classic Immersive pale capsule rings (black-face glyphs). */
+    Immersive,
+}
+
+/**
  * Fusion persona — EPORO shell + glow-ring eyes with Immersive-style expression morphs
  * (shape, spacing, selective mouth, blush, gaze, gestures, lip-sync).
  *
- * @param immersiveGlowEyes when true, eyes match [ImmersiveGlowEyesFace] capsules
- *   (hollow pill + EPORO purple bloom) instead of Fusion oval rings.
+ * @param eyeMode [FusionEyeMode.OvalGlow] (default), [FusionEyeMode.ImmersiveGlow],
+ *   or [FusionEyeMode.Immersive] pale Immersive capsules.
  */
 @Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
@@ -236,7 +248,7 @@ fun FusionAssistantFace(
     shellColor: Color = EporoShell,
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
-    immersiveGlowEyes: Boolean = false,
+    eyeMode: FusionEyeMode = FusionEyeMode.OvalGlow,
 ) {
     val target = mood.toFusionEyePose()
     val shellMorph = remember {
@@ -466,11 +478,10 @@ fun FusionAssistantFace(
     )
 
     val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
-    val eyeTint = when {
-        immersiveGlowEyes && highContrast -> eyeFillForContrast(true)
-        immersiveGlowEyes -> glowColor
-        highContrast -> eyeFillForContrast(true)
-        else -> glowColor
+    val eyeTint = when (eyeMode) {
+        FusionEyeMode.Immersive -> eyeFillForContrast(highContrast)
+        FusionEyeMode.ImmersiveGlow -> if (highContrast) eyeFillForContrast(true) else glowColor
+        FusionEyeMode.OvalGlow -> if (highContrast) eyeFillForContrast(true) else glowColor
     }
     val mouthTint = eyeFillForContrast(highContrast)
 
@@ -539,15 +550,16 @@ fun FusionAssistantFace(
                 )
             }
 
-            if (immersiveGlowEyes) {
-                // Same Immersive-glow capsule proportions + purple bloom.
+            if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
+                // Immersive capsule proportions — purple bloom or pale black-face glyphs.
                 val faceR = side * 0.42f * pulse
                 val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
                 val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
                     .coerceAtMost(faceR * 0.26f)
                 val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
-                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = true)
-                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = true)
+                val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
+                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
             } else {
                 val baseR = side * 0.082f * pulse
                 val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
@@ -850,6 +862,40 @@ fun FusionGlowAssistantFace(
         shellColor = shellColor,
         visorColor = visorColor,
         glowColor = glowColor,
-        immersiveGlowEyes = true,
+        eyeMode = FusionEyeMode.ImmersiveGlow,
+    )
+}
+
+/**
+ * Fusion shell + classic Immersive pale capsule eyes (black-face glyphs).
+ * Mood morphs, mouth, blush, and gestures match [FusionAssistantFace].
+ */
+@Composable
+fun FusionEyesAssistantFace(
+    mood: AssistantMood,
+    modifier: Modifier = Modifier,
+    gazeX: Float? = null,
+    gazeY: Float? = null,
+    mouthAmplitude: Float? = null,
+    brandGlow: Color = EporoGlow,
+    highContrast: Boolean = false,
+    gesture: FaceGesture = FaceGesture.None,
+    shellColor: Color = EporoShell,
+    visorColor: Color = EporoVisor,
+    glowColor: Color = EporoGlow,
+) {
+    FusionAssistantFace(
+        mood = mood,
+        modifier = modifier,
+        gazeX = gazeX,
+        gazeY = gazeY,
+        mouthAmplitude = mouthAmplitude,
+        brandGlow = brandGlow,
+        highContrast = highContrast,
+        gesture = gesture,
+        shellColor = shellColor,
+        visorColor = visorColor,
+        glowColor = glowColor,
+        eyeMode = FusionEyeMode.Immersive,
     )
 }
