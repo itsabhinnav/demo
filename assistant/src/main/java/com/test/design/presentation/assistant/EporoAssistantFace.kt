@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -183,35 +184,43 @@ fun EporoAssistantFace(
         val w = size.width
         val h = size.height
         val cx = w * 0.5f
+        // Fit EPORO shell into Immersive eyes bounds (same height/size).
+        val match = immersiveMatchedShellBounds(w, h)
+        val sx = match.width / w
+        val sy = match.height / h
 
-        rotate(degrees = tilt.value, pivot = Offset(cx, h * 0.48f)) {
-            drawHead(shellMorph = shellMorph, shellColor = shellColor)
-            drawVisor(visorColor)
+        translate(left = match.left, top = match.top) {
+            scale(scaleX = sx, scaleY = sy, pivot = Offset.Zero) {
+                rotate(degrees = tilt.value, pivot = Offset(cx, h * 0.48f)) {
+                    drawHead(shellMorph = shellMorph, shellColor = shellColor)
+                    drawVisor(visorColor)
 
-            val gap = 0.24f * eyeGap.value
-            val eyeY = h * (0.50f + lookY.value * 0.03f)
-            val gaze = lookX.value + if (
-                mood == AssistantMood.Searching || mood == AssistantMood.Reading
-            ) {
-                scan * 0.04f
-            } else {
-                0f
+                    val gap = 0.24f * eyeGap.value
+                    val eyeY = h * (0.50f + lookY.value * 0.03f)
+                    val gaze = lookX.value + if (
+                        mood == AssistantMood.Searching || mood == AssistantMood.Reading
+                    ) {
+                        scan * 0.04f
+                    } else {
+                        0f
+                    }
+                    val pulse = (0.9f + 0.1f * glowPhase).coerceIn(0.85f, 1f)
+                    val eyeR = (minOf(w, h) * 0.095f) * eyeOpen.value * pulse
+
+                    drawEye(
+                        center = Offset(w * (0.50f - gap) + gaze * eyeR, eyeY),
+                        radius = eyeR,
+                        glow = glowColor,
+                        open = blinkOpen,
+                    )
+                    drawEye(
+                        center = Offset(w * (0.50f + gap) + gaze * eyeR, eyeY),
+                        radius = eyeR,
+                        glow = glowColor,
+                        open = blinkOpen,
+                    )
+                }
             }
-            val pulse = (0.9f + 0.1f * glowPhase).coerceIn(0.85f, 1f)
-            val eyeR = (minOf(w, h) * 0.095f) * eyeOpen.value * pulse
-
-            drawEye(
-                center = Offset(w * (0.50f - gap) + gaze * eyeR, eyeY),
-                radius = eyeR,
-                glow = glowColor,
-                open = blinkOpen,
-            )
-            drawEye(
-                center = Offset(w * (0.50f + gap) + gaze * eyeR, eyeY),
-                radius = eyeR,
-                glow = glowColor,
-                open = blinkOpen,
-            )
         }
     }
 }

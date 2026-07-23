@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
@@ -499,13 +500,17 @@ fun FusionAssistantFace(
         val w = size.width
         val h = size.height
         val cx = w * 0.5f
-        val cy = h * 0.48f
+        val cy = h * 0.5f
         val side = minOf(w, h)
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
+        // Fit EPORO shell into Immersive eyes bounds (same height/size).
+        val match = immersiveMatchedShellBounds(w, h)
+        val sx = match.width / w
+        val sy = match.height / h
 
         // Soft brand halo behind the head — Immersive presence cue.
         val haloA = auraAlphaForContrast(highContrast, 0.07f) * glow
-        val haloR = side * (0.72f + 0.04f * sin(lifePhase * 0.5f).toFloat())
+        val haloR = side * (0.55f + 0.04f * sin(lifePhase * 0.5f).toFloat())
         drawCircle(
             brush = Brush.radialGradient(
                 colorStops = arrayOf(
@@ -521,86 +526,90 @@ fun FusionAssistantFace(
         )
 
         val liveTilt = tilt.value + 0.35f * sin(lifePhase * 0.28f).toFloat()
-        rotate(degrees = liveTilt, pivot = Offset(cx, cy)) {
-            drawFusionHead(shellMorph = shellMorph, shellColor = shellColor, glow = glow)
-            drawFusionVisor(visorColor)
+        translate(left = match.left, top = match.top) {
+            scale(scaleX = sx, scaleY = sy, pivot = Offset.Zero) {
+                rotate(degrees = liveTilt, pivot = Offset(cx, h * 0.48f)) {
+                    drawFusionHead(shellMorph = shellMorph, shellColor = shellColor, glow = glow)
+                    drawFusionVisor(visorColor)
 
-            val open = (eyeOpen.value * blinkOpen).coerceIn(0.05f, 1.2f)
-            // Wider dynamic spacing — Sad ~0.72 closer, Excited ~1.32 farther.
-            val gap = 0.152f * eyeGap.value.coerceIn(0.65f, 1.45f)
-            val eyeY = h * (0.48f + lookY.value * 0.05f)
-            val gaze = lookX.value * side * 0.018f
-            val pulse = (0.88f + 0.12f * glowPhase).coerceIn(0.82f, 1f)
-            val left = Offset(w * (0.50f - gap) + gaze, eyeY)
-            val right = Offset(w * (0.50f + gap) + gaze, eyeY)
-            val style = eyeStyle.value
+                    val open = (eyeOpen.value * blinkOpen).coerceIn(0.05f, 1.2f)
+                    // Wider dynamic spacing — Sad ~0.72 closer, Excited ~1.32 farther.
+                    val gap = 0.152f * eyeGap.value.coerceIn(0.65f, 1.45f)
+                    val eyeY = h * (0.48f + lookY.value * 0.05f)
+                    val gaze = lookX.value * side * 0.018f
+                    val pulse = (0.88f + 0.12f * glowPhase).coerceIn(0.82f, 1f)
+                    val left = Offset(w * (0.50f - gap) + gaze, eyeY)
+                    val right = Offset(w * (0.50f + gap) + gaze, eyeY)
+                    val style = eyeStyle.value
 
-            if (blush.value > 0.04f) {
-                val blushA = 0.22f * blush.value
-                val bx = w * gap * 0.9f
-                drawCircle(
-                    Color(0xFFFF9BB0).copy(alpha = blushA),
-                    side * 0.055f,
-                    Offset(cx - bx, h * 0.62f),
-                )
-                drawCircle(
-                    Color(0xFFFF9BB0).copy(alpha = blushA),
-                    side * 0.055f,
-                    Offset(cx + bx, h * 0.62f),
-                )
-            }
+                    if (blush.value > 0.04f) {
+                        val blushA = 0.22f * blush.value
+                        val bx = w * gap * 0.9f
+                        drawCircle(
+                            Color(0xFFFF9BB0).copy(alpha = blushA),
+                            side * 0.055f,
+                            Offset(cx - bx, h * 0.62f),
+                        )
+                        drawCircle(
+                            Color(0xFFFF9BB0).copy(alpha = blushA),
+                            side * 0.055f,
+                            Offset(cx + bx, h * 0.62f),
+                        )
+                    }
 
-            if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
-                // Immersive capsule proportions — purple bloom or pale black-face glyphs.
-                val faceR = side * 0.42f * pulse
-                val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
-                val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
-                    .coerceAtMost(faceR * 0.26f)
-                val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
-                val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
-                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
-                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
-            } else {
-                val baseR = side * 0.082f * pulse
-                val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
-                val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
-                    .coerceAtLeast(baseR * 0.06f)
-                drawFusionEye(
-                    center = left,
-                    radiusX = rx,
-                    radiusY = ry,
-                    glow = eyeTint,
-                    open = blinkOpen,
-                    style = style,
-                )
-                drawFusionEye(
-                    center = right,
-                    radiusX = rx,
-                    radiusY = ry,
-                    glow = eyeTint,
-                    open = blinkOpen,
-                    style = style,
-                )
-            }
+                    if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
+                        // Immersive capsule proportions — purple bloom or pale black-face glyphs.
+                        val faceR = side * 0.42f * pulse
+                        val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
+                        val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
+                            .coerceAtMost(faceR * 0.26f)
+                        val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
+                        val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
+                        drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                        drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                    } else {
+                        val baseR = side * 0.082f * pulse
+                        val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+                        val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                            .coerceAtLeast(baseR * 0.06f)
+                        drawFusionEye(
+                            center = left,
+                            radiusX = rx,
+                            radiusY = ry,
+                            glow = eyeTint,
+                            open = blinkOpen,
+                            style = style,
+                        )
+                        drawFusionEye(
+                            center = right,
+                            radiusX = rx,
+                            radiusY = ry,
+                            glow = eyeTint,
+                            open = blinkOpen,
+                            style = style,
+                        )
+                    }
 
-            val speaking = mouthAmplitude != null ||
-                mood == AssistantMood.Speaking ||
-                mood == AssistantMood.Excited
-            // Mouth only when the pose asks for it (happy / sad / speaking / …).
-            if (mouthVisible.value > 0.2f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
-                drawFusionMouth(
-                    center = Offset(cx, h * 0.66f),
-                    faceR = side * 0.42f,
-                    curve = mouthCurve.value,
-                    open = mouthOpen.value,
-                    visible = maxOf(
-                        mouthVisible.value,
-                        if (mouthAmplitude != null) 0.9f else 0f,
-                    ),
-                    color = mouthTint,
-                    speaking = speaking,
-                    life = lifePhase,
-                )
+                    val speaking = mouthAmplitude != null ||
+                        mood == AssistantMood.Speaking ||
+                        mood == AssistantMood.Excited
+                    // Mouth only when the pose asks for it (happy / sad / speaking / …).
+                    if (mouthVisible.value > 0.2f || (mouthAmplitude != null && mouthAmplitude > 0.05f)) {
+                        drawFusionMouth(
+                            center = Offset(cx, h * 0.66f),
+                            faceR = side * 0.42f,
+                            curve = mouthCurve.value,
+                            open = mouthOpen.value,
+                            visible = maxOf(
+                                mouthVisible.value,
+                                if (mouthAmplitude != null) 0.9f else 0f,
+                            ),
+                            color = mouthTint,
+                            speaking = speaking,
+                            life = lifePhase,
+                        )
+                    }
+                }
             }
         }
     }
