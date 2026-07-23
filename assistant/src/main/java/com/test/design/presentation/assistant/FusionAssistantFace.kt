@@ -180,16 +180,16 @@ internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
         blinkSpeed = 0.65f,
     )
     AssistantMood.Bored -> FusionBase.copy(
-        eyeOpen = 0.68f,
-        eyeWidth = 1.28f,
-        eyeHeight = 0.58f, // flat half-lids
-        eyeGap = 1.14f,
-        lookX = 0.34f,
-        lookY = 0.08f,
-        eyeStyle = -0.15f,
-        faceGlow = 0.36f,
-        tilt = 2.5f,
-        blinkSpeed = 0.5f,
+        eyeOpen = 0.88f,
+        eyeWidth = 1.14f,
+        eyeHeight = 0.86f, // slightly half-lidded, not flat slits
+        eyeGap = 1.1f,
+        lookX = 0.28f,
+        lookY = 0.05f,
+        eyeStyle = -0.06f,
+        faceGlow = 0.4f,
+        tilt = 2f,
+        blinkSpeed = 0.55f,
     )
     AssistantMood.Drowsy -> FusionBase.copy(
         eyeOpen = 0.72f,
