@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.type.automotive"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application
+        android:name=".DesignApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
+        android:theme="@style/Theme.Design">
+
+        <!-- Avoid androidx.startup crash: library R$string is not packaged into dex (AGP). -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
+            android:theme="@style/Theme.Design"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.APP_AUTOMOTIVE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Assistant UI — same affinity as MainActivity so AAOS places it on the visible app panel. -->
+        <activity
+            android:name=".presentation.assistant.VirtualAssistantActivity"
+            android:exported="true"
+            android:label="@string/assistant_activity_name"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="false"
+            android:allowTaskReparenting="false"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"
+            android:theme="@style/Theme.Design.AssistantStandalone"
+            android:windowSoftInputMode="adjustNothing">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.APP_AUTOMOTIVE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.test.design.action.OPEN_ASSISTANT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".presentation.assistant.gallery.AssistantUiGalleryActivity"
+            android:exported="true"
+            android:label="Assistant UI gallery"
+            android:theme="@style/Theme.Design.AssistantOverlay"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTop"
+            android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.APP_AUTOMOTIVE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.test.design.action.OPEN_ASSISTANT_GALLERY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".presentation.assistant.overlay.AssistantOverlayBootstrapActivity"
+            android:exported="true"
+            android:label="@string/assistant_activity_name"
+            android:theme="@style/Theme.Design.AssistantOverlay"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.test.design.main"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="com.test.design.action.START_ASSISTANT_OVERLAY" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <service
+            android:name=".presentation.assistant.overlay.AssistantOverlayService"
+            android:exported="true"
+            android:enabled="true" />
+
+        <!-- Translucent immersive assistant over any app (standalone launch path). -->
+        <service
+            android:name=".presentation.assistant.ImmersiveAssistantOverlayService"
+            android:exported="false"
+            android:enabled="true" />
+
+        <!-- ADB swap immersive assistant face (none|eyes|eporo|droid|glyph) -->
+        <receiver
+            android:name=".presentation.assistant.AssistantFaceReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.test.design.action.SET_ASSISTANT_FACE" />
+                <action android:name="com.test.design.action.GET_ASSISTANT_FACE" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Used by Material Symbols vector drawables (android:tint="?attr/colorControlNormal"). -->
+    <attr name="colorControlNormal" format="color|reference" />
+
+    <style name="Theme.Design" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/canvas_background</item>
+        <item name="android:colorBackground">@color/canvas_background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:colorControlNormal">@color/control_normal</item>
+        <item name="colorControlNormal">@color/control_normal</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowShowWallpaper">false</item>
+    </style>
+
+    <style name="Theme.Design.Panel" parent="Theme.Design">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <!-- In-app / gallery translucent overlay (drawn over existing content). -->
+    <style name="Theme.Design.AssistantOverlay" parent="Theme.Design.Panel">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+
+    <!--
+      Trampoline / in-activity fallback. Transparent so AAOS can show content under the
+      assistant when overlay permission is unavailable. Primary path is the overlay service.
+    -->
+    <style name="Theme.Design.AssistantStandalone" parent="Theme.Design.Panel">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+</resources>
