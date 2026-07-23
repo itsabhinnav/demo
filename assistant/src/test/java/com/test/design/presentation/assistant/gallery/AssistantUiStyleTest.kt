@@ -31,6 +31,7 @@ class AssistantUiStyleTest {
         assertTrue(titles.contains("Droid face"))
         assertTrue(titles.contains("EPORO"))
         assertTrue(titles.contains("Fusion"))
+        assertTrue(titles.contains("Fusion glow"))
     }
 
     @Test

@@ -45,7 +45,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** Matte black face fill (NOMI-like). */
-private val NomiFaceBlack = Color(0xFF050508)
+internal val NomiFaceBlack = Color(0xFF050508)
 
 /**
  * NIO NOMI–style glyphs: hollow ring eyes + mouth on a matte black SemiCircle face.
@@ -609,7 +609,8 @@ fun ImmersiveEyesFace(
     }
 }
 
-private fun DrawScope.drawNomiGlyphEye(
+/** Immersive capsule eyes — set [glowRing] for EPORO purple bloom (Immersive glow / Fusion glow). */
+internal fun DrawScope.drawNomiGlyphEye(
     center: Offset,
     width: Float,
     height: Float,

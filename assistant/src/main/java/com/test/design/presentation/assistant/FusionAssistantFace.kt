@@ -218,6 +218,9 @@ internal fun AssistantMood.toFusionEyePose(): FusionEyePose = when (this) {
 /**
  * Fusion persona — EPORO shell + glow-ring eyes with Immersive-style expression morphs
  * (shape, spacing, selective mouth, blush, gaze, gestures, lip-sync).
+ *
+ * @param immersiveGlowEyes when true, eyes match [ImmersiveGlowEyesFace] capsules
+ *   (hollow pill + EPORO purple bloom) instead of Fusion oval rings.
  */
 @Composable
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
@@ -233,6 +236,7 @@ fun FusionAssistantFace(
     shellColor: Color = EporoShell,
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
+    immersiveGlowEyes: Boolean = false,
 ) {
     val target = mood.toFusionEyePose()
     val shellMorph = remember {
@@ -462,10 +466,11 @@ fun FusionAssistantFace(
     )
 
     val blinkOpen = blink.value.coerceIn(0.05f, 1.2f)
-    val eyeTint = if (highContrast) {
-        eyeFillForContrast(true)
-    } else {
-        glowColor
+    val eyeTint = when {
+        immersiveGlowEyes && highContrast -> eyeFillForContrast(true)
+        immersiveGlowEyes -> glowColor
+        highContrast -> eyeFillForContrast(true)
+        else -> glowColor
     }
     val mouthTint = eyeFillForContrast(highContrast)
 
@@ -515,10 +520,8 @@ fun FusionAssistantFace(
             val eyeY = h * (0.48f + lookY.value * 0.05f)
             val gaze = lookX.value * side * 0.018f
             val pulse = (0.88f + 0.12f * glowPhase).coerceIn(0.82f, 1f)
-            val baseR = side * 0.082f * pulse
-            val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
-            val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
-                .coerceAtLeast(baseR * 0.06f)
+            val left = Offset(w * (0.50f - gap) + gaze, eyeY)
+            val right = Offset(w * (0.50f + gap) + gaze, eyeY)
             val style = eyeStyle.value
 
             if (blush.value > 0.04f) {
@@ -536,22 +539,37 @@ fun FusionAssistantFace(
                 )
             }
 
-            drawFusionEye(
-                center = Offset(w * (0.50f - gap) + gaze, eyeY),
-                radiusX = rx,
-                radiusY = ry,
-                glow = eyeTint,
-                open = blinkOpen,
-                style = style,
-            )
-            drawFusionEye(
-                center = Offset(w * (0.50f + gap) + gaze, eyeY),
-                radiusX = rx,
-                radiusY = ry,
-                glow = eyeTint,
-                open = blinkOpen,
-                style = style,
-            )
+            if (immersiveGlowEyes) {
+                // Same Immersive-glow capsule proportions + purple bloom.
+                val faceR = side * 0.42f * pulse
+                val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
+                val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
+                    .coerceAtMost(faceR * 0.26f)
+                val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
+                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = true)
+                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = true)
+            } else {
+                val baseR = side * 0.082f * pulse
+                val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+                val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                    .coerceAtLeast(baseR * 0.06f)
+                drawFusionEye(
+                    center = left,
+                    radiusX = rx,
+                    radiusY = ry,
+                    glow = eyeTint,
+                    open = blinkOpen,
+                    style = style,
+                )
+                drawFusionEye(
+                    center = right,
+                    radiusX = rx,
+                    radiusY = ry,
+                    glow = eyeTint,
+                    open = blinkOpen,
+                    style = style,
+                )
+            }
 
             val speaking = mouthAmplitude != null ||
                 mood == AssistantMood.Speaking ||
@@ -800,4 +818,38 @@ private fun DrawScope.drawFusionMouth(
         }
         drawPath(path, tint, style = Stroke(width = faceR * 0.034f, cap = StrokeCap.Round))
     }
+}
+
+/**
+ * Fusion shell + Immersive-glow capsule eyes (EPORO purple bloom).
+ * Mood morphs, mouth, blush, and gestures match [FusionAssistantFace].
+ */
+@Composable
+fun FusionGlowAssistantFace(
+    mood: AssistantMood,
+    modifier: Modifier = Modifier,
+    gazeX: Float? = null,
+    gazeY: Float? = null,
+    mouthAmplitude: Float? = null,
+    brandGlow: Color = EporoGlow,
+    highContrast: Boolean = false,
+    gesture: FaceGesture = FaceGesture.None,
+    shellColor: Color = EporoShell,
+    visorColor: Color = EporoVisor,
+    glowColor: Color = EporoGlow,
+) {
+    FusionAssistantFace(
+        mood = mood,
+        modifier = modifier,
+        gazeX = gazeX,
+        gazeY = gazeY,
+        mouthAmplitude = mouthAmplitude,
+        brandGlow = brandGlow,
+        highContrast = highContrast,
+        gesture = gesture,
+        shellColor = shellColor,
+        visorColor = visorColor,
+        glowColor = glowColor,
+        immersiveGlowEyes = true,
+    )
 }

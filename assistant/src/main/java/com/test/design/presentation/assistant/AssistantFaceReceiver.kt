@@ -21,7 +21,7 @@ import android.util.Log
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver
  * ```
  *
- * Face tokens: `none` | `eyes` | `glow` | `eporo` | `fusion` | `droid` | `glyph` (default: `fusion`)
+ * Face tokens: `none` | `eyes` | `glow` | `eporo` | `fusion` | `fusionglow` | `droid` | `glyph` (default: `fusion`)
  *
  * Also:
  * ```
@@ -38,7 +38,7 @@ class AssistantFaceReceiver : BroadcastReceiver() {
                     ?: intent.getStringExtra(EXTRA_KIND)
                 val ok = AssistantFaceConfig.setFromRaw(context, raw)
                 if (!ok) {
-                    Log.w(TAG, "Unknown face '$raw' — use none|eyes|glow|eporo|fusion|droid|glyph")
+                    Log.w(TAG, "Unknown face '$raw' — use none|eyes|glow|eporo|fusion|fusionglow|droid|glyph")
                 } else {
                     Log.i(TAG, "Assistant face → ${AssistantFaceConfig.current().adbKey}")
                 }

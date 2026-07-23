@@ -14,6 +14,7 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("glow"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporo"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("fusion"))
+        assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("fusionglow"))
         assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("droid"))
         assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("glyph"))
     }
@@ -28,6 +29,8 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporp"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("express"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("hybrid"))
+        assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("fusion_glow"))
+        assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("glow_fusion"))
         assertEquals(AssistantFaceKind.Droid, AssistantFaceKind.parse("bugdroid"))
         assertEquals(AssistantFaceKind.Glyph, AssistantFaceKind.parse("classic"))
     }
@@ -37,6 +40,7 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("  EPORO "))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("Eyes"))
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("Glow"))
+        assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("FusionGlow"))
     }
 
     @Test
@@ -55,6 +59,7 @@ class AssistantFaceKindTest {
         assertTrue(keys.contains("glow"))
         assertTrue(keys.contains("eporo"))
         assertTrue(keys.contains("fusion"))
+        assertTrue(keys.contains("fusionglow"))
     }
 
     @Test

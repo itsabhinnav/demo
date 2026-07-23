@@ -60,9 +60,9 @@ adb shell am startservice \
 
 ## Swap face (live)
 
-Tokens: `none` | `eyes` | `glow` | `eporo` | `fusion` | `droid` | `glyph`
+Tokens: `none` | `eyes` | `glow` | `eporo` | `fusion` | `fusionglow` | `droid` | `glyph`
 
-Aliases: `off`/`noface` → none · `immersive` → eyes · `aura`/`ring`/`purple_eyes` → glow · `eporp` → eporo · `express`/`hybrid` → fusion · `classic` → glyph
+Aliases: `off`/`noface` → none · `immersive` → eyes · `aura`/`ring`/`purple_eyes` → glow · `eporp` → eporo · `express`/`hybrid` → fusion · `fusion_glow`/`glow_fusion` → fusionglow · `classic` → glyph
 
 ```bash
 # EPORO robot head
@@ -74,6 +74,11 @@ adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
 adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
   -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
   --es face fusion
+
+# Fusion glow — Fusion shell + Immersive-glow capsule eyes
+adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
+  -n com.test.design/.presentation.assistant.AssistantFaceReceiver \
+  --es face fusionglow
 
 # Immersive eyes
 adb shell am broadcast -a com.test.design.action.SET_ASSISTANT_FACE \
