@@ -72,7 +72,7 @@ class AssistantFaceKindTest {
     }
 
     @Test
-    fun defaultIsImmersiveHybrid() {
-        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.Default)
+    fun defaultIsImmersiveEyes() {
+        assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.Default)
     }
 }

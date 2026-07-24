@@ -109,11 +109,11 @@ adb logcat -d -s AssistantFace:I | tail -n 3
 Settings.Global (survives process; observed live when app is up):
 
 ```bash
-adb shell settings put global design_assistant_face hybrid
+adb shell settings put global design_assistant_face eyes
 adb shell settings get global design_assistant_face
 ```
 
-Default when nothing is saved: **Immersive hybrid** (`hybrid`) — purple glow for Excited / Happy / Searching / Thinking, pale Immersive eyes otherwise. Override anytime with the face tokens above. Size matches Weather sink (~10% larger face).
+Default when nothing is saved: **Immersive eyes** (`eyes`). Override anytime with the face tokens above. Size matches Weather sink (~10% larger face).
 
 ## Other assistant surfaces
 

@@ -21,11 +21,11 @@ import android.util.Log
  *   -n com.test.design/.presentation.assistant.AssistantFaceReceiver
  * ```
  *
- * Face tokens: `none` | `eyes` | `glow` | `hybrid` | `eporo` | `fusion` | `fusionglow` | `fusioneyes` | `droid` | `glyph` (default: `hybrid`)
+ * Face tokens: `none` | `eyes` | `glow` | `hybrid` | `eporo` | `fusion` | `fusionglow` | `fusioneyes` | `droid` | `glyph` (default: `eyes`)
  *
  * Also:
  * ```
- * adb shell settings put global design_assistant_face hybrid
+ * adb shell settings put global design_assistant_face eyes
  * adb shell settings get global design_assistant_face
  * ```
  */

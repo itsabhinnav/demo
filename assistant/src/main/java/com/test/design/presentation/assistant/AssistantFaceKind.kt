@@ -58,7 +58,7 @@ enum class AssistantFaceKind(
     ;
 
     companion object {
-        val Default: AssistantFaceKind = ImmersiveHybrid
+        val Default: AssistantFaceKind = ImmersiveEyes
 
         /** Accepts canonical keys plus common aliases (`off`, `immersive`, `classic`, …). */
         fun parse(raw: String?): AssistantFaceKind? {
