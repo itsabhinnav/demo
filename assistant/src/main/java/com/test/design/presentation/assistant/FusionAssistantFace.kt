@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,10 +39,13 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.graphics.shapes.Morph
+import kotlin.math.min
+import kotlin.math.max
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
@@ -571,59 +575,75 @@ fun FusionAssistantFace(
                         )
                     }
 
-                    if (eyeReveal > 0.02f) {
-                        val fadedEye = eyeTint.copy(alpha = eyeTint.alpha * eyeReveal)
-                        if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
-                            // Immersive capsule proportions — purple bloom or pale black-face glyphs.
-                            val faceR = side * 0.42f * pulse
-                            val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
-                            val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
-                                .coerceAtMost(faceR * 0.26f)
-                            val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
-                            val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
-                            drawNomiGlyphEye(left, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
-                            drawNomiGlyphEye(right, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
-                        } else {
-                            val baseR = side * 0.082f * pulse
-                            val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
-                            val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
-                                .coerceAtLeast(baseR * 0.06f)
-                            drawFusionEye(
-                                center = left,
-                                radiusX = rx,
-                                radiusY = ry,
-                                glow = fadedEye,
-                                open = blinkOpen,
-                                style = style,
-                            )
-                            drawFusionEye(
-                                center = right,
-                                radiusX = rx,
-                                radiusY = ry,
-                                glow = fadedEye,
-                                open = blinkOpen,
-                                style = style,
-                            )
-                        }
-                    }
+                    if (eyeReveal > 0.02f || (visorPainter != null && glyphA > 0.02f)) {
+                        val faceR = side * 0.42f * pulse
+                        val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
+                        val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
+                            .coerceAtMost(faceR * 0.26f)
+                        val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
 
-                    // Weather glyph occupies the eye slots so it rides gaze/tilt with the face.
-                    if (visorPainter != null && glyphA > 0.02f) {
-                        val tint = visorDisplayTint ?: eyeTint
-                        val iconSide = side * 0.092f * pulse
-                        listOf(left, right).forEach { eyeCenter ->
-                            translate(
-                                left = eyeCenter.x - iconSide * 0.5f,
-                                top = eyeCenter.y - iconSide * 0.5f,
-                            ) {
-                                with(visorPainter) {
-                                    draw(
-                                        size = Size(iconSide, iconSide),
-                                        alpha = glyphA,
-                                        colorFilter = ColorFilter.tint(tint),
-                                    )
-                                }
+                        if (eyeReveal > 0.02f) {
+                            val fadedEye = eyeTint.copy(alpha = eyeTint.alpha * eyeReveal)
+                            if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
+                                val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
+                                drawNomiGlyphEye(left, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
+                                drawNomiGlyphEye(right, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
+                            } else {
+                                val baseR = side * 0.082f * pulse
+                                val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+                                val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                                    .coerceAtLeast(baseR * 0.06f)
+                                drawFusionEye(
+                                    center = left,
+                                    radiusX = rx,
+                                    radiusY = ry,
+                                    glow = fadedEye,
+                                    open = blinkOpen,
+                                    style = style,
+                                )
+                                drawFusionEye(
+                                    center = right,
+                                    radiusX = rx,
+                                    radiusY = ry,
+                                    glow = fadedEye,
+                                    open = blinkOpen,
+                                    style = style,
+                                )
                             }
+                        }
+
+                        // Replace both eyes with weather glyphs — same capsule size + morph.
+                        if (visorPainter != null && glyphA > 0.02f) {
+                            val tint = visorDisplayTint ?: eyeTint
+                            val glyphW: Float
+                            val glyphH: Float
+                            if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
+                                glyphW = barW
+                                glyphH = barH
+                            } else {
+                                val baseR = side * 0.082f * pulse
+                                glyphW = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+                                glyphH = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                                    .coerceAtLeast(baseR * 0.06f)
+                            }
+                            drawWeatherEyeReplacement(
+                                painter = visorPainter,
+                                center = left,
+                                halfW = glyphW,
+                                halfH = glyphH,
+                                style = capsuleStyle,
+                                alpha = glyphA,
+                                tint = tint,
+                            )
+                            drawWeatherEyeReplacement(
+                                painter = visorPainter,
+                                center = right,
+                                halfW = glyphW,
+                                halfH = glyphH,
+                                style = capsuleStyle,
+                                alpha = glyphA,
+                                tint = tint,
+                            )
                         }
                     }
 
@@ -650,6 +670,75 @@ fun FusionAssistantFace(
             }
         }
     }
+}
+
+/**
+ * Weather icon drawn as a full eye replacement — same capsule footprint as
+ * [drawNomiGlyphEye], morphing with blink/open and eye style.
+ */
+private fun DrawScope.drawWeatherEyeReplacement(
+    painter: Painter,
+    center: Offset,
+    halfW: Float,
+    halfH: Float,
+    style: Float,
+    alpha: Float,
+    tint: Color,
+) {
+    val w = halfW.coerceAtLeast(1.5f)
+    val h = when {
+        style < -0.25f -> {
+            val flatten = (-style).coerceIn(0.25f, 1f)
+            (halfH * (1f - 0.55f * flatten)).coerceAtLeast(w * 0.55f)
+        }
+        style > 0.28f -> halfH * (1f + 0.2f * style.coerceAtMost(1f))
+        else -> halfH.coerceAtLeast(w * 0.55f)
+    }
+    val boxW = w * 2f
+    val boxH = h * 2f
+    val topLeft = Offset(center.x - w, center.y - h)
+    val capsule = Path().apply {
+        addRoundRect(
+            RoundRect(
+                left = topLeft.x,
+                top = topLeft.y,
+                right = topLeft.x + boxW,
+                bottom = topLeft.y + boxH,
+                cornerRadius = CornerRadius(w, w),
+            ),
+        )
+    }
+
+    // Soft fill so the glyph reads as eye material, not a sticker.
+    drawPath(path = capsule, color = tint.copy(alpha = 0.14f * alpha))
+    clipPath(capsule) {
+        // Icon fills the capsule (same outer size as the Immersive eye ring).
+        val iconPad = min(w, h) * 0.18f
+        val iw = (boxW - iconPad * 2f).coerceAtLeast(1f)
+        val ih = (boxH - iconPad * 2f).coerceAtLeast(1f)
+        // Keep square icon aspect centered in the morphing capsule.
+        val side = min(iw, ih)
+        translate(
+            left = center.x - side * 0.5f,
+            top = center.y - side * 0.5f,
+        ) {
+            with(painter) {
+                draw(
+                    size = Size(side, side),
+                    alpha = alpha,
+                    colorFilter = ColorFilter.tint(tint),
+                )
+            }
+        }
+    }
+    val strokeW = min(w, h) * 0.42f
+    drawRoundRect(
+        color = tint.copy(alpha = 0.92f * alpha),
+        topLeft = topLeft,
+        size = Size(boxW, boxH),
+        cornerRadius = CornerRadius(w, w),
+        style = Stroke(width = strokeW, cap = StrokeCap.Round),
+    )
 }
 
 private fun DrawScope.drawFusionHead(
