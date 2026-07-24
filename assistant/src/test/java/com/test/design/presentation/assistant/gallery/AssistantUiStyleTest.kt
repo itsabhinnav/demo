@@ -1,5 +1,6 @@
 package com.test.design.presentation.assistant.gallery
 
+import com.test.design.assistant.api.AssistantContextGlyph
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -33,10 +34,37 @@ class AssistantUiStyleTest {
         assertTrue(titles.contains("Fusion"))
         assertTrue(titles.contains("Fusion glow"))
         assertTrue(titles.contains("Fusion eyes"))
+        assertTrue(titles.contains("Weather sink"))
     }
 
     @Test
     fun styleNamesAreUnique() {
         assertEquals(AssistantUiStyle.entries.size, AssistantUiStyle.entries.map { it.name }.toSet().size)
+    }
+
+    @Test
+    fun weatherSinkScriptIsWeatherOnly() {
+        assertTrue(WeatherSinkDialogueScript.isNotEmpty())
+        assertTrue(
+            WeatherSinkDialogueScript.all { beat ->
+                beat.contextGlyph == null ||
+                    beat.contextGlyph.name.startsWith("Weather")
+            },
+        )
+        assertTrue(
+            WeatherSinkDialogueScript.none { beat ->
+                beat.contextGlyph?.name?.startsWith("Climate") == true
+            },
+        )
+        assertTrue(
+            WeatherSinkDialogueScript.any {
+                it.contextGlyph == AssistantContextGlyph.WeatherSnow
+            },
+        )
+        assertTrue(
+            WeatherSinkDialogueScript.any {
+                it.contextGlyph == AssistantContextGlyph.WeatherLightRain
+            },
+        )
     }
 }

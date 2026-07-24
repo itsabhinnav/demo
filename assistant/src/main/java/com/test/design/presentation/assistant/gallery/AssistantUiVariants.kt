@@ -45,20 +45,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.test.design.assistant.api.AssistantContextGlyph
 import com.test.design.presentation.assistant.AssistantFace
 import com.test.design.presentation.assistant.AssistantFaceKind
 import com.test.design.presentation.assistant.AssistantMood
 import com.test.design.presentation.assistant.AssistantPresence
+import com.test.design.presentation.assistant.DialogueBeat
+import com.test.design.presentation.assistant.DialogueSpeaker
 import com.test.design.presentation.assistant.DroidAssistantFace
 import com.test.design.presentation.assistant.DroidFaceGlyph
 import com.test.design.presentation.assistant.DroidGlyph
 import com.test.design.presentation.assistant.EporoAssistantFace
 import com.test.design.presentation.assistant.FusionAssistantFace
+import com.test.design.presentation.assistant.FusionEyesAssistantFace
 import com.test.design.presentation.assistant.FusionGlowAssistantFace
 import com.test.design.presentation.assistant.ImmersiveAssistantBottomChrome
 import com.test.design.presentation.assistant.ImmersiveBackdrop
 import com.test.design.presentation.assistant.ImmersiveBorderGlow
-import com.test.design.presentation.assistant.ImmersiveDialogueScript
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
 import com.test.design.presentation.assistant.LiveInputText
@@ -99,6 +102,7 @@ fun AssistantUiVariant(
         AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, modifier)
         AssistantUiStyle.FusionGlowFace -> FusionGlowFaceUi(mood, prompt, modifier)
         AssistantUiStyle.FusionEyesFace -> FusionEyesFaceUi(mood, prompt, modifier)
+        AssistantUiStyle.WeatherSink -> WeatherSinkUi(modifier)
     }
 }
 
@@ -181,11 +185,121 @@ private fun FusionGlowFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
 }
 
 @Composable
-@Suppress("UNUSED_PARAMETER")
 private fun FusionEyesFaceUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
-    // Exact ImmersiveAssistantOverlay bottom chrome clone — drives ImmersiveDialogueScript.
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1A1C22),
+                        Color(0xFF0B0C10),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            FusionEyesAssistantFace(
+                mood = mood,
+                modifier = Modifier.size(228.dp),
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = mood.label,
+                color = mood.glowColor,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Spacer(Modifier.height(6.dp))
+            LiveInputText(
+                text = prompt,
+                color = Color(0xFFF1F3F4),
+                live = mood == AssistantMood.Listening,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 28.dp),
+            )
+        }
+    }
+}
+
+/** Weather-only dialogue for the Weather sink gallery style. */
+internal val WeatherSinkDialogueScript: List<DialogueBeat> = listOf(
+    DialogueBeat(
+        speaker = DialogueSpeaker.System,
+        text = "Listening…",
+        mood = AssistantMood.Listening,
+        holdMs = 1600,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "Will it snow tonight?",
+        mood = AssistantMood.Listening,
+        holdMs = 2200,
+        contextGlyph = AssistantContextGlyph.WeatherSnow,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Thinking through the overnight forecast…",
+        mood = AssistantMood.Thinking,
+        holdMs = 2000,
+        contextGlyph = AssistantContextGlyph.WeatherCloudy,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Reading the radar along your route…",
+        mood = AssistantMood.Reading,
+        holdMs = 2200,
+        contextGlyph = AssistantContextGlyph.WeatherCloudy,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Light snow after midnight — roads should stay clear until then.",
+        mood = AssistantMood.Speaking,
+        holdMs = 3200,
+        contextGlyph = AssistantContextGlyph.WeatherSnow,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "And will it rain tomorrow?",
+        mood = AssistantMood.Listening,
+        holdMs = 2000,
+        contextGlyph = AssistantContextGlyph.WeatherLightRain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "A soft drizzle around midday — nothing heavy.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.WeatherLightRain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.User,
+        text = "Any chance of a heavier downpour later?",
+        mood = AssistantMood.Listening,
+        holdMs = 2200,
+        contextGlyph = AssistantContextGlyph.WeatherHeavyRain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Unlikely — staying light through the evening.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.WeatherLightRain,
+    ),
+    DialogueBeat(
+        speaker = DialogueSpeaker.Assistant,
+        text = "Morning looks clearer — expect some sun after the clouds lift.",
+        mood = AssistantMood.Speaking,
+        holdMs = 2800,
+        contextGlyph = AssistantContextGlyph.WeatherSunny,
+    ),
+)
+
+@Composable
+private fun WeatherSinkUi(modifier: Modifier) {
     var beatIndex by rememberSaveable { mutableIntStateOf(0) }
-    val script = ImmersiveDialogueScript
+    val script = WeatherSinkDialogueScript
     val beat = script[beatIndex % script.size]
 
     LaunchedEffect(beatIndex) {
