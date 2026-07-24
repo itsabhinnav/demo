@@ -323,6 +323,7 @@ private fun WeatherSinkUi(modifier: Modifier) {
             faceScale = 1f,
             faceAlpha = 1f,
             transcriptAlpha = 1f,
+            faceSizeScale = 1.05f,
             faceContent = { faceModifier, _ ->
                 WeatherSinkFace(
                     mood = beat.mood,
