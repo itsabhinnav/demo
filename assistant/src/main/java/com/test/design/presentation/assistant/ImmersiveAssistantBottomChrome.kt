@@ -18,14 +18,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.test.design.assistant.api.AssistantContextGlyph
 import kotlin.math.roundToInt
 
 /**
- * Shared bottom chrome for the immersive assistant stage and Fusion Eyes gallery clone:
- * face (optional context glyph) + [ImmersiveTranscript].
+ * Shared bottom chrome for the immersive assistant stage:
+ * face (optional floating context glyph) + [ImmersiveTranscript].
+ *
+ * [faceContent] replaces [ConfigurableAssistantFace] when provided (e.g. Weather sink).
+ * [floatContextGlyph] shows the Material icon above Fusion Eyes; Weather sink keeps this off
+ * and swaps the icon into the eye band instead.
  */
 @Composable
 fun ImmersiveAssistantBottomChrome(
@@ -41,13 +46,18 @@ fun ImmersiveAssistantBottomChrome(
     highContrast: Boolean = false,
     gesture: FaceGesture = FaceGesture.None,
     contextGlyph: AssistantContextGlyph? = null,
+    floatContextGlyph: Boolean = true,
     showFace: Boolean = true,
     faceRise: Float = 0f,
     faceScale: Float = 1f,
     faceAlpha: Float = 1f,
     transcriptAlpha: Float = 1f,
+    faceContent: (@Composable (faceModifier: Modifier, faceSize: Dp) -> Unit)? = null,
 ) {
-    val showGlyph = faceKind == AssistantFaceKind.FusionEyes && contextGlyph != null
+    val showGlyph = floatContextGlyph &&
+        faceKind == AssistantFaceKind.FusionEyes &&
+        contextGlyph != null &&
+        faceContent == null
 
     BoxWithConstraints(
         modifier = modifier
@@ -94,17 +104,21 @@ fun ImmersiveAssistantBottomChrome(
                                 .offset(y = -(glyphSize * 0.72f)),
                         )
                     }
-                    ConfigurableAssistantFace(
-                        mood = mood,
-                        kind = faceKind,
-                        modifier = Modifier.size(faceSize),
-                        gazeX = gazeX,
-                        gazeY = gazeY,
-                        mouthAmplitude = mouthAmplitude,
-                        brandGlow = brandGlow,
-                        highContrast = highContrast,
-                        gesture = gesture,
-                    )
+                    if (faceContent != null) {
+                        faceContent(Modifier.size(faceSize), faceSize)
+                    } else {
+                        ConfigurableAssistantFace(
+                            mood = mood,
+                            kind = faceKind,
+                            modifier = Modifier.size(faceSize),
+                            gazeX = gazeX,
+                            gazeY = gazeY,
+                            mouthAmplitude = mouthAmplitude,
+                            brandGlow = brandGlow,
+                            highContrast = highContrast,
+                            gesture = gesture,
+                        )
+                    }
                 }
             }
             ImmersiveTranscript(

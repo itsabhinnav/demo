@@ -66,7 +66,7 @@ import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
 import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.VoiceWaveform
-import com.test.design.presentation.assistant.contextGlyphGaze
+import com.test.design.presentation.assistant.WeatherSinkFace
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
 import kotlin.math.PI
@@ -307,11 +307,6 @@ private fun WeatherSinkUi(modifier: Modifier) {
         beatIndex = (beatIndex + 1) % script.size
     }
 
-    val glyphGaze = contextGlyphGaze()
-    val hasGlyph = beat.contextGlyph != null
-    val gazeX = if (hasGlyph) glyphGaze.first else null
-    val gazeY = if (hasGlyph) glyphGaze.second else null
-
     Box(modifier = modifier.fillMaxSize()) {
         ImmersiveBackdrop()
         ImmersiveBorderGlow(glowColor = beat.mood.glowColor.copy(alpha = 0.55f))
@@ -320,15 +315,22 @@ private fun WeatherSinkUi(modifier: Modifier) {
             faceKind = AssistantFaceKind.FusionEyes,
             transcript = beat.text,
             speaker = beat.speaker,
-            gazeX = gazeX,
-            gazeY = gazeY,
             brandGlow = beat.mood.glowColor.copy(alpha = 0.65f),
             contextGlyph = beat.contextGlyph,
+            floatContextGlyph = false,
             showFace = true,
             faceRise = 0f,
             faceScale = 1f,
             faceAlpha = 1f,
             transcriptAlpha = 1f,
+            faceContent = { faceModifier, _ ->
+                WeatherSinkFace(
+                    mood = beat.mood,
+                    modifier = faceModifier,
+                    contextGlyph = beat.contextGlyph,
+                    brandGlow = beat.mood.glowColor.copy(alpha = 0.65f),
+                )
+            },
         )
     }
 }

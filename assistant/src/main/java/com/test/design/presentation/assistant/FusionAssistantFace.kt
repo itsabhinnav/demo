@@ -250,6 +250,8 @@ fun FusionAssistantFace(
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
     eyeMode: FusionEyeMode = FusionEyeMode.OvalGlow,
+    /** When true, skip drawing eyes (e.g. Weather sink icon swap). */
+    hideEyes: Boolean = false,
 ) {
     val target = mood.toFusionEyePose()
     val shellMorph = remember {
@@ -557,37 +559,39 @@ fun FusionAssistantFace(
                         )
                     }
 
-                    if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
-                        // Immersive capsule proportions — purple bloom or pale black-face glyphs.
-                        val faceR = side * 0.42f * pulse
-                        val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
-                        val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
-                            .coerceAtMost(faceR * 0.26f)
-                        val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
-                        val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
-                        drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
-                        drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
-                    } else {
-                        val baseR = side * 0.082f * pulse
-                        val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
-                        val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
-                            .coerceAtLeast(baseR * 0.06f)
-                        drawFusionEye(
-                            center = left,
-                            radiusX = rx,
-                            radiusY = ry,
-                            glow = eyeTint,
-                            open = blinkOpen,
-                            style = style,
-                        )
-                        drawFusionEye(
-                            center = right,
-                            radiusX = rx,
-                            radiusY = ry,
-                            glow = eyeTint,
-                            open = blinkOpen,
-                            style = style,
-                        )
+                    if (!hideEyes) {
+                        if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
+                            // Immersive capsule proportions — purple bloom or pale black-face glyphs.
+                            val faceR = side * 0.42f * pulse
+                            val barW = faceR * 0.11f * eyeWidth.value.coerceIn(0.8f, 1.35f)
+                            val barH = (faceR * 0.22f * eyeHeight.value.coerceAtMost(1.05f) * open)
+                                .coerceAtMost(faceR * 0.26f)
+                            val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
+                            val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
+                            drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                            drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                        } else {
+                            val baseR = side * 0.082f * pulse
+                            val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
+                            val ry = (baseR * eyeHeight.value.coerceIn(0.35f, 1.3f) * open)
+                                .coerceAtLeast(baseR * 0.06f)
+                            drawFusionEye(
+                                center = left,
+                                radiusX = rx,
+                                radiusY = ry,
+                                glow = eyeTint,
+                                open = blinkOpen,
+                                style = style,
+                            )
+                            drawFusionEye(
+                                center = right,
+                                radiusX = rx,
+                                radiusY = ry,
+                                glow = eyeTint,
+                                open = blinkOpen,
+                                style = style,
+                            )
+                        }
                     }
 
                     val speaking = mouthAmplitude != null ||
@@ -892,6 +896,7 @@ fun FusionEyesAssistantFace(
     shellColor: Color = EporoShell,
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
+    hideEyes: Boolean = false,
 ) {
     FusionAssistantFace(
         mood = mood,
@@ -906,5 +911,6 @@ fun FusionEyesAssistantFace(
         visorColor = visorColor,
         glowColor = glowColor,
         eyeMode = FusionEyeMode.Immersive,
+        hideEyes = hideEyes,
     )
 }
