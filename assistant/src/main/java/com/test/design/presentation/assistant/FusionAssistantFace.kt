@@ -558,7 +558,8 @@ fun FusionAssistantFace(
                     val right = Offset(w * (0.50f + gap) + gaze, eyeY)
                     val style = eyeStyle.value
                     val glyphA = visorDisplayAlpha.coerceIn(0f, 1f)
-                    val eyeReveal = (1f - glyphA).coerceIn(0f, 1f)
+                    // Hard swap: once the glyph appears, eyes are gone (no ring behind icons).
+                    val eyeReveal = if (glyphA > 0.08f) 0f else 1f
 
                     if (blush.value > 0.04f) {
                         val blushA = 0.22f * blush.value
@@ -673,8 +674,9 @@ fun FusionAssistantFace(
 }
 
 /**
- * Weather icon drawn as a full eye replacement — same capsule footprint as
- * [drawNomiGlyphEye], morphing with blink/open and eye style.
+ * Weather icon drawn as a full eye replacement — same footprint as Immersive
+ * eyes ([halfW]/[halfH]), morphing with blink/open and eye style, with no
+ * capsule/ring chrome so it does not read as “inside” the eye.
  */
 private fun DrawScope.drawWeatherEyeReplacement(
     painter: Painter,
@@ -694,51 +696,20 @@ private fun DrawScope.drawWeatherEyeReplacement(
         style > 0.28f -> halfH * (1f + 0.2f * style.coerceAtMost(1f))
         else -> halfH.coerceAtLeast(w * 0.55f)
     }
-    val boxW = w * 2f
-    val boxH = h * 2f
-    val topLeft = Offset(center.x - w, center.y - h)
-    val capsule = Path().apply {
-        addRoundRect(
-            RoundRect(
-                left = topLeft.x,
-                top = topLeft.y,
-                right = topLeft.x + boxW,
-                bottom = topLeft.y + boxH,
-                cornerRadius = CornerRadius(w, w),
-            ),
-        )
-    }
-
-    // Soft fill so the glyph reads as eye material, not a sticker.
-    drawPath(path = capsule, color = tint.copy(alpha = 0.14f * alpha))
-    clipPath(capsule) {
-        // Icon fills the capsule (same outer size as the Immersive eye ring).
-        val iconPad = min(w, h) * 0.18f
-        val iw = (boxW - iconPad * 2f).coerceAtLeast(1f)
-        val ih = (boxH - iconPad * 2f).coerceAtLeast(1f)
-        // Keep square icon aspect centered in the morphing capsule.
-        val side = min(iw, ih)
-        translate(
-            left = center.x - side * 0.5f,
-            top = center.y - side * 0.5f,
-        ) {
-            with(painter) {
-                draw(
-                    size = Size(side, side),
-                    alpha = alpha,
-                    colorFilter = ColorFilter.tint(tint),
-                )
-            }
+    // Match Immersive eye outer bounds without any capsule/ring chrome.
+    val side = max(w * 2f, h * 2f).coerceAtLeast(1f)
+    translate(
+        left = center.x - side * 0.5f,
+        top = center.y - side * 0.5f,
+    ) {
+        with(painter) {
+            draw(
+                size = Size(side, side),
+                alpha = alpha,
+                colorFilter = ColorFilter.tint(tint),
+            )
         }
     }
-    val strokeW = min(w, h) * 0.42f
-    drawRoundRect(
-        color = tint.copy(alpha = 0.92f * alpha),
-        topLeft = topLeft,
-        size = Size(boxW, boxH),
-        cornerRadius = CornerRadius(w, w),
-        style = Stroke(width = strokeW, cap = StrokeCap.Round),
-    )
 }
 
 private fun DrawScope.drawFusionHead(
