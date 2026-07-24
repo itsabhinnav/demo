@@ -109,9 +109,11 @@ adb logcat -d -s AssistantFace:I | tail -n 3
 Settings.Global (survives process; observed live when app is up):
 
 ```bash
-adb shell settings put global design_assistant_face fusion
+adb shell settings put global design_assistant_face glow
 adb shell settings get global design_assistant_face
 ```
+
+Default when nothing is saved: **Immersive glow** (`glow`). Override anytime with the face tokens above.
 
 ## Other assistant surfaces
 

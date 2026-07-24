@@ -69,6 +69,6 @@ class AssistantFaceKindTest {
 
     @Test
     fun defaultIsFusion() {
-        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.Default)
+        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.Default)
     }
 }
