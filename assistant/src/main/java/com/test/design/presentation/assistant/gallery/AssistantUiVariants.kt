@@ -223,75 +223,75 @@ private fun FusionEyesFaceUi(mood: AssistantMood, prompt: String, modifier: Modi
     }
 }
 
-/** Weather-only dialogue for the Weather sink gallery style. */
+/** Weather-only dialogue for the Weather sink gallery style — paced like a real talk turn. */
 internal val WeatherSinkDialogueScript: List<DialogueBeat> = listOf(
     DialogueBeat(
         speaker = DialogueSpeaker.System,
         text = "Listening…",
         mood = AssistantMood.Listening,
-        holdMs = 1600,
+        holdMs = 2_200,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Will it snow tonight?",
         mood = AssistantMood.Listening,
-        holdMs = 2200,
+        holdMs = 3_200,
         contextGlyph = AssistantContextGlyph.WeatherSnow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Thinking through the overnight forecast…",
         mood = AssistantMood.Thinking,
-        holdMs = 2000,
+        holdMs = 4_000,
         contextGlyph = AssistantContextGlyph.WeatherCloudy,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Reading the radar along your route…",
         mood = AssistantMood.Reading,
-        holdMs = 2200,
+        holdMs = 3_600,
         contextGlyph = AssistantContextGlyph.WeatherCloudy,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Light snow after midnight — roads should stay clear until then.",
         mood = AssistantMood.Speaking,
-        holdMs = 3200,
+        holdMs = 5_400,
         contextGlyph = AssistantContextGlyph.WeatherSnow,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "And will it rain tomorrow?",
         mood = AssistantMood.Listening,
-        holdMs = 2000,
+        holdMs = 3_400,
         contextGlyph = AssistantContextGlyph.WeatherLightRain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "A soft drizzle around midday — nothing heavy.",
         mood = AssistantMood.Speaking,
-        holdMs = 2800,
+        holdMs = 4_600,
         contextGlyph = AssistantContextGlyph.WeatherLightRain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.User,
         text = "Any chance of a heavier downpour later?",
         mood = AssistantMood.Listening,
-        holdMs = 2200,
+        holdMs = 3_800,
         contextGlyph = AssistantContextGlyph.WeatherHeavyRain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Unlikely — staying light through the evening.",
         mood = AssistantMood.Speaking,
-        holdMs = 2800,
+        holdMs = 4_400,
         contextGlyph = AssistantContextGlyph.WeatherLightRain,
     ),
     DialogueBeat(
         speaker = DialogueSpeaker.Assistant,
         text = "Morning looks clearer — expect some sun after the clouds lift.",
         mood = AssistantMood.Speaking,
-        holdMs = 2800,
+        holdMs = 5_200,
         contextGlyph = AssistantContextGlyph.WeatherSunny,
     ),
 )
@@ -303,7 +303,15 @@ private fun WeatherSinkUi(modifier: Modifier) {
     val beat = script[beatIndex % script.size]
 
     LaunchedEffect(beatIndex) {
-        delay(script[beatIndex % script.size].holdMs)
+        val current = script[beatIndex % script.size]
+        delay(current.holdMs)
+        // Brief breath between turns so it feels like a real exchange.
+        val next = script[(beatIndex + 1) % script.size]
+        if (current.speaker != next.speaker) {
+            delay(550)
+        } else {
+            delay(280)
+        }
         beatIndex = (beatIndex + 1) % script.size
     }
 

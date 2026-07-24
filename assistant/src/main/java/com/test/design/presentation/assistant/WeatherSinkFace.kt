@@ -64,9 +64,13 @@ fun WeatherSinkFace(
     LaunchedEffect(contextGlyph) {
         showIcon = false
         if (contextGlyph == null) return@LaunchedEffect
+        // Settle on eyes first, then leisurely alternate so the swap reads clearly.
+        delay(1_800)
         while (true) {
-            delay(1_350)
-            showIcon = !showIcon
+            showIcon = true
+            delay(2_800)
+            showIcon = false
+            delay(2_800)
         }
     }
 
@@ -75,10 +79,10 @@ fun WeatherSinkFace(
         if (contextGlyph != null && showIcon) {
             iconAlpha.animateTo(
                 1f,
-                spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow),
+                tween(520, easing = FastOutSlowInEasing),
             )
         } else {
-            iconAlpha.animateTo(0f, tween(220, easing = FastOutSlowInEasing))
+            iconAlpha.animateTo(0f, tween(480, easing = FastOutSlowInEasing))
         }
     }
 
@@ -103,12 +107,13 @@ fun WeatherSinkFace(
                 contentDescription = contextGlyph.name,
                 tint = contextGlyph.tint(),
                 modifier = Modifier
-                    .fillMaxSize(0.34f)
+                    // Keep the glyph inside the visor band (~eye span).
+                    .fillMaxSize(0.22f)
                     .offset(y = (-2).dp)
                     .graphicsLayer {
                         val a = iconAlpha.value.coerceIn(0f, 1f)
                         alpha = a
-                        val s = 0.82f + 0.18f * a
+                        val s = 0.88f + 0.12f * a
                         scaleX = s
                         scaleY = s
                     },
