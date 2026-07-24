@@ -364,6 +364,7 @@ fun ImmersiveAssistantOverlay(
                 faceScale = faceScale.value,
                 faceAlpha = faceAlpha.value,
                 transcriptAlpha = transcriptAlpha.value,
+                faceSizeScale = 1.10f,
             )
         }
     }

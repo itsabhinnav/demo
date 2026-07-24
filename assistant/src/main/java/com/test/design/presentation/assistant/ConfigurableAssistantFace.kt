@@ -55,6 +55,16 @@ fun ConfigurableAssistantFace(
                 highContrast = highContrast,
                 gesture = gesture,
             )
+            AssistantFaceKind.ImmersiveHybrid -> ImmersiveHybridEyesFace(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+                gazeX = gazeX,
+                gazeY = gazeY,
+                mouthAmplitude = mouthAmplitude,
+                brandGlow = brandGlow,
+                highContrast = highContrast,
+                gesture = gesture,
+            )
             AssistantFaceKind.Eporo -> EporoAssistantFace(
                 mood = mood,
                 modifier = Modifier.fillMaxSize(),

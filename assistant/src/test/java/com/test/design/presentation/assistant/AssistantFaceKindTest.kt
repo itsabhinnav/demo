@@ -12,6 +12,7 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.None, AssistantFaceKind.parse("none"))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("eyes"))
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("glow"))
+        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.parse("hybrid"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporo"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("fusion"))
         assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("fusionglow"))
@@ -27,9 +28,10 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("immersive"))
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("aura"))
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("purple_eyes"))
+        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.parse("immersive_hybrid"))
+        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.parse("glow_hybrid"))
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("eporp"))
         assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("express"))
-        assertEquals(AssistantFaceKind.Fusion, AssistantFaceKind.parse("hybrid"))
         assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("fusion_glow"))
         assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("glow_fusion"))
         assertEquals(AssistantFaceKind.FusionEyes, AssistantFaceKind.parse("fusion_eyes"))
@@ -43,6 +45,7 @@ class AssistantFaceKindTest {
         assertEquals(AssistantFaceKind.Eporo, AssistantFaceKind.parse("  EPORO "))
         assertEquals(AssistantFaceKind.ImmersiveEyes, AssistantFaceKind.parse("Eyes"))
         assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.parse("Glow"))
+        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.parse("Hybrid"))
         assertEquals(AssistantFaceKind.FusionGlow, AssistantFaceKind.parse("FusionGlow"))
         assertEquals(AssistantFaceKind.FusionEyes, AssistantFaceKind.parse("FusionEyes"))
     }
@@ -61,6 +64,7 @@ class AssistantFaceKindTest {
         assertTrue(keys.contains("none"))
         assertTrue(keys.contains("eyes"))
         assertTrue(keys.contains("glow"))
+        assertTrue(keys.contains("hybrid"))
         assertTrue(keys.contains("eporo"))
         assertTrue(keys.contains("fusion"))
         assertTrue(keys.contains("fusionglow"))
@@ -68,7 +72,7 @@ class AssistantFaceKindTest {
     }
 
     @Test
-    fun defaultIsFusion() {
-        assertEquals(AssistantFaceKind.ImmersiveGlow, AssistantFaceKind.Default)
+    fun defaultIsImmersiveHybrid() {
+        assertEquals(AssistantFaceKind.ImmersiveHybrid, AssistantFaceKind.Default)
     }
 }

@@ -2,6 +2,7 @@ package com.test.design.presentation.assistant.gallery
 
 import com.test.design.assistant.api.AssistantContextGlyph
 import com.test.design.presentation.assistant.AssistantMood
+import com.test.design.presentation.assistant.usesImmersivePurpleGlow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -71,6 +71,7 @@ import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.WeatherSinkFace
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
+import com.test.design.presentation.assistant.usesImmersivePurpleGlow
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlinx.coroutines.delay
@@ -520,15 +521,6 @@ private fun ImmersiveGlowUi(mood: AssistantMood, prompt: String, modifier: Modif
 }
 
 /** Excited / Happy / Searching / Thinking → purple glow; other moods → pale Immersive eyes. */
-internal fun AssistantMood.usesImmersivePurpleGlow(): Boolean = when (this) {
-    AssistantMood.Excited,
-    AssistantMood.Happy,
-    AssistantMood.Searching,
-    AssistantMood.Thinking,
-    -> true
-    else -> false
-}
-
 @Composable
 private fun ImmersiveHybridUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
     val usePurpleGlow = mood.usesImmersivePurpleGlow()

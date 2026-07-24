@@ -27,6 +27,10 @@ enum class AssistantFaceKind(
         adbKey = "glow",
         label = "Immersive glow",
     ),
+    ImmersiveHybrid(
+        adbKey = "hybrid",
+        label = "Immersive hybrid",
+    ),
     Eporo(
         adbKey = "eporo",
         label = "EPORO",
@@ -54,7 +58,7 @@ enum class AssistantFaceKind(
     ;
 
     companion object {
-        val Default: AssistantFaceKind = ImmersiveGlow
+        val Default: AssistantFaceKind = ImmersiveHybrid
 
         /** Accepts canonical keys plus common aliases (`off`, `immersive`, `classic`, …). */
         fun parse(raw: String?): AssistantFaceKind? {
@@ -66,8 +70,9 @@ enum class AssistantFaceKind(
                 "off", "noface", "no_face", "hidden", "blank" -> None
                 "immersive", "immersive_eyes", "eye", "orb" -> ImmersiveEyes
                 "immersive_glow", "glow_eyes", "aura", "ring", "purple_eyes" -> ImmersiveGlow
+                "immersive_hybrid", "glow_hybrid", "hybrid_eyes", "eyes_hybrid" -> ImmersiveHybrid
                 "eporp", "robot" -> Eporo
-                "express", "hybrid", "eporo_immersive", "eporo_eyes" -> Fusion
+                "express", "eporo_immersive", "eporo_eyes" -> Fusion
                 "fusion_glow", "glow_fusion", "fusion_capsule", "capsule_fusion" -> FusionGlow
                 "fusion_eyes", "eyes_fusion", "fusion_immersive", "fusion_black" -> FusionEyes
                 "bugdroid", "android" -> Droid

@@ -60,9 +60,9 @@ adb shell am startservice \
 
 ## Swap face (live)
 
-Tokens: `none` | `eyes` | `glow` | `eporo` | `fusion` | `fusionglow` | `fusioneyes` | `droid` | `glyph`
+Tokens: `none` | `eyes` | `glow` | `hybrid` | `eporo` | `fusion` | `fusionglow` | `fusioneyes` | `droid` | `glyph`
 
-Aliases: `off`/`noface` → none · `immersive` → eyes · `aura`/`ring`/`purple_eyes` → glow · `eporp` → eporo · `express`/`hybrid` → fusion · `fusion_glow`/`glow_fusion` → fusionglow · `fusion_eyes`/`fusion_black` → fusioneyes · `classic` → glyph
+Aliases: `off`/`noface` → none · `immersive` → eyes · `aura`/`ring`/`purple_eyes` → glow · `immersive_hybrid`/`glow_hybrid` → hybrid · `eporp` → eporo · `express` → fusion · `fusion_glow`/`glow_fusion` → fusionglow · `fusion_eyes`/`fusion_black` → fusioneyes · `classic` → glyph
 
 ```bash
 # EPORO robot head
@@ -109,11 +109,11 @@ adb logcat -d -s AssistantFace:I | tail -n 3
 Settings.Global (survives process; observed live when app is up):
 
 ```bash
-adb shell settings put global design_assistant_face glow
+adb shell settings put global design_assistant_face hybrid
 adb shell settings get global design_assistant_face
 ```
 
-Default when nothing is saved: **Immersive glow** (`glow`). Override anytime with the face tokens above.
+Default when nothing is saved: **Immersive hybrid** (`hybrid`) — purple glow for Excited / Happy / Searching / Thinking, pale Immersive eyes otherwise. Override anytime with the face tokens above. Size matches Weather sink (~10% larger face).
 
 ## Other assistant surfaces
 

@@ -13,6 +13,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -783,6 +784,61 @@ fun ImmersiveGlowEyesFace(
         gesture = gesture,
         eyeGlow = eyeGlow,
     )
+}
+
+/** Excited / Happy / Searching / Thinking → purple glow rings; other moods → pale eyes. */
+fun AssistantMood.usesImmersivePurpleGlow(): Boolean = when (this) {
+    AssistantMood.Excited,
+    AssistantMood.Happy,
+    AssistantMood.Searching,
+    AssistantMood.Thinking,
+    -> true
+    else -> false
+}
+
+/**
+ * Mood-aware merge of Immersive glow + Immersive eyes (gallery Immersive hybrid).
+ */
+@Composable
+fun ImmersiveHybridEyesFace(
+    mood: AssistantMood,
+    modifier: Modifier = Modifier,
+    gazeX: Float? = null,
+    gazeY: Float? = null,
+    mouthAmplitude: Float? = null,
+    brandGlow: Color = EporoGlow,
+    highContrast: Boolean = false,
+    gesture: FaceGesture = FaceGesture.None,
+) {
+    androidx.compose.animation.Crossfade(
+        targetState = mood.usesImmersivePurpleGlow(),
+        modifier = modifier,
+        label = "immersive_hybrid_face",
+    ) { purple ->
+        if (purple) {
+            ImmersiveGlowEyesFace(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+                gazeX = gazeX,
+                gazeY = gazeY,
+                mouthAmplitude = mouthAmplitude,
+                brandGlow = brandGlow,
+                highContrast = highContrast,
+                gesture = gesture,
+            )
+        } else {
+            ImmersiveEyesFace(
+                mood = mood,
+                modifier = Modifier.fillMaxSize(),
+                gazeX = gazeX,
+                gazeY = gazeY,
+                mouthAmplitude = mouthAmplitude,
+                brandGlow = brandGlow,
+                highContrast = highContrast,
+                gesture = gesture,
+            )
+        }
+    }
 }
 
 private fun DrawScope.drawNomiGlyphMouth(
