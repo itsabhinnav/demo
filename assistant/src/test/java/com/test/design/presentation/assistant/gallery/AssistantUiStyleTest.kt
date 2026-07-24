@@ -1,7 +1,9 @@
 package com.test.design.presentation.assistant.gallery
 
 import com.test.design.assistant.api.AssistantContextGlyph
+import com.test.design.presentation.assistant.AssistantMood
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -67,5 +69,17 @@ class AssistantUiStyleTest {
                 it.contextGlyph == AssistantContextGlyph.WeatherLightRain
             },
         )
+    }
+
+    @Test
+    fun immersiveHybridUsesPurpleOnExpressiveMoods() {
+        assertTrue(AssistantMood.Excited.usesImmersivePurpleGlow())
+        assertTrue(AssistantMood.Happy.usesImmersivePurpleGlow())
+        assertTrue(AssistantMood.Searching.usesImmersivePurpleGlow())
+        assertTrue(AssistantMood.Thinking.usesImmersivePurpleGlow())
+        assertFalse(AssistantMood.Idle.usesImmersivePurpleGlow())
+        assertFalse(AssistantMood.Listening.usesImmersivePurpleGlow())
+        assertFalse(AssistantMood.Speaking.usesImmersivePurpleGlow())
+        assertFalse(AssistantMood.Sad.usesImmersivePurpleGlow())
     }
 }
