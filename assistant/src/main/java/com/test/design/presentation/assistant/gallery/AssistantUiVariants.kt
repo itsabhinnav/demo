@@ -65,13 +65,13 @@ import com.test.design.presentation.assistant.ImmersiveBackdrop
 import com.test.design.presentation.assistant.ImmersiveBorderGlow
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
+import com.test.design.presentation.assistant.ImmersiveHybridEyesFace
 import com.test.design.presentation.assistant.LiveInputText
 import com.test.design.presentation.assistant.ThinkingCloudOverlay
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.WeatherSinkFace
 import com.test.design.presentation.assistant.overlay.AssistantState
 import com.test.design.presentation.assistant.overlay.CarAssistantFace
-import com.test.design.presentation.assistant.usesImmersivePurpleGlow
 import kotlin.math.PI
 import kotlin.math.sin
 import kotlinx.coroutines.delay
@@ -523,7 +523,6 @@ private fun ImmersiveGlowUi(mood: AssistantMood, prompt: String, modifier: Modif
 /** Excited / Happy / Searching / Thinking → purple glow; other moods → pale Immersive eyes. */
 @Composable
 private fun ImmersiveHybridUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
-    val usePurpleGlow = mood.usesImmersivePurpleGlow()
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -539,22 +538,10 @@ private fun ImmersiveHybridUi(mood: AssistantMood, prompt: String, modifier: Mod
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            androidx.compose.animation.Crossfade(
-                targetState = usePurpleGlow,
-                label = "immersive_hybrid_glow",
-            ) { purple ->
-                if (purple) {
-                    ImmersiveGlowEyesFace(
-                        mood = mood,
-                        modifier = Modifier.size(228.dp),
-                    )
-                } else {
-                    ImmersiveEyesFace(
-                        mood = mood,
-                        modifier = Modifier.size(228.dp),
-                    )
-                }
-            }
+            ImmersiveHybridEyesFace(
+                mood = mood,
+                modifier = Modifier.size(228.dp),
+            )
             Spacer(Modifier.height(28.dp))
             LiveInputText(
                 text = prompt,

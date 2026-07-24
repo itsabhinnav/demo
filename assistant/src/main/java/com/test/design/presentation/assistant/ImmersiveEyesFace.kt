@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.graphics.shapes.Morph
 import kotlinx.coroutines.delay
@@ -446,12 +447,14 @@ fun ImmersiveEyesFace(
         // Feature scale only — no drawn shell / black disk.
         val faceR = side * 0.36f * breath
         val glyph = eyeFillForContrast(highContrast)
-        val eyeRing = when {
-            eyeGlow != null && highContrast -> eyeFillForContrast(true)
-            eyeGlow != null -> eyeGlow
-            else -> glyph
+        // [eyeGlow].alpha drives a continuous pale↔purple morph (Immersive hybrid).
+        val glowAmount = eyeGlow?.alpha?.coerceIn(0f, 1f) ?: 0f
+        val glowBase = when {
+            eyeGlow == null -> glyph
+            highContrast -> eyeFillForContrast(true)
+            else -> eyeGlow.copy(alpha = 1f)
         }
-        val glowEyes = eyeGlow != null
+        val eyeRing = lerp(glyph, glowBase, glowAmount)
         val glow = faceGlow.value.coerceIn(0f, 1.2f)
         val bobY = idleBob * faceR * 0.058f
         val swayX = idleSway * faceR * 0.02f
@@ -587,8 +590,8 @@ fun ImmersiveEyesFace(
 
                 // Keep capsule eyes for all moods (clamp out of arc/dash branches).
                 val capsuleStyle = eyeStyle.value.coerceIn(-0.2f, 0.25f)
-                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeRing, glowEyes)
-                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeRing, glowEyes)
+                drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeRing, glowStrength = glowAmount)
+                drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeRing, glowStrength = glowAmount)
 
                 val speaking = mouthAmplitude != null ||
                     mood == AssistantMood.Speaking ||
@@ -610,7 +613,7 @@ fun ImmersiveEyesFace(
     }
 }
 
-/** Immersive capsule eyes — set [glowRing] for EPORO purple bloom (Immersive glow / Fusion glow). */
+/** Immersive capsule eyes — [glowStrength] 0..1 morphs pale rings ↔ EPORO purple bloom. */
 internal fun DrawScope.drawNomiGlyphEye(
     center: Offset,
     width: Float,
@@ -618,10 +621,12 @@ internal fun DrawScope.drawNomiGlyphEye(
     style: Float,
     color: Color,
     glowRing: Boolean = false,
+    glowStrength: Float = if (glowRing) 1f else 0f,
 ) {
     val w = width.coerceAtLeast(1.5f)
     // Allow short capsules — do not force taller-than-wide.
     val h = height.coerceAtLeast(w * 0.55f)
+    val gs = glowStrength.coerceIn(0f, 1f)
     when {
         style > 0.28f -> {
             // Cute ^ happy arcs (icon-pack Nomi)
@@ -634,11 +639,11 @@ internal fun DrawScope.drawNomiGlyphEye(
                     center.y + h * 0.25f,
                 )
             }
-            if (glowRing) {
+            if (gs > 0.02f) {
                 drawIntoCanvas { canvas ->
                     val fw = Paint().asFrameworkPaint()
                     fw.isAntiAlias = true
-                    fw.color = color.copy(alpha = 0.4f).toArgb()
+                    fw.color = color.copy(alpha = 0.4f * gs).toArgb()
                     fw.maskFilter = BlurMaskFilter(w * 1.1f, BlurMaskFilter.Blur.NORMAL)
                     fw.strokeWidth = w * 1.45f
                     fw.strokeCap = android.graphics.Paint.Cap.ROUND
@@ -664,8 +669,8 @@ internal fun DrawScope.drawNomiGlyphEye(
             val flatten = (-style).coerceIn(0.25f, 1f)
             val dashW = w * (1.6f + 0.5f * flatten)
             val dashH = (h * (1f - 0.55f * flatten)).coerceAtLeast(w * 0.95f)
-            if (glowRing) {
-                val bloomArgb = color.copy(alpha = 0.4f).toArgb()
+            if (gs > 0.02f) {
+                val bloomArgb = color.copy(alpha = 0.4f * gs).toArgb()
                 drawIntoCanvas { canvas ->
                     val paint = Paint().asFrameworkPaint().apply {
                         isAntiAlias = true
@@ -691,8 +696,8 @@ internal fun DrawScope.drawNomiGlyphEye(
         else -> {
             // Hollow pill-in-pill — Immersive capsule shape; optional EPORO purple bloom.
             val bloomR = maxOf(w, h) * 1.85f
-            if (glowRing) {
-                val bloomArgb = color.copy(alpha = 0.45f).toArgb()
+            if (gs > 0.02f) {
+                val bloomArgb = color.copy(alpha = 0.45f * gs).toArgb()
                 drawIntoCanvas { canvas ->
                     val paint = Paint().asFrameworkPaint().apply {
                         isAntiAlias = true
@@ -709,7 +714,7 @@ internal fun DrawScope.drawNomiGlyphEye(
                 }
                 drawOval(
                     brush = Brush.radialGradient(
-                        colors = listOf(color.copy(alpha = 0.35f), Color.Transparent),
+                        colors = listOf(color.copy(alpha = 0.35f * gs), Color.Transparent),
                         center = center,
                         radius = bloomR,
                     ),
@@ -748,7 +753,7 @@ internal fun DrawScope.drawNomiGlyphEye(
             )
             // Specular on the lower ring arc.
             drawRoundRect(
-                color = Color.White.copy(alpha = if (glowRing) 0.9f else 0.55f),
+                color = Color.White.copy(alpha = 0.55f + 0.35f * gs),
                 topLeft = Offset(center.x - w * 0.18f, center.y + h * 0.52f),
                 size = Size(w * 0.36f, h * 0.14f),
                 cornerRadius = CornerRadius(w * 0.2f, w * 0.2f),
@@ -797,7 +802,9 @@ fun AssistantMood.usesImmersivePurpleGlow(): Boolean = when (this) {
 }
 
 /**
- * Mood-aware merge of Immersive glow + Immersive eyes (gallery Immersive hybrid).
+ * Mood-aware merge of Immersive glow + Immersive eyes.
+ * One face instance — purple bloom strength and mood poses morph continuously
+ * so any conversation state can transition smoothly into any other.
  */
 @Composable
 fun ImmersiveHybridEyesFace(
@@ -810,35 +817,31 @@ fun ImmersiveHybridEyesFace(
     highContrast: Boolean = false,
     gesture: FaceGesture = FaceGesture.None,
 ) {
-    androidx.compose.animation.Crossfade(
-        targetState = mood.usesImmersivePurpleGlow(),
-        modifier = modifier,
-        label = "immersive_hybrid_face",
-    ) { purple ->
-        if (purple) {
-            ImmersiveGlowEyesFace(
-                mood = mood,
-                modifier = Modifier.fillMaxSize(),
-                gazeX = gazeX,
-                gazeY = gazeY,
-                mouthAmplitude = mouthAmplitude,
-                brandGlow = brandGlow,
-                highContrast = highContrast,
-                gesture = gesture,
-            )
-        } else {
-            ImmersiveEyesFace(
-                mood = mood,
-                modifier = Modifier.fillMaxSize(),
-                gazeX = gazeX,
-                gazeY = gazeY,
-                mouthAmplitude = mouthAmplitude,
-                brandGlow = brandGlow,
-                highContrast = highContrast,
-                gesture = gesture,
-            )
-        }
+    val glowStrength = remember {
+        Animatable(if (mood.usesImmersivePurpleGlow()) 1f else 0f)
     }
+    LaunchedEffect(mood) {
+        glowStrength.animateTo(
+            targetValue = if (mood.usesImmersivePurpleGlow()) 1f else 0f,
+            animationSpec = spring(
+                dampingRatio = 0.92f,
+                stiffness = 90f,
+            ),
+        )
+    }
+
+    ImmersiveEyesFace(
+        mood = mood,
+        modifier = modifier,
+        gazeX = gazeX,
+        gazeY = gazeY,
+        mouthAmplitude = mouthAmplitude,
+        brandGlow = brandGlow,
+        highContrast = highContrast,
+        gesture = gesture,
+        // Always pass a glow color; alpha is the morph amount (0 = pale, 1 = purple).
+        eyeGlow = EporoGlow.copy(alpha = glowStrength.value.coerceIn(0f, 1f)),
+    )
 }
 
 private fun DrawScope.drawNomiGlyphMouth(
