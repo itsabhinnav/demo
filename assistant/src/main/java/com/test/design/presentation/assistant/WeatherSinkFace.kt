@@ -21,8 +21,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.test.design.assistant.api.AssistantContextGlyph
@@ -45,8 +42,8 @@ private val ThinkCloudStroke = Color(0xFFF5F7FF)
 private val ThinkCloudDot = Color(0xFFB39DDB)
 
 /**
- * Weather sink face: Fusion Eyes with weather icon swapping in place of the eyes,
- * plus a thinking cloud that pops in/out at the top-right of the shell.
+ * Weather sink face: Fusion Eyes with weather glyphs rendered *inside* the visor
+ * as a realtime HUD (eyes ↔ icon crossfade), plus a thinking cloud at top-right.
  */
 @Composable
 fun WeatherSinkFace(
@@ -77,16 +74,11 @@ fun WeatherSinkFace(
     val iconAlpha = remember { Animatable(0f) }
     LaunchedEffect(showIcon, contextGlyph) {
         if (contextGlyph != null && showIcon) {
-            iconAlpha.animateTo(
-                1f,
-                tween(520, easing = FastOutSlowInEasing),
-            )
+            iconAlpha.animateTo(1f, tween(520, easing = FastOutSlowInEasing))
         } else {
             iconAlpha.animateTo(0f, tween(480, easing = FastOutSlowInEasing))
         }
     }
-
-    val hideEyes = contextGlyph != null && showIcon
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         FusionEyesAssistantFace(
@@ -98,27 +90,10 @@ fun WeatherSinkFace(
             brandGlow = brandGlow,
             highContrast = highContrast,
             gesture = gesture,
-            hideEyes = hideEyes,
+            visorDisplayGlyph = contextGlyph?.imageVector(),
+            visorDisplayAlpha = if (contextGlyph != null) iconAlpha.value else 0f,
+            visorDisplayTint = contextGlyph?.tint(),
         )
-
-        if (contextGlyph != null) {
-            Icon(
-                imageVector = contextGlyph.imageVector(),
-                contentDescription = contextGlyph.name,
-                tint = contextGlyph.tint(),
-                modifier = Modifier
-                    // Keep the glyph inside the visor band (~eye span).
-                    .fillMaxSize(0.22f)
-                    .offset(y = (-2).dp)
-                    .graphicsLayer {
-                        val a = iconAlpha.value.coerceIn(0f, 1f)
-                        alpha = a
-                        val s = 0.88f + 0.12f * a
-                        scaleX = s
-                        scaleY = s
-                    },
-            )
-        }
 
         WeatherSinkThinkingCloud(
             visible = mood == AssistantMood.Thinking,
@@ -206,7 +181,6 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawWeatherThoughtC
     drawCircle(stroke, s * 0.28f, c3, style = Stroke(1.5f))
     drawCircle(stroke, s * 0.24f, c4, style = Stroke(1.5f))
 
-    // Trail toward face (bottom-left)
     drawCircle(fill, s * 0.08f, Offset(anchor.x - s * 0.42f, anchor.y + s * 0.32f))
     drawCircle(fill, s * 0.05f, Offset(anchor.x - s * 0.55f, anchor.y + s * 0.48f))
 

@@ -25,11 +25,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -37,6 +39,8 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.graphics.shapes.Morph
 import kotlin.math.PI
 import kotlin.math.abs
@@ -250,9 +254,15 @@ fun FusionAssistantFace(
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
     eyeMode: FusionEyeMode = FusionEyeMode.OvalGlow,
-    /** When true, skip drawing eyes (e.g. Weather sink icon swap). */
-    hideEyes: Boolean = false,
+    /**
+     * Optional Material glyph drawn as a visor HUD (Weather sink).
+     * Crossfades with the eyes via [visorDisplayAlpha] (0 = eyes, 1 = glyph).
+     */
+    visorDisplayGlyph: ImageVector? = null,
+    visorDisplayAlpha: Float = 0f,
+    visorDisplayTint: Color? = null,
 ) {
+    val visorPainter = visorDisplayGlyph?.let { rememberVectorPainter(it) }
     val target = mood.toFusionEyePose()
     val shellMorph = remember {
         ExpressiveShellMorphState(
@@ -543,6 +553,8 @@ fun FusionAssistantFace(
                     val left = Offset(w * (0.50f - gap) + gaze, eyeY)
                     val right = Offset(w * (0.50f + gap) + gaze, eyeY)
                     val style = eyeStyle.value
+                    val glyphA = visorDisplayAlpha.coerceIn(0f, 1f)
+                    val eyeReveal = (1f - glyphA).coerceIn(0f, 1f)
 
                     if (blush.value > 0.04f) {
                         val blushA = 0.22f * blush.value
@@ -559,7 +571,8 @@ fun FusionAssistantFace(
                         )
                     }
 
-                    if (!hideEyes) {
+                    if (eyeReveal > 0.02f) {
+                        val fadedEye = eyeTint.copy(alpha = eyeTint.alpha * eyeReveal)
                         if (eyeMode == FusionEyeMode.ImmersiveGlow || eyeMode == FusionEyeMode.Immersive) {
                             // Immersive capsule proportions — purple bloom or pale black-face glyphs.
                             val faceR = side * 0.42f * pulse
@@ -568,8 +581,8 @@ fun FusionAssistantFace(
                                 .coerceAtMost(faceR * 0.26f)
                             val capsuleStyle = style.coerceIn(-0.2f, 0.25f)
                             val glowRing = eyeMode == FusionEyeMode.ImmersiveGlow
-                            drawNomiGlyphEye(left, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
-                            drawNomiGlyphEye(right, barW, barH, capsuleStyle, eyeTint, glowRing = glowRing)
+                            drawNomiGlyphEye(left, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
+                            drawNomiGlyphEye(right, barW, barH, capsuleStyle, fadedEye, glowRing = glowRing)
                         } else {
                             val baseR = side * 0.082f * pulse
                             val rx = baseR * eyeWidth.value.coerceIn(0.75f, 1.45f)
@@ -579,7 +592,7 @@ fun FusionAssistantFace(
                                 center = left,
                                 radiusX = rx,
                                 radiusY = ry,
-                                glow = eyeTint,
+                                glow = fadedEye,
                                 open = blinkOpen,
                                 style = style,
                             )
@@ -587,10 +600,44 @@ fun FusionAssistantFace(
                                 center = right,
                                 radiusX = rx,
                                 radiusY = ry,
-                                glow = eyeTint,
+                                glow = fadedEye,
                                 open = blinkOpen,
                                 style = style,
                             )
+                        }
+                    }
+
+                    // Weather / context glyph as in-visor HUD — clipped + centered in the glass.
+                    if (visorPainter != null && glyphA > 0.02f) {
+                        val tint = visorDisplayTint ?: eyeTint
+                        val displayCenter = Offset(cx + gaze * 0.35f, h * 0.50f)
+                        val iconSide = side * 0.148f
+                        clipPath(fusionVisorPath(w, h)) {
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        tint.copy(alpha = 0.28f * glyphA),
+                                        tint.copy(alpha = 0.06f * glyphA),
+                                        Color.Transparent,
+                                    ),
+                                    center = displayCenter,
+                                    radius = iconSide * 1.15f,
+                                ),
+                                radius = iconSide * 1.15f,
+                                center = displayCenter,
+                            )
+                            translate(
+                                left = displayCenter.x - iconSide * 0.5f,
+                                top = displayCenter.y - iconSide * 0.5f,
+                            ) {
+                                with(visorPainter) {
+                                    draw(
+                                        size = Size(iconSide, iconSide),
+                                        alpha = glyphA,
+                                        colorFilter = ColorFilter.tint(tint),
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -649,18 +696,20 @@ private fun DrawScope.drawFusionHead(
     )
 }
 
+private fun fusionVisorPath(w: Float, h: Float): Path = Path().apply {
+    moveTo(w * 0.18f, h * 0.34f)
+    cubicTo(w * 0.26f, h * 0.22f, w * 0.74f, h * 0.22f, w * 0.82f, h * 0.34f)
+    cubicTo(w * 0.88f, h * 0.44f, w * 0.86f, h * 0.62f, w * 0.76f, h * 0.68f)
+    cubicTo(w * 0.66f, h * 0.73f, w * 0.58f, h * 0.76f, w * 0.50f, h * 0.76f)
+    cubicTo(w * 0.42f, h * 0.76f, w * 0.34f, h * 0.73f, w * 0.24f, h * 0.68f)
+    cubicTo(w * 0.14f, h * 0.62f, w * 0.12f, h * 0.44f, w * 0.18f, h * 0.34f)
+    close()
+}
+
 private fun DrawScope.drawFusionVisor(visorColor: Color) {
     val w = size.width
     val h = size.height
-    val p = Path().apply {
-        moveTo(w * 0.18f, h * 0.34f)
-        cubicTo(w * 0.26f, h * 0.22f, w * 0.74f, h * 0.22f, w * 0.82f, h * 0.34f)
-        cubicTo(w * 0.88f, h * 0.44f, w * 0.86f, h * 0.62f, w * 0.76f, h * 0.68f)
-        cubicTo(w * 0.66f, h * 0.73f, w * 0.58f, h * 0.76f, w * 0.50f, h * 0.76f)
-        cubicTo(w * 0.42f, h * 0.76f, w * 0.34f, h * 0.73f, w * 0.24f, h * 0.68f)
-        cubicTo(w * 0.14f, h * 0.62f, w * 0.12f, h * 0.44f, w * 0.18f, h * 0.34f)
-        close()
-    }
+    val p = fusionVisorPath(w, h)
     drawPath(path = p, color = visorColor)
     drawPath(
         path = p,
@@ -896,7 +945,9 @@ fun FusionEyesAssistantFace(
     shellColor: Color = EporoShell,
     visorColor: Color = EporoVisor,
     glowColor: Color = EporoGlow,
-    hideEyes: Boolean = false,
+    visorDisplayGlyph: ImageVector? = null,
+    visorDisplayAlpha: Float = 0f,
+    visorDisplayTint: Color? = null,
 ) {
     FusionAssistantFace(
         mood = mood,
@@ -911,6 +962,8 @@ fun FusionEyesAssistantFace(
         visorColor = visorColor,
         glowColor = glowColor,
         eyeMode = FusionEyeMode.Immersive,
-        hideEyes = hideEyes,
+        visorDisplayGlyph = visorDisplayGlyph,
+        visorDisplayAlpha = visorDisplayAlpha,
+        visorDisplayTint = visorDisplayTint,
     )
 }
