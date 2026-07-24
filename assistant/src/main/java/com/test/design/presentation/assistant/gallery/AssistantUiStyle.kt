@@ -59,6 +59,10 @@ enum class AssistantUiStyle(
         title = "Immersive glow",
         blurb = "Immersive face · EPORO purple glow rings",
     ),
+    ImmersiveHybrid(
+        title = "Immersive hybrid",
+        blurb = "Purple glow on excited/happy/search/think · pale eyes otherwise",
+    ),
     DroidFace(
         title = "Droid face",
         blurb = "Single Bugdroid · morphs through all glyphs",

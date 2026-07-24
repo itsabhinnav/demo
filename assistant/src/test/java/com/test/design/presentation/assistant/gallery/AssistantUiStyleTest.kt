@@ -29,6 +29,7 @@ class AssistantUiStyleTest {
         assertTrue(titles.contains("Ambient pill"))
         assertTrue(titles.contains("Immersive eyes"))
         assertTrue(titles.contains("Immersive glow"))
+        assertTrue(titles.contains("Immersive hybrid"))
         assertTrue(titles.contains("Droid face"))
         assertTrue(titles.contains("EPORO"))
         assertTrue(titles.contains("Fusion"))

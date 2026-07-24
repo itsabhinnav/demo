@@ -100,6 +100,7 @@ fun AssistantUiVariant(
             AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, Modifier.fillMaxSize())
             AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, Modifier.fillMaxSize())
             AssistantUiStyle.ImmersiveGlow -> ImmersiveGlowUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.ImmersiveHybrid -> ImmersiveHybridUi(mood, prompt, Modifier.fillMaxSize())
             AssistantUiStyle.DroidFace -> DroidFaceUi(mood, Modifier.fillMaxSize())
             AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, Modifier.fillMaxSize())
             AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, Modifier.fillMaxSize())
@@ -505,6 +506,63 @@ private fun ImmersiveGlowUi(mood: AssistantMood, prompt: String, modifier: Modif
                 mood = mood,
                 modifier = Modifier.size(228.dp),
             )
+            Spacer(Modifier.height(28.dp))
+            LiveInputText(
+                text = prompt,
+                color = Color(0xFFF8F9FA),
+                live = mood == AssistantMood.Listening,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+        }
+    }
+}
+
+/** Excited / Happy / Searching / Thinking → purple glow; other moods → pale Immersive eyes. */
+internal fun AssistantMood.usesImmersivePurpleGlow(): Boolean = when (this) {
+    AssistantMood.Excited,
+    AssistantMood.Happy,
+    AssistantMood.Searching,
+    AssistantMood.Thinking,
+    -> true
+    else -> false
+}
+
+@Composable
+private fun ImmersiveHybridUi(mood: AssistantMood, prompt: String, modifier: Modifier) {
+    val usePurpleGlow = mood.usesImmersivePurpleGlow()
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF101820),
+                        Color(0xFF0A0C10),
+                        Color(0xFF050608),
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            androidx.compose.animation.Crossfade(
+                targetState = usePurpleGlow,
+                label = "immersive_hybrid_glow",
+            ) { purple ->
+                if (purple) {
+                    ImmersiveGlowEyesFace(
+                        mood = mood,
+                        modifier = Modifier.size(228.dp),
+                    )
+                } else {
+                    ImmersiveEyesFace(
+                        mood = mood,
+                        modifier = Modifier.size(228.dp),
+                    )
+                }
+            }
             Spacer(Modifier.height(28.dp))
             LiveInputText(
                 text = prompt,
