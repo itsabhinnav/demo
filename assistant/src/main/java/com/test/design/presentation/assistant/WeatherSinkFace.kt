@@ -42,8 +42,8 @@ private val ThinkCloudStroke = Color(0xFFF5F7FF)
 private val ThinkCloudDot = Color(0xFFB39DDB)
 
 /**
- * Weather sink face: Fusion Eyes with weather glyphs rendered *inside* the visor
- * as a realtime HUD (eyes ↔ icon crossfade), plus a thinking cloud at top-right.
+ * Weather sink face: Fusion Eyes with weather glyphs drawn in the eye slots
+ * (same gaze/tilt motion as the face), plus a thinking cloud at top-right.
  */
 @Composable
 fun WeatherSinkFace(
@@ -61,22 +61,19 @@ fun WeatherSinkFace(
     LaunchedEffect(contextGlyph) {
         showIcon = false
         if (contextGlyph == null) return@LaunchedEffect
-        // Settle on eyes first, then leisurely alternate so the swap reads clearly.
-        delay(1_800)
-        while (true) {
-            showIcon = true
-            delay(2_800)
-            showIcon = false
-            delay(2_800)
-        }
+        // One brief icon reveal per weather topic, then settle back on eyes.
+        delay(2_800)
+        showIcon = true
+        delay(2_600)
+        showIcon = false
     }
 
     val iconAlpha = remember { Animatable(0f) }
     LaunchedEffect(showIcon, contextGlyph) {
         if (contextGlyph != null && showIcon) {
-            iconAlpha.animateTo(1f, tween(520, easing = FastOutSlowInEasing))
+            iconAlpha.animateTo(1f, tween(640, easing = FastOutSlowInEasing))
         } else {
-            iconAlpha.animateTo(0f, tween(480, easing = FastOutSlowInEasing))
+            iconAlpha.animateTo(0f, tween(560, easing = FastOutSlowInEasing))
         }
     }
 

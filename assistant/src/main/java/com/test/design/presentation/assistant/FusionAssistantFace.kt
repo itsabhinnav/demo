@@ -607,28 +607,14 @@ fun FusionAssistantFace(
                         }
                     }
 
-                    // Weather / context glyph as in-visor HUD — clipped + centered in the glass.
+                    // Weather glyph occupies the eye slots so it rides gaze/tilt with the face.
                     if (visorPainter != null && glyphA > 0.02f) {
                         val tint = visorDisplayTint ?: eyeTint
-                        val displayCenter = Offset(cx + gaze * 0.35f, h * 0.50f)
-                        val iconSide = side * 0.148f
-                        clipPath(fusionVisorPath(w, h)) {
-                            drawCircle(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        tint.copy(alpha = 0.28f * glyphA),
-                                        tint.copy(alpha = 0.06f * glyphA),
-                                        Color.Transparent,
-                                    ),
-                                    center = displayCenter,
-                                    radius = iconSide * 1.15f,
-                                ),
-                                radius = iconSide * 1.15f,
-                                center = displayCenter,
-                            )
+                        val iconSide = side * 0.092f * pulse
+                        listOf(left, right).forEach { eyeCenter ->
                             translate(
-                                left = displayCenter.x - iconSide * 0.5f,
-                                top = displayCenter.y - iconSide * 0.5f,
+                                left = eyeCenter.x - iconSide * 0.5f,
+                                top = eyeCenter.y - iconSide * 0.5f,
                             ) {
                                 with(visorPainter) {
                                     draw(
