@@ -42,8 +42,8 @@ private val ThinkCloudStroke = Color(0xFFF5F7FF)
 private val ThinkCloudDot = Color(0xFFB39DDB)
 
 /**
- * Weather sink face: Fusion Eyes with weather glyphs drawn in the eye slots
- * (same gaze/tilt motion as the face), plus a thinking cloud at top-right.
+ * Weather sink face: weather glyphs fully replace both eyes (same capsule size + morph),
+ * plus a thinking cloud at top-right.
  */
 @Composable
 fun WeatherSinkFace(
