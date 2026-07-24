@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -65,6 +66,7 @@ import com.test.design.presentation.assistant.ImmersiveBorderGlow
 import com.test.design.presentation.assistant.ImmersiveEyesFace
 import com.test.design.presentation.assistant.ImmersiveGlowEyesFace
 import com.test.design.presentation.assistant.LiveInputText
+import com.test.design.presentation.assistant.ThinkingCloudOverlay
 import com.test.design.presentation.assistant.VoiceWaveform
 import com.test.design.presentation.assistant.WeatherSinkFace
 import com.test.design.presentation.assistant.overlay.AssistantState
@@ -83,26 +85,38 @@ fun AssistantUiVariant(
     modifier: Modifier = Modifier,
     prompt: String = "How can I help?",
 ) {
-    when (style) {
-        AssistantUiStyle.VoicePlate -> VoicePlateUi(mood, prompt, modifier)
-        AssistantUiStyle.FaceOnly -> FaceOnlyUi(mood, modifier)
-        AssistantUiStyle.WaveformCenter -> WaveformCenterUi(mood, modifier)
-        AssistantUiStyle.OrbGlow -> OrbGlowUi(mood, modifier)
-        AssistantUiStyle.CapsuleFace -> CapsuleFaceUi(mood, modifier)
-        AssistantUiStyle.SideRail -> SideRailUi(mood, prompt, modifier)
-        AssistantUiStyle.EqualizerBars -> EqualizerBarsUi(mood, modifier)
-        AssistantUiStyle.ListeningRings -> ListeningRingsUi(mood, modifier)
-        AssistantUiStyle.CornerBubble -> CornerBubbleUi(mood, prompt, modifier)
-        AssistantUiStyle.WaveFaceCombo -> WaveFaceComboUi(mood, prompt, modifier)
-        AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, modifier)
-        AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, modifier)
-        AssistantUiStyle.ImmersiveGlow -> ImmersiveGlowUi(mood, prompt, modifier)
-        AssistantUiStyle.DroidFace -> DroidFaceUi(mood, modifier)
-        AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, modifier)
-        AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, modifier)
-        AssistantUiStyle.FusionGlowFace -> FusionGlowFaceUi(mood, prompt, modifier)
-        AssistantUiStyle.FusionEyesFace -> FusionEyesFaceUi(mood, prompt, modifier)
-        AssistantUiStyle.WeatherSink -> WeatherSinkUi(modifier)
+    Box(modifier = modifier) {
+        when (style) {
+            AssistantUiStyle.VoicePlate -> VoicePlateUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.FaceOnly -> FaceOnlyUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.WaveformCenter -> WaveformCenterUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.OrbGlow -> OrbGlowUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.CapsuleFace -> CapsuleFaceUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.SideRail -> SideRailUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.EqualizerBars -> EqualizerBarsUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.ListeningRings -> ListeningRingsUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.CornerBubble -> CornerBubbleUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.WaveFaceCombo -> WaveFaceComboUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.AmbientPill -> AmbientPillUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.ImmersiveEyes -> ImmersiveEyesUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.ImmersiveGlow -> ImmersiveGlowUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.DroidFace -> DroidFaceUi(mood, Modifier.fillMaxSize())
+            AssistantUiStyle.EporoFace -> EporoFaceUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.FusionFace -> FusionFaceUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.FusionGlowFace -> FusionGlowFaceUi(mood, prompt, Modifier.fillMaxSize())
+            AssistantUiStyle.FusionEyesFace -> FusionEyesFaceUi(mood, prompt, Modifier.fillMaxSize())
+            // Weather sink drives its own beat mood + face-local thinking cloud.
+            AssistantUiStyle.WeatherSink -> WeatherSinkUi(Modifier.fillMaxSize())
+        }
+        if (style != AssistantUiStyle.WeatherSink) {
+            ThinkingCloudOverlay(
+                visible = mood == AssistantMood.Thinking,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .offset(x = 96.dp, y = (-72).dp)
+                    .size(88.dp),
+            )
+        }
     }
 }
 
