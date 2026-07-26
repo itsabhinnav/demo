@@ -66,7 +66,8 @@ import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
 import com.test.design.presentation.ivi.navigation.NavigationUiState
-import com.test.design.presentation.ivi.navigation.components.DrivingMapBackdrop
+import com.test.design.presentation.ivi.navigation.components.DefaultMapCenter
+import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
 import com.test.design.presentation.ivi.navigation.components.mapChromeLayer
 import com.test.design.presentation.ivi.vehicle.VehicleUiState
 import com.test.design.theme.CarDesignTokens
@@ -113,9 +114,9 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     onOpenWidgetDashboard: (() -> Unit)? = null,
-    @Suppress("UNUSED_PARAMETER") mapCenter: GeoPoint? = null,
-    @Suppress("UNUSED_PARAMETER") initialMapZoom: Double = 14.5,
-    @Suppress("UNUSED_PARAMETER") showMapRoute: Boolean = false,
+    mapCenter: GeoPoint? = null,
+    initialMapZoom: Double = 14.5,
+    showMapRoute: Boolean = false,
     @Suppress("UNUSED_PARAMETER") onOpenMain: (() -> Unit)? = null,
 ) {
     val widgetsReveal = rememberWidgetsReveal(initial = 1f)
@@ -124,8 +125,15 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     val cluster = remember(drivingUx) { ClusterUiState.fromDrivingUx(drivingUx) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // Compose-only map — OsmDroid AndroidView paints above siblings and blacked out launch.
-        DrivingMapBackdrop(modifier = Modifier.fillMaxSize())
+        // Map stays full-bleed; SafeBounds / system bars pad overlays only.
+        // mapChromeLayer() keeps Compose chrome above the OsmDroid AndroidView.
+        OsmMapBackground(
+            modifier = Modifier.fillMaxSize(),
+            center = mapCenter ?: DefaultMapCenter,
+            showRoute = showMapRoute,
+            interactive = true,
+            zoom = initialMapZoom,
+        )
 
         BoxWithConstraints(
             modifier = Modifier

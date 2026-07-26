@@ -62,12 +62,12 @@ private val CartoDarkTiles: OnlineTileSourceBase = object : XYTileSource(
     }
 }
 
-/** Prefer [DrivingMapBackdrop] for in-Compose chrome. Use this only when MapView can own the window. */
+/** Forces Compose chrome into its own layer so it stays above the OsmDroid [MapView]. */
 fun Modifier.mapChromeLayer(): Modifier = graphicsLayer { alpha = 0.99f }
 
 /**
- * OsmDroid map. Prefer [DrivingMapBackdrop] under Compose chrome — AndroidView paints above
- * Compose siblings and previously blacked out the AAOS launch buffer.
+ * OsmDroid OpenStreetMap background (Carto dark tiles) with optional demo route.
+ * Pair overlay chrome with [mapChromeLayer] so Compose siblings draw above this AndroidView.
  */
 @Composable
 fun OsmMapBackground(
