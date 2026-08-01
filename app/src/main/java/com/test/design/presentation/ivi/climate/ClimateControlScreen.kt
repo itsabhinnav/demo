@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -54,7 +57,7 @@ import com.test.design.theme.carTouchTarget
 import com.test.design.theme.rememberClimateDialShape
 import com.test.design.theme.temperatureToFraction
 import com.test.design.theme.zoneCoolIntensity
-import androidx.compose.foundation.layout.fillMaxHeight
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.ClimateControlScreen(
@@ -149,8 +152,17 @@ fun SharedTransitionScope.ClimateControlScreen(
                         .padding(CarDesignTokens.ContentPadding),
                 ) {
                     AdaptiveLayout(modifier = Modifier.fillMaxSize()) { layout ->
+                        val scrollPortrait = !layout.useSideBySide
                         Column(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (scrollPortrait) {
+                                        Modifier.verticalScroll(rememberScrollState())
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
                             verticalArrangement = Arrangement.spacedBy(20.dp),
                         ) {
                             WidgetScreenHeader(
@@ -200,8 +212,15 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 onEvent = onEvent,
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth(),
+                                    .then(
+                                        if (scrollPortrait) {
+                                            Modifier.fillMaxWidth()
+                                        } else {
+                                            Modifier
+                                                .weight(1f)
+                                                .fillMaxWidth()
+                                        },
+                                    ),
                             )
 
                             ClimateAirBand(
@@ -319,23 +338,17 @@ private fun SharedTransitionScope.DualZoneTemperatureBand(
         }
     } else {
         Column(
-            modifier = modifier,
+            modifier = modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(CarDesignTokens.TouchTargetSpacing),
         ) {
             driverDial(
                 widgetContentSharedElement(
                     widget = DashboardWidget.Climate,
                     animatedVisibilityScope = animatedVisibilityScope,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ),
             )
-            passengerDial(
-                Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            )
+            passengerDial(Modifier.fillMaxWidth())
         }
     }
 }
