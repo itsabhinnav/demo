@@ -15,7 +15,7 @@ import com.test.design.presentation.ivi.media.MediaPlayerScreen
 import com.test.design.presentation.ivi.media.MediaViewModel
 
 /** Standalone full media screen — launch via [ACTION_OPEN_MEDIA] or component name. */
-class MediaPanelActivity : GlanceableActivity() {
+class MediaPanelActivity : StandalonePanelActivity() {
 
     private val mediaViewModel: MediaViewModel by viewModels()
 
@@ -33,7 +33,7 @@ class MediaPanelActivity : GlanceableActivity() {
                     MediaPlayerScreen(
                         uiState = mediaState,
                         onEvent = mediaViewModel::onEvent,
-                        onBack = { finish() },
+                        onBack = ::navigateHomeAndFinish,
                         animatedVisibilityScope = this,
                         modifier = Modifier.fillMaxSize(),
                     )

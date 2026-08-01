@@ -3,6 +3,8 @@
 Standalone full-screen activities for Music (Media), Climate, and Vehicle info.
 Car assistants can open the same screens with matching intent actions.
 
+**Back** (system or in-UI) always returns to `MainActivity` driving home — same as map.
+
 ## Prerequisites
 
 ```bash

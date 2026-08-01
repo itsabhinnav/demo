@@ -15,7 +15,7 @@ import com.test.design.presentation.ivi.vehicle.VehicleScreen
 import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 
 /** Standalone full vehicle info screen — launch via [ACTION_OPEN_VEHICLE] or component name. */
-class VehiclePanelActivity : GlanceableActivity() {
+class VehiclePanelActivity : StandalonePanelActivity() {
 
     private val vehicleViewModel: VehicleViewModel by viewModels()
 
@@ -33,7 +33,7 @@ class VehiclePanelActivity : GlanceableActivity() {
                     VehicleScreen(
                         uiState = vehicleState,
                         onEvent = vehicleViewModel::onEvent,
-                        onBack = { finish() },
+                        onBack = ::navigateHomeAndFinish,
                         animatedVisibilityScope = this,
                         modifier = Modifier.fillMaxSize(),
                     )
