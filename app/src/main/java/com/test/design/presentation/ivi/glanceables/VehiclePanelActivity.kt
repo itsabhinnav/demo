@@ -11,18 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.test.design.presentation.ivi.climate.ClimateControlScreen
-import com.test.design.presentation.ivi.climate.ClimateViewModel
+import com.test.design.presentation.ivi.vehicle.VehicleScreen
+import com.test.design.presentation.ivi.vehicle.VehicleViewModel
 
-/** Standalone full climate screen — launch via [ACTION_OPEN_CLIMATE] or component name. */
-class ClimatePanelActivity : GlanceableActivity() {
+/** Standalone full vehicle info screen — launch via [ACTION_OPEN_VEHICLE] or component name. */
+class VehiclePanelActivity : GlanceableActivity() {
 
-    private val climateViewModel: ClimateViewModel by viewModels()
+    private val vehicleViewModel: VehicleViewModel by viewModels()
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     @Composable
     override fun GlanceContent() {
-        val climateState by climateViewModel.state.collectAsStateWithLifecycle()
+        val vehicleState by vehicleViewModel.state.collectAsStateWithLifecycle()
         GlanceRoot {
             SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
                 AnimatedVisibility(
@@ -30,10 +30,9 @@ class ClimatePanelActivity : GlanceableActivity() {
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    ClimateControlScreen(
-                        uiState = climateState,
-                        activeTemperature = climateState.temperatureCelsius,
-                        onEvent = climateViewModel::onEvent,
+                    VehicleScreen(
+                        uiState = vehicleState,
+                        onEvent = vehicleViewModel::onEvent,
                         onBack = { finish() },
                         animatedVisibilityScope = this,
                         modifier = Modifier.fillMaxSize(),
