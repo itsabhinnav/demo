@@ -18,3 +18,9 @@ scalable-ui-rro/screenshot*.png
 .externalNativeBuild
 .cxx
 local.properties
+
+# AOSP Car Cuttlefish runtime + downloaded CI artifacts (~2GB)
+/cuttlefish-data/
+/prebuilt/car-sdk/*.jar
+/prebuilt/car-sdk/.build-id
+/prebuilt/car-sdk/BUILD_INFO.txt

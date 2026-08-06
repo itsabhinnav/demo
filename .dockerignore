@@ -1,0 +1,8 @@
+.git
+.gradle
+**/build
+cuttlefish-data
+prebuilt/car-sdk/*.jar
+*.apk
+.idea
+screenshots
