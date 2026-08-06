@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- HVAC VHAL via CarPropertyManager (signature|privileged — install as priv-app). -->
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE" />
+    <uses-permission android:name="android.car.permission.CONTROL_CAR_DISPLAY_UNITS" />
+    <uses-permission android:name="android.car.permission.READ_CAR_DISPLAY_UNITS" />
 
     <application
         android:name=".DesignApplication"
@@ -23,6 +27,12 @@
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Design">
+
+        <!-- On Baklava+ AAOS, android.car is on the boot classpath and is not always
+             registered as a PackageManager shared library; required=false allows install. -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
 
         <!-- Avoid androidx.startup crash: library R$string is not packaged into dex (AGP). -->
         <provider

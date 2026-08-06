@@ -39,9 +39,10 @@ fun MorphingAirflowSegmentedButton(
     selectedMode: AirflowMode,
     onModeSelected: (AirflowMode) -> Unit,
     modifier: Modifier = Modifier,
+    modes: List<AirflowMode> = AirflowMode.entries,
 ) {
-    val modes = AirflowMode.entries
-    val selectedIndex = modes.indexOf(selectedMode)
+    if (modes.isEmpty()) return
+    val selectedIndex = modes.indexOf(selectedMode).coerceAtLeast(0)
     val motionSpec = MaterialTheme.motionScheme.slowSpatialSpec<Dp>()
 
     BoxWithConstraints(

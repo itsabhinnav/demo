@@ -59,6 +59,13 @@ fun ClimateComfortControlsCard(
     onToggleRecirculation: () -> Unit,
     onToggleSync: () -> Unit,
     modifier: Modifier = Modifier,
+    showSeatHeat: Boolean = true,
+    showSteeringHeat: Boolean = true,
+    showSeatVent: Boolean = true,
+    showFrontDefrost: Boolean = true,
+    showRearDefrost: Boolean = true,
+    showRecirculation: Boolean = true,
+    showSync: Boolean = true,
 ) {
     MorphingDetailSurfaceCard(
         morphExpanded = isAcEnabled,
@@ -71,59 +78,73 @@ fun ClimateComfortControlsCard(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ComfortIconLevelButton(
-                icon = ClimateHvacIcons.SeatHeat,
-                contentDescription = "Seat heat",
-                level = seatHeatLevel,
-                maxLevel = maxSeatHeatLevel,
-                onClick = onCycleSeatHeat,
-            )
-            ComfortIconLevelButton(
-                icon = ClimateHvacIcons.SteeringHeat,
-                contentDescription = "Wheel heat",
-                level = steeringHeatLevel,
-                maxLevel = maxSteeringHeatLevel,
-                onClick = onCycleSteeringHeat,
-            )
-            ComfortIconLevelButton(
-                icon = ClimateHvacIcons.SeatVent,
-                contentDescription = "Seat vent",
-                level = seatVentLevel,
-                maxLevel = maxSeatVentLevel,
-                onClick = onCycleSeatVent,
-            )
-            ComfortIconToggle(
-                icon = ClimateHvacIcons.FrontDefrost,
-                contentDescription = "Front defrost",
-                active = isFrontDefrostOn,
-                onClick = onToggleFrontDefrost,
-            )
-            ComfortIconToggle(
-                icon = ClimateHvacIcons.RearDefrost,
-                contentDescription = "Rear defrost",
-                active = isRearDefrostOn,
-                onClick = onToggleRearDefrost,
-            )
-            ComfortIconToggle(
-                icon = ClimateHvacIcons.FreshAir,
-                contentDescription = "Fresh air",
-                active = !isRecirculationOn,
-                onClick = {
-                    if (isRecirculationOn) onToggleRecirculation()
-                },
-            )
-            ComfortIconToggle(
-                icon = ClimateHvacIcons.Recirculation,
-                contentDescription = "Recirculation",
-                active = isRecirculationOn,
-                onClick = onToggleRecirculation,
-            )
-            ComfortIconToggle(
-                icon = ClimateHvacIcons.SyncZones,
-                contentDescription = "Sync zones",
-                active = isSyncEnabled,
-                onClick = onToggleSync,
-            )
+            if (showSeatHeat) {
+                ComfortIconLevelButton(
+                    icon = ClimateHvacIcons.SeatHeat,
+                    contentDescription = "Seat heat",
+                    level = seatHeatLevel,
+                    maxLevel = maxSeatHeatLevel,
+                    onClick = onCycleSeatHeat,
+                )
+            }
+            if (showSteeringHeat) {
+                ComfortIconLevelButton(
+                    icon = ClimateHvacIcons.SteeringHeat,
+                    contentDescription = "Wheel heat",
+                    level = steeringHeatLevel,
+                    maxLevel = maxSteeringHeatLevel,
+                    onClick = onCycleSteeringHeat,
+                )
+            }
+            if (showSeatVent) {
+                ComfortIconLevelButton(
+                    icon = ClimateHvacIcons.SeatVent,
+                    contentDescription = "Seat vent",
+                    level = seatVentLevel,
+                    maxLevel = maxSeatVentLevel,
+                    onClick = onCycleSeatVent,
+                )
+            }
+            if (showFrontDefrost) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.FrontDefrost,
+                    contentDescription = "Front defrost",
+                    active = isFrontDefrostOn,
+                    onClick = onToggleFrontDefrost,
+                )
+            }
+            if (showRearDefrost) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.RearDefrost,
+                    contentDescription = "Rear defrost",
+                    active = isRearDefrostOn,
+                    onClick = onToggleRearDefrost,
+                )
+            }
+            if (showRecirculation) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.FreshAir,
+                    contentDescription = "Fresh air",
+                    active = !isRecirculationOn,
+                    onClick = {
+                        if (isRecirculationOn) onToggleRecirculation()
+                    },
+                )
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.Recirculation,
+                    contentDescription = "Recirculation",
+                    active = isRecirculationOn,
+                    onClick = onToggleRecirculation,
+                )
+            }
+            if (showSync) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.SyncZones,
+                    contentDescription = "Sync zones",
+                    active = isSyncEnabled,
+                    onClick = onToggleSync,
+                )
+            }
         }
     }
 }

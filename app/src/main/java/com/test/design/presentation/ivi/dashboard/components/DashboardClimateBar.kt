@@ -44,7 +44,7 @@ import com.test.design.theme.rememberMorphingRoundedShape
 @Composable
 fun SharedTransitionScope.DashboardClimateBar(
     climateState: ClimateUiState,
-    climateTemperature: Int,
+    climateTemperature: Float,
     onClimateEvent: (ClimateEvent) -> Unit,
     onExpandClimate: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -73,53 +73,60 @@ fun SharedTransitionScope.DashboardClimateBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            FilledIconToggleButton(
-                checked = climateState.isFrontDefrostOn,
-                onCheckedChange = { onClimateEvent(ClimateEvent.ToggleFrontDefrost) },
-                modifier = Modifier.size(52.dp),
-            ) {
-                Icon(
-                    painter = painterResource(ClimateHvacIcons.FrontDefrost),
-                    contentDescription = "Front defrost",
-                    modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
-                )
+            val caps = climateState.capabilities
+            if (caps.hasFrontDefrost) {
+                FilledIconToggleButton(
+                    checked = climateState.isFrontDefrostOn,
+                    onCheckedChange = { onClimateEvent(ClimateEvent.ToggleFrontDefrost) },
+                    modifier = Modifier.size(52.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(ClimateHvacIcons.FrontDefrost),
+                        contentDescription = "Front defrost",
+                        modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
+                    )
+                }
             }
-            IconButton(
-                onClick = { onClimateEvent(ClimateEvent.CycleSeatHeat) },
-                modifier = Modifier.size(52.dp),
-            ) {
-                Icon(
-                    painter = painterResource(ClimateHvacIcons.SeatHeat),
-                    contentDescription = "Seat heat",
-                    tint = if (climateState.seatHeatLevel > 0) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
-                )
+            if (caps.hasSeatHeat) {
+                IconButton(
+                    onClick = { onClimateEvent(ClimateEvent.CycleSeatHeat) },
+                    modifier = Modifier.size(52.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(ClimateHvacIcons.SeatHeat),
+                        contentDescription = "Seat heat",
+                        tint = if (climateState.seatHeatLevel > 0) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
+                    )
+                }
             }
             TextButton(onClick = onExpandClimate) {
                 Text(
-                    text = formatTemperature(climateTemperature, climateState.temperatureUnit),
+                    text = climateState.formatTemperature(climateTemperature),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            FilledIconToggleButton(
-                checked = climateState.isAcEnabled,
-                onCheckedChange = { onClimateEvent(ClimateEvent.ToggleAc) },
-                modifier = Modifier.size(52.dp),
-                colors = IconButtonDefaults.filledIconToggleButtonColors(
-                    checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            ) {
-                Icon(
-                    painter = painterResource(ClimateHvacIcons.Ac),
-                    contentDescription = "A/C",
-                    modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
-                )
+            if (caps.hasAc) {
+                FilledIconToggleButton(
+                    checked = climateState.isAcEnabled,
+                    onCheckedChange = { onClimateEvent(ClimateEvent.ToggleAc) },
+                    modifier = Modifier.size(52.dp),
+                    colors = IconButtonDefaults.filledIconToggleButtonColors(
+                        checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                ) {
+                    Icon(
+                        painter = painterResource(ClimateHvacIcons.Ac),
+                        contentDescription = "A/C",
+                        modifier = Modifier.size(CarDesignTokens.TertiaryIcon),
+                    )
+                }
             }
             if (onOpenWidgetDashboard != null) {
                 IconButton(

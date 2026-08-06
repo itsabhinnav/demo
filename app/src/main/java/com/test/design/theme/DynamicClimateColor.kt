@@ -110,8 +110,13 @@ fun climateColorScheme(
     )
 }
 
+fun temperatureToFraction(celsius: Float, min: Float = 16f, max: Float = 30f): Float {
+    val span = (max - min).takeIf { it > 0f } ?: return 0f
+    return ((celsius - min) / span).coerceIn(0f, 1f)
+}
+
 fun temperatureToFraction(celsius: Int, min: Int = 16, max: Int = 30): Float =
-    ((celsius - min).toFloat() / (max - min).toFloat()).coerceIn(0f, 1f)
+    temperatureToFraction(celsius.toFloat(), min.toFloat(), max.toFloat())
 
 /** Normalized fraction at/below which snowflakes begin (≈22°C for 16–30). */
 const val ClimateCoolThresholdFraction = 0.42f

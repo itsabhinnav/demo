@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.TemperatureUnit
+import com.test.design.presentation.ivi.climate.formatTemperature
 import com.test.design.presentation.ivi.climate.toDisplayTemperature
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
@@ -40,7 +41,7 @@ import com.test.design.theme.zoneCoolIntensity
 
 @Composable
 fun ClimateTemperatureSection(
-    temperature: Int,
+    temperature: Float,
     isAcEnabled: Boolean,
     dialShape: Shape,
     onDecrease: () -> Unit,
@@ -48,14 +49,17 @@ fun ClimateTemperatureSection(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
     contentModifier: Modifier = Modifier,
-    minTemperature: Int = 16,
-    maxTemperature: Int = 30,
+    minTemperature: Float = 16f,
+    maxTemperature: Float = 30f,
+    temperatureStepCelsius: Float = 0.5f,
+    temperatureStepFahrenheit: Float = 1f,
+    minTemperatureFahrenheit: Float? = null,
     zoneLabel: String? = null,
     useZoneColorScheme: Boolean = false,
     temperatureUnit: TemperatureUnit = TemperatureUnit.Celsius,
     onTemperatureSteps: ((Int) -> Unit)? = null,
     /** When set, snow only appears if this zone is cooler than (or equal to) the other. */
-    otherZoneTemperature: Int? = null,
+    otherZoneTemperature: Float? = null,
 ) {
     val fraction = temperatureToFraction(temperature, minTemperature, maxTemperature)
     val otherFraction = otherZoneTemperature?.let {
@@ -73,6 +77,9 @@ fun ClimateTemperatureSection(
             contentModifier = contentModifier,
             minTemperature = minTemperature,
             maxTemperature = maxTemperature,
+            temperatureStepCelsius = temperatureStepCelsius,
+            temperatureStepFahrenheit = temperatureStepFahrenheit,
+            minTemperatureFahrenheit = minTemperatureFahrenheit,
             zoneLabel = zoneLabel,
             temperatureUnit = temperatureUnit,
             onTemperatureSteps = onTemperatureSteps,
@@ -110,15 +117,18 @@ fun ClimateTemperatureSection(
 
 @Composable
 private fun ClimateTemperatureDialContent(
-    temperature: Int,
+    temperature: Float,
     isAcEnabled: Boolean,
     dialShape: Shape,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
     compact: Boolean,
     contentModifier: Modifier,
-    minTemperature: Int,
-    maxTemperature: Int,
+    minTemperature: Float,
+    maxTemperature: Float,
+    temperatureStepCelsius: Float,
+    temperatureStepFahrenheit: Float,
+    minTemperatureFahrenheit: Float?,
     zoneLabel: String?,
     temperatureUnit: TemperatureUnit,
     onTemperatureSteps: ((Int) -> Unit)?,
@@ -129,7 +139,21 @@ private fun ClimateTemperatureDialContent(
     val buttonSize = if (compact) 36.dp else CarDesignTokens.MinTouchTarget
     val iconSize = if (compact) 18.dp else CarDesignTokens.PrimaryIcon
     val spacing = if (compact) 4.dp else CarDesignTokens.TouchTargetSpacing
-    val displayTemperature = temperature.toDisplayTemperature(temperatureUnit)
+    val displayLabel = formatTemperature(
+        celsius = temperature,
+        unit = temperatureUnit,
+        celsiusStep = temperatureStepCelsius,
+        minCelsius = minTemperature,
+        minFahrenheit = minTemperatureFahrenheit,
+        fahrenheitStep = temperatureStepFahrenheit,
+    )
+    val displaySortKey = temperature.toDisplayTemperature(
+        unit = temperatureUnit,
+        minCelsius = minTemperature,
+        celsiusStep = temperatureStepCelsius,
+        minFahrenheit = minTemperatureFahrenheit,
+        fahrenheitStep = temperatureStepFahrenheit,
+    )
     val stepHandler = onTemperatureSteps ?: { steps ->
         repeat(abs(steps)) {
             if (steps > 0) onIncrease() else onDecrease()
@@ -183,10 +207,10 @@ private fun ClimateTemperatureDialContent(
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     AnimatedTemperatureCounter(
-                        temperature = displayTemperature,
+                        temperatureLabel = displayLabel,
                         compact = compact,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        unitSymbol = temperatureUnit.symbol,
+                        sortKey = displaySortKey,
                     )
                     if (!compact) {
                         Text(

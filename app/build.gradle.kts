@@ -43,6 +43,9 @@ android {
 dependencies {
     implementation(project(":assistant"))
 
+    // Provided by the AAOS platform at runtime; compile against the stub jar in app/libs.
+    compileOnly(files("libs/android.car.jar"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

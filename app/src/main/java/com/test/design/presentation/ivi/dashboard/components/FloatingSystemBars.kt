@@ -58,7 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.presentation.ivi.climate.ClimateEvent
 import com.test.design.presentation.ivi.climate.ClimateUiState
 import com.test.design.presentation.ivi.climate.ClimateZone
-import com.test.design.presentation.ivi.climate.toDisplayTemperature
+import com.test.design.presentation.ivi.climate.formatTemperatureValue
 import com.test.design.presentation.ivi.dashboard.FloatingSystemBarsVisibility
 import com.test.design.theme.CarDesignTokens
 import kotlinx.coroutines.delay
@@ -224,10 +224,10 @@ fun FloatingBottomSystemBar(
     onOpenAssistant: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val driverTemp = climateState.temperatureCelsius
-        .toDisplayTemperature(climateState.temperatureUnit)
-    val passengerTemp = climateState.passengerTemperatureCelsius
-        .toDisplayTemperature(climateState.temperatureUnit)
+    val driverTemp = climateState.formatTemperatureValue(climateState.temperatureCelsius)
+    val passengerTemp = climateState.formatTemperatureValue(
+        climateState.passengerTemperatureCelsius,
+    )
 
     Row(
         modifier = modifier
@@ -246,20 +246,22 @@ fun FloatingBottomSystemBar(
                     contentDescription = "All apps",
                     onClick = onOpenApps,
                 )
-                ZoneTemperatureControl(
-                    temperature = driverTemp,
-                    onDecrease = {
-                        onClimateEvent(
-                            ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, -1),
-                        )
-                    },
-                    onIncrease = {
-                        onClimateEvent(
-                            ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, +1),
-                        )
-                    },
-                    contentDescription = "Driver temperature",
-                )
+                if (climateState.capabilities.hasDriverTemp) {
+                    ZoneTemperatureControl(
+                        temperature = driverTemp,
+                        onDecrease = {
+                            onClimateEvent(
+                                ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, -1),
+                            )
+                        },
+                        onIncrease = {
+                            onClimateEvent(
+                                ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, +1),
+                            )
+                        },
+                        contentDescription = "Driver temperature",
+                    )
+                }
             }
         }
 
@@ -314,20 +316,22 @@ fun FloatingBottomSystemBar(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ZoneTemperatureControl(
-                    temperature = passengerTemp,
-                    onDecrease = {
-                        onClimateEvent(
-                            ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, -1),
-                        )
-                    },
-                    onIncrease = {
-                        onClimateEvent(
-                            ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, +1),
-                        )
-                    },
-                    contentDescription = "Passenger temperature",
-                )
+                if (climateState.capabilities.hasPassengerTemp) {
+                    ZoneTemperatureControl(
+                        temperature = passengerTemp,
+                        onDecrease = {
+                            onClimateEvent(
+                                ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, -1),
+                            )
+                        },
+                        onIncrease = {
+                            onClimateEvent(
+                                ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, +1),
+                            )
+                        },
+                        contentDescription = "Passenger temperature",
+                    )
+                }
                 BarIconButton(
                     icon = Icons.Default.Mic,
                     contentDescription = "Voice assistant",
@@ -426,7 +430,7 @@ private fun BarIconButton(
 
 @Composable
 private fun ZoneTemperatureControl(
-    temperature: Int,
+    temperature: String,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
     contentDescription: String,
@@ -440,13 +444,14 @@ private fun ZoneTemperatureControl(
     ) {
         TempStepButton(Icons.Default.Remove, "Decrease $contentDescription", onDecrease)
         Text(
-            text = temperature.toString(),
+            text = temperature,
             color = Color.White,
-            fontSize = 26.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.width(44.dp),
+            modifier = Modifier.width(56.dp),
             softWrap = false,
+            maxLines = 1,
         )
         TempStepButton(Icons.Default.Add, "Increase $contentDescription", onIncrease)
     }

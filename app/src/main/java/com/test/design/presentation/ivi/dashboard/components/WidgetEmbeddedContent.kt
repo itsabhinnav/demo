@@ -63,7 +63,7 @@ fun SharedTransitionScope.WidgetEmbeddedContent(
     mediaState: MediaUiState? = null,
     onMediaEvent: ((MediaEvent) -> Unit)? = null,
     climateState: ClimateUiState? = null,
-    climateTemperature: Int? = null,
+    climateTemperature: Float? = null,
     onClimateEvent: ((ClimateEvent) -> Unit)? = null,
     navigationState: NavigationUiState? = null,
     onNavigationEvent: ((NavigationEvent) -> Unit)? = null,
@@ -224,7 +224,7 @@ private fun SharedTransitionScope.MediaWidgetEmbedded(
 @Composable
 private fun SharedTransitionScope.ClimateWidgetEmbedded(
     state: ClimateUiState,
-    temperature: Int,
+    temperature: Float,
     dialShape: Shape,
     onEvent: (ClimateEvent) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -244,32 +244,41 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ClimateTemperatureSection(
-                    temperature = temperature,
-                    isAcEnabled = state.isAcEnabled,
-                    dialShape = dialShape,
-                    onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
-                    onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
-                    compact = true,
-                    temperatureUnit = state.temperatureUnit,
-                    modifier = widgetContentSharedElement(
-                        widget = DashboardWidget.Climate,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier.fillMaxWidth(),
-                    ),
-                )
-                ClimateFanSpeedCard(
-                    fanSpeed = state.fanSpeed,
-                    maxFanSpeed = state.maxFanSpeed,
-                    isAcEnabled = state.isAcEnabled,
-                    onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
-                    compact = true,
-                    modifier = widgetControlsSharedElement(
-                        widget = DashboardWidget.Climate,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        modifier = Modifier.fillMaxWidth(),
-                    ),
-                )
+                if (state.capabilities.hasDriverTemp || state.capabilities.hasPassengerTemp) {
+                    ClimateTemperatureSection(
+                        temperature = temperature,
+                        isAcEnabled = state.isAcEnabled,
+                        dialShape = dialShape,
+                        onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
+                        onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },
+                        compact = true,
+                        minTemperature = state.minTemperature,
+                        maxTemperature = state.maxTemperature,
+                        temperatureStepCelsius = state.temperatureStepCelsius,
+                        temperatureStepFahrenheit = state.temperatureStepFahrenheit,
+                        minTemperatureFahrenheit = state.minTemperatureFahrenheit,
+                        temperatureUnit = state.temperatureUnit,
+                        modifier = widgetContentSharedElement(
+                            widget = DashboardWidget.Climate,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier.fillMaxWidth(),
+                        ),
+                    )
+                }
+                if (state.capabilities.hasFanSpeed) {
+                    ClimateFanSpeedCard(
+                        fanSpeed = state.fanSpeed,
+                        maxFanSpeed = state.maxFanSpeed,
+                        isAcEnabled = state.isAcEnabled,
+                        onSpeedSelected = { onEvent(ClimateEvent.SetFanSpeed(it)) },
+                        compact = true,
+                        modifier = widgetControlsSharedElement(
+                            widget = DashboardWidget.Climate,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            modifier = Modifier.fillMaxWidth(),
+                        ),
+                    )
+                }
             }
         }
     }

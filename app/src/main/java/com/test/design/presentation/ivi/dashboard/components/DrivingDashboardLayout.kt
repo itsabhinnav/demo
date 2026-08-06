@@ -107,7 +107,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     @Suppress("UNUSED_PARAMETER") navigationState: NavigationUiState,
     mediaState: MediaUiState,
     climateState: ClimateUiState,
-    climateTemperature: Int,
+    climateTemperature: Float,
     onEvent: (DashboardEvent) -> Unit,
     onMediaEvent: (MediaEvent) -> Unit,
     onClimateEvent: (ClimateEvent) -> Unit,
@@ -296,7 +296,7 @@ private fun SharedTransitionScope.MapSearchBar(
 @Composable
 private fun SharedTransitionScope.MapHvacBar(
     climateState: ClimateUiState,
-    climateTemperature: Int,
+    climateTemperature: Float,
     onClimateEvent: (ClimateEvent) -> Unit,
     onExpandClimate: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -342,21 +342,26 @@ private fun SharedTransitionScope.MapHvacBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            HvacLevelControl(
-                icon = ClimateHvacIcons.SeatHeat,
-                contentDescription = "Seat heat",
-                level = climateState.seatHeatLevel,
-                maxLevel = climateState.maxSeatHeatLevel,
-                activeColor = seatHeatTint,
-                onClick = { onClimateEvent(ClimateEvent.CycleSeatHeat) },
-            )
-            HvacToggleControl(
-                icon = ClimateHvacIcons.FrontDefrost,
-                contentDescription = "Front defrost",
-                active = climateState.isFrontDefrostOn,
-                activeColor = Color.White,
-                onClick = { onClimateEvent(ClimateEvent.ToggleFrontDefrost) },
-            )
+            val caps = climateState.capabilities
+            if (caps.hasSeatHeat) {
+                HvacLevelControl(
+                    icon = ClimateHvacIcons.SeatHeat,
+                    contentDescription = "Seat heat",
+                    level = climateState.seatHeatLevel,
+                    maxLevel = climateState.maxSeatHeatLevel,
+                    activeColor = seatHeatTint,
+                    onClick = { onClimateEvent(ClimateEvent.CycleSeatHeat) },
+                )
+            }
+            if (caps.hasFrontDefrost) {
+                HvacToggleControl(
+                    icon = ClimateHvacIcons.FrontDefrost,
+                    contentDescription = "Front defrost",
+                    active = climateState.isFrontDefrostOn,
+                    activeColor = Color.White,
+                    onClick = { onClimateEvent(ClimateEvent.ToggleFrontDefrost) },
+                )
+            }
 
             Column(
                 modifier = Modifier
@@ -367,33 +372,44 @@ private fun SharedTransitionScope.MapHvacBar(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = formatTemperature(climateTemperature, climateState.temperatureUnit),
+                    text = climateState.formatTemperature(climateTemperature),
                     color = ambient,
                     fontSize = 42.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = if (climateState.isAcEnabled) "A/C · Fan ${climateState.fanSpeed}" else "Fan ${climateState.fanSpeed}",
+                    text = buildString {
+                        if (caps.hasAc && climateState.isAcEnabled) append("A/C")
+                        if (caps.hasFanSpeed) {
+                            if (isNotEmpty()) append(" · ")
+                            append("Fan ${climateState.fanSpeed}")
+                        }
+                        if (isEmpty()) append(if (climateState.isLive) "Live" else "Climate")
+                    },
                     color = Color.White.copy(alpha = 0.5f),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                 )
             }
 
-            HvacToggleControl(
-                icon = ClimateHvacIcons.Ac,
-                contentDescription = "A/C",
-                active = climateState.isAcEnabled,
-                activeColor = Color(0xFF4EA1FF),
-                onClick = { onClimateEvent(ClimateEvent.ToggleAc) },
-            )
-            CompactFanBars(
-                fanSpeed = climateState.fanSpeed,
-                maxFanSpeed = climateState.maxFanSpeed,
-                activeColor = ambient,
-                onSpeedSelected = { onClimateEvent(ClimateEvent.SetFanSpeed(it)) },
-                modifier = Modifier.padding(horizontal = 8.dp),
-            )
+            if (caps.hasAc) {
+                HvacToggleControl(
+                    icon = ClimateHvacIcons.Ac,
+                    contentDescription = "A/C",
+                    active = climateState.isAcEnabled,
+                    activeColor = Color(0xFF4EA1FF),
+                    onClick = { onClimateEvent(ClimateEvent.ToggleAc) },
+                )
+            }
+            if (caps.hasFanSpeed) {
+                CompactFanBars(
+                    fanSpeed = climateState.fanSpeed,
+                    maxFanSpeed = climateState.maxFanSpeed,
+                    activeColor = ambient,
+                    onSpeedSelected = { onClimateEvent(ClimateEvent.SetFanSpeed(it)) },
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+            }
             IconButton(
                 onClick = onExpandClimate,
                 modifier = Modifier.size(CarDesignTokens.MinTouchTarget),

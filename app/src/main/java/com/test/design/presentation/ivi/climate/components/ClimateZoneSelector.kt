@@ -29,8 +29,8 @@ import com.test.design.theme.carTouchTarget
 
 @Composable
 fun ClimateZoneSelector(
-    driverTemp: Int,
-    passengerTemp: Int,
+    driverTempLabel: String,
+    passengerTempLabel: String,
     activeZone: ClimateZone,
     onZoneSelected: (ClimateZone) -> Unit,
     modifier: Modifier = Modifier,
@@ -41,14 +41,14 @@ fun ClimateZoneSelector(
     ) {
         ClimateZoneCard(
             label = ClimateZone.Driver.label,
-            temperature = driverTemp,
+            temperatureLabel = driverTempLabel,
             selected = activeZone == ClimateZone.Driver,
             onClick = { onZoneSelected(ClimateZone.Driver) },
             modifier = Modifier.weight(1f),
         )
         ClimateZoneCard(
             label = ClimateZone.Passenger.label,
-            temperature = passengerTemp,
+            temperatureLabel = passengerTempLabel,
             selected = activeZone == ClimateZone.Passenger,
             onClick = { onZoneSelected(ClimateZone.Passenger) },
             modifier = Modifier.weight(1f),
@@ -59,7 +59,7 @@ fun ClimateZoneSelector(
 @Composable
 fun ClimateZoneCard(
     label: String,
-    temperature: Int,
+    temperatureLabel: String,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -96,7 +96,7 @@ fun ClimateZoneCard(
             textAlign = if (centered) TextAlign.Center else TextAlign.Start,
         )
         Text(
-            text = "$temperature°",
+            text = temperatureLabel,
             style = if (centered) {
                 MaterialTheme.typography.displaySmall
             } else {

@@ -10,7 +10,7 @@ import com.test.design.presentation.ivi.vehicle.VehicleUiState
 fun DashboardWidget.liveStatus(
     mediaState: MediaUiState? = null,
     climateState: ClimateUiState? = null,
-    climateTemperature: Int? = null,
+    climateTemperature: Float? = null,
     navigationState: NavigationUiState? = null,
     vehicleState: VehicleUiState? = null,
 ): String = when (this) {
@@ -22,8 +22,20 @@ fun DashboardWidget.liveStatus(
     } ?: subtitle
     DashboardWidget.Climate -> climateState?.let { state ->
         val temp = climateTemperature ?: state.temperatureCelsius
-        val ac = if (state.isAcEnabled) "A/C on" else "A/C off"
-        "Simulated · ${formatTemperature(temp, state.temperatureUnit)} · $ac · Fan ${state.fanSpeed}"
+        val source = if (state.isLive) "Live" else "Simulated"
+        buildString {
+            append(source)
+            append(" · ")
+            append(state.formatTemperature(temp))
+            if (state.capabilities.hasAc) {
+                append(" · ")
+                append(if (state.isAcEnabled) "A/C on" else "A/C off")
+            }
+            if (state.capabilities.hasFanSpeed) {
+                append(" · Fan ")
+                append(state.fanSpeed)
+            }
+        }
     } ?: subtitle
     DashboardWidget.Navigation -> navigationState?.let { state ->
         "Simulated · ${state.destination} · ${state.etaMinutes} min · ${state.distanceRemaining}"

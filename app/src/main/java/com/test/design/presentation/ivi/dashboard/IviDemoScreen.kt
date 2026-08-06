@@ -235,7 +235,7 @@ private fun SharedTransitionScope.DashboardHubContent(
     mediaState: com.test.design.presentation.ivi.media.MediaUiState,
     onMediaEvent: (com.test.design.presentation.ivi.media.MediaEvent) -> Unit,
     climateState: com.test.design.presentation.ivi.climate.ClimateUiState,
-    climateTemperature: Int,
+    climateTemperature: Float,
     onClimateEvent: (com.test.design.presentation.ivi.climate.ClimateEvent) -> Unit,
     navigationState: com.test.design.presentation.ivi.navigation.NavigationUiState,
     onNavigationEvent: (com.test.design.presentation.ivi.navigation.NavigationEvent) -> Unit,

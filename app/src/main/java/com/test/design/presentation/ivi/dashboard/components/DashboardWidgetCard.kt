@@ -63,7 +63,7 @@ fun SharedTransitionScope.DashboardWidgetCard(
     mediaState: MediaUiState? = null,
     onMediaEvent: ((MediaEvent) -> Unit)? = null,
     climateState: ClimateUiState? = null,
-    climateTemperature: Int? = null,
+    climateTemperature: Float? = null,
     onClimateEvent: ((ClimateEvent) -> Unit)? = null,
     navigationState: NavigationUiState? = null,
     onNavigationEvent: ((NavigationEvent) -> Unit)? = null,
