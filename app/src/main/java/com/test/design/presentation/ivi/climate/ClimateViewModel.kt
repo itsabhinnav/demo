@@ -46,6 +46,10 @@ class ClimateViewModel(
                 val next = !_state.value.isAcEnabled
                 if (live) repository.setAcEnabled(next) else setState { copy(isAcEnabled = next) }
             }
+            ClimateEvent.TogglePower -> {
+                val next = !_state.value.isPowerOn
+                if (live) repository.setPower(next) else setState { copy(isPowerOn = next) }
+            }
             ClimateEvent.ToggleSync -> {
                 val next = !_state.value.isSyncEnabled
                 if (live) repository.setSyncEnabled(next) else setState { copy(isSyncEnabled = next) }
@@ -87,12 +91,23 @@ class ClimateViewModel(
             }
             is ClimateEvent.SelectZone -> setState { copy(activeZone = event.zone) }
             is ClimateEvent.SetFanSpeed -> {
-                val speed = event.speed.coerceIn(1, _state.value.maxFanSpeed)
+                val speed = event.speed.coerceIn(0, _state.value.maxFanSpeed)
                 if (live) repository.setFanSpeed(speed) else setState { copy(fanSpeed = speed) }
             }
             ClimateEvent.CycleSeatHeat -> {
                 val next = nextLevel(_state.value.seatHeatLevel, _state.value.maxSeatHeatLevel)
                 if (live) repository.setSeatHeatLevel(next) else setState { copy(seatHeatLevel = next) }
+            }
+            ClimateEvent.CyclePassengerSeatHeat -> {
+                val next = nextLevel(
+                    _state.value.passengerSeatHeatLevel,
+                    _state.value.maxSeatHeatLevel,
+                )
+                if (live) {
+                    repository.setSeatHeatLevel(next, ClimateZone.Passenger)
+                } else {
+                    setState { copy(passengerSeatHeatLevel = next) }
+                }
             }
             ClimateEvent.CycleSteeringHeat -> {
                 val next = nextLevel(_state.value.steeringHeatLevel, _state.value.maxSteeringHeatLevel)
@@ -155,11 +170,13 @@ class ClimateViewModel(
                 maxFanSpeed = connection.maxFanSpeed,
                 airflowMode = connection.airflowMode,
                 isAcEnabled = connection.isAcEnabled,
+                isPowerOn = connection.isPowerOn,
                 isSyncEnabled = connection.isSyncEnabled,
                 isRecirculationOn = connection.isRecirculationOn,
                 isFrontDefrostOn = connection.isFrontDefrostOn,
                 isRearDefrostOn = connection.isRearDefrostOn,
                 seatHeatLevel = connection.seatHeatLevel,
+                passengerSeatHeatLevel = connection.passengerSeatHeatLevel,
                 maxSeatHeatLevel = connection.maxSeatHeatLevel,
                 seatVentLevel = connection.seatVentLevel,
                 maxSeatVentLevel = connection.maxSeatVentLevel,

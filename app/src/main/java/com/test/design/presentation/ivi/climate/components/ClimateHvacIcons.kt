@@ -28,4 +28,5 @@ object ClimateHvacIcons {
     @DrawableRes val Recirculation = R.drawable.ic_hvac_recirculate
     @DrawableRes val FreshAir = R.drawable.ic_hvac_fresh_air
     @DrawableRes val SyncZones = R.drawable.ic_hvac_sync_zones
+    @DrawableRes val Power = R.drawable.ic_hvac_power
 }

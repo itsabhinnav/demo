@@ -95,11 +95,23 @@ class CarClimateRepository(
 
     fun setFanSpeed(speed: Int) {
         val mgr = propertyManager ?: return
-        val targets = areas.fanSpeedAreas.ifEmpty { return }
-        targets.forEach { area ->
-            setInt(mgr, VehiclePropertyIds.HVAC_FAN_SPEED, area, speed)
-            ensurePowerOn(mgr, area)
+        val clamped = speed.coerceIn(0, areas.maxFan)
+        if (clamped == 0 && areas.minFan > 0) {
+            setPower(false)
+            return
         }
+        val targets = areas.fanSpeedAreas.ifEmpty { return }
+        val written = clamped.coerceAtLeast(areas.minFan)
+        targets.forEach { area ->
+            setInt(mgr, VehiclePropertyIds.HVAC_FAN_SPEED, area, written)
+            if (written > 0) ensurePowerOn(mgr, area)
+        }
+    }
+
+    fun setPower(on: Boolean) {
+        val mgr = propertyManager ?: return
+        val targets = areas.powerAreas.ifEmpty { return }
+        targets.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_POWER_ON, it, on) }
     }
 
     fun setAcEnabled(enabled: Boolean) {
@@ -161,12 +173,26 @@ class CarClimateRepository(
                     setInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, it, HvacFanDirection.FLOOR)
                 }
             }
+            AirflowMode.FeetDefrost -> {
+                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
+                areas.fanDirectionAreas.forEach {
+                    setInt(
+                        mgr,
+                        VehiclePropertyIds.HVAC_FAN_DIRECTION,
+                        it,
+                        HvacFanDirection.FLOOR_AND_DEFROST,
+                    )
+                }
+            }
         }
     }
 
-    fun setSeatHeatLevel(level: Int) {
+    fun setSeatHeatLevel(level: Int, zone: ClimateZone = ClimateZone.Driver) {
         val mgr = propertyManager ?: return
-        val area = areas.seatHeat ?: return
+        val area = when (zone) {
+            ClimateZone.Driver -> areas.seatHeat
+            ClimateZone.Passenger -> areas.passengerSeatHeat
+        } ?: return
         setInt(mgr, VehiclePropertyIds.HVAC_SEAT_TEMPERATURE, area, level)
     }
 
@@ -249,6 +275,7 @@ class CarClimateRepository(
 
         val seatHeatAreas = areaIds(mgr, VehiclePropertyIds.HVAC_SEAT_TEMPERATURE)
         val seatHeat = preferredSeat(seatHeatAreas, VehicleAreaSeat.SEAT_ROW_1_LEFT)
+        val passengerSeatHeat = seatHeatAreas.firstOrNull { it != seatHeat }
         val seatVentAreas = areaIds(mgr, VehiclePropertyIds.HVAC_SEAT_VENTILATION)
         val seatVent = preferredSeat(seatVentAreas, VehicleAreaSeat.SEAT_ROW_1_LEFT)
 
@@ -315,6 +342,7 @@ class CarClimateRepository(
             frontDefrost = frontDefrost,
             rearDefrost = rearDefrost,
             seatHeat = seatHeat,
+            passengerSeatHeat = passengerSeatHeat,
             seatVent = seatVent,
             steeringHeat = steeringHeat,
             tempDisplayUnits = tempDisplayUnits,
@@ -345,11 +373,14 @@ class CarClimateRepository(
             if (areas.acAreas.isNotEmpty()) add(VehiclePropertyIds.HVAC_AC_ON)
             if (areas.recircAreas.isNotEmpty()) add(VehiclePropertyIds.HVAC_RECIRC_ON)
             if (areas.autoAreas.isNotEmpty()) add(VehiclePropertyIds.HVAC_AUTO_ON)
+            if (areas.powerAreas.isNotEmpty()) add(VehiclePropertyIds.HVAC_POWER_ON)
             if (areas.dual != null) add(VehiclePropertyIds.HVAC_DUAL_ON)
             if (areas.frontDefrost != null || areas.rearDefrost != null) {
                 add(VehiclePropertyIds.HVAC_DEFROSTER)
             }
-            if (areas.seatHeat != null) add(VehiclePropertyIds.HVAC_SEAT_TEMPERATURE)
+            if (areas.seatHeat != null || areas.passengerSeatHeat != null) {
+                add(VehiclePropertyIds.HVAC_SEAT_TEMPERATURE)
+            }
             if (areas.seatVent != null) add(VehiclePropertyIds.HVAC_SEAT_VENTILATION)
             if (areas.steeringHeat != null) add(VehiclePropertyIds.HVAC_STEERING_WHEEL_HEAT)
             if (areas.tempDisplayUnits != null) {
@@ -374,11 +405,13 @@ class CarClimateRepository(
         var fanSpeed = 1
         var airflow = AirflowMode.Face
         var ac = false
+        var powerOn = true
         var sync = true
         var recirc = false
         var frontDefrost = false
         var rearDefrost = false
         var seatHeat = 0
+        var passengerSeatHeat = 0
         var seatVent = 0
         var steeringHeat = 0
         var unit = TemperatureUnit.Celsius
@@ -395,6 +428,9 @@ class CarClimateRepository(
         }
         areas.acAreas.firstOrNull()?.let {
             ac = getBoolean(mgr, VehiclePropertyIds.HVAC_AC_ON, it) ?: ac
+        }
+        areas.powerAreas.firstOrNull()?.let {
+            powerOn = getBoolean(mgr, VehiclePropertyIds.HVAC_POWER_ON, it) ?: powerOn
         }
         areas.recircAreas.firstOrNull()?.let {
             recirc = getBoolean(mgr, VehiclePropertyIds.HVAC_RECIRC_ON, it) ?: recirc
@@ -414,6 +450,10 @@ class CarClimateRepository(
         }
         areas.seatHeat?.let {
             seatHeat = (getInt(mgr, VehiclePropertyIds.HVAC_SEAT_TEMPERATURE, it) ?: 0).coerceAtLeast(0)
+        }
+        areas.passengerSeatHeat?.let {
+            passengerSeatHeat =
+                (getInt(mgr, VehiclePropertyIds.HVAC_SEAT_TEMPERATURE, it) ?: 0).coerceAtLeast(0)
         }
         areas.seatVent?.let {
             seatVent = (getInt(mgr, VehiclePropertyIds.HVAC_SEAT_VENTILATION, it) ?: 0).coerceAtLeast(0)
@@ -447,15 +487,17 @@ class CarClimateRepository(
             temperatureStepCelsius = areas.tempStepC,
             temperatureStepFahrenheit = areas.tempStepF,
             minTemperatureFahrenheit = areas.minTempF,
-            fanSpeed = fanSpeed.coerceIn(areas.minFan.coerceAtLeast(1), areas.maxFan),
+            fanSpeed = fanSpeed.coerceIn(0, areas.maxFan.coerceAtLeast(0)),
             maxFanSpeed = areas.maxFan.coerceAtLeast(1),
             airflowMode = airflow,
             isAcEnabled = ac,
+            isPowerOn = powerOn,
             isSyncEnabled = sync,
             isRecirculationOn = recirc,
             isFrontDefrostOn = frontDefrost,
             isRearDefrostOn = rearDefrost,
             seatHeatLevel = seatHeat.coerceIn(0, areas.maxSeatHeat),
+            passengerSeatHeatLevel = passengerSeatHeat.coerceIn(0, areas.maxSeatHeat),
             maxSeatHeatLevel = areas.maxSeatHeat.coerceAtLeast(1),
             seatVentLevel = seatVent.coerceIn(0, areas.maxSeatVent),
             maxSeatVentLevel = areas.maxSeatVent.coerceAtLeast(1),
@@ -482,7 +524,7 @@ class CarClimateRepository(
                 VehiclePropertyIds.HVAC_FAN_SPEED -> {
                     if (area in areas.fanSpeedAreas || areas.fanSpeedAreas.isEmpty()) {
                         val speed = (value.value as? Number)?.toInt() ?: return@update current
-                        current.copy(fanSpeed = speed.coerceIn(1, current.maxFanSpeed))
+                        current.copy(fanSpeed = speed.coerceIn(0, current.maxFanSpeed))
                     } else {
                         current
                     }
@@ -490,6 +532,13 @@ class CarClimateRepository(
                 VehiclePropertyIds.HVAC_AC_ON -> {
                     if (area == areas.acAreas.firstOrNull()) {
                         current.copy(isAcEnabled = value.value as? Boolean ?: current.isAcEnabled)
+                    } else {
+                        current
+                    }
+                }
+                VehiclePropertyIds.HVAC_POWER_ON -> {
+                    if (area == areas.powerAreas.firstOrNull()) {
+                        current.copy(isPowerOn = value.value as? Boolean ?: current.isPowerOn)
                     } else {
                         current
                     }
@@ -539,11 +588,12 @@ class CarClimateRepository(
                     }
                 }
                 VehiclePropertyIds.HVAC_SEAT_TEMPERATURE -> {
-                    if (area == areas.seatHeat) {
-                        val level = ((value.value as? Number)?.toInt() ?: 0).coerceAtLeast(0)
-                        current.copy(seatHeatLevel = level.coerceAtMost(current.maxSeatHeatLevel))
-                    } else {
-                        current
+                    val level = ((value.value as? Number)?.toInt() ?: 0).coerceAtLeast(0)
+                        .coerceAtMost(current.maxSeatHeatLevel)
+                    when (area) {
+                        areas.seatHeat -> current.copy(seatHeatLevel = level)
+                        areas.passengerSeatHeat -> current.copy(passengerSeatHeatLevel = level)
+                        else -> current
                     }
                 }
                 VehiclePropertyIds.HVAC_SEAT_VENTILATION -> {
@@ -668,6 +718,9 @@ class CarClimateRepository(
     }
 
     private fun directionToAirflow(direction: Int): AirflowMode = when {
+        direction and HvacFanDirection.DEFROST != 0 &&
+            direction and HvacFanDirection.FLOOR != 0 -> AirflowMode.FeetDefrost
+        direction == HvacFanDirection.DEFROST -> AirflowMode.FeetDefrost
         direction and HvacFanDirection.FACE != 0 &&
             direction and HvacFanDirection.FLOOR != 0 -> AirflowMode.BiLevel
         direction and HvacFanDirection.FLOOR != 0 -> AirflowMode.Feet
@@ -687,6 +740,7 @@ class CarClimateRepository(
         val frontDefrost: Int? = null,
         val rearDefrost: Int? = null,
         val seatHeat: Int? = null,
+        val passengerSeatHeat: Int? = null,
         val seatVent: Int? = null,
         val steeringHeat: Int? = null,
         val tempDisplayUnits: Int? = null,
@@ -716,8 +770,10 @@ class CarClimateRepository(
             hasFrontDefrost = frontDefrost != null,
             hasRearDefrost = rearDefrost != null,
             hasSeatHeat = seatHeat != null,
+            hasPassengerSeatHeat = passengerSeatHeat != null,
             hasSteeringHeat = steeringHeat != null,
             hasSeatVent = seatVent != null,
+            hasPower = powerAreas.isNotEmpty(),
             hasTemperatureUnit = tempDisplayUnits != null,
         )
     }
@@ -794,11 +850,13 @@ data class ClimateHvacConnection(
     val maxFanSpeed: Int = 5,
     val airflowMode: AirflowMode = AirflowMode.Auto,
     val isAcEnabled: Boolean = true,
+    val isPowerOn: Boolean = true,
     val isSyncEnabled: Boolean = true,
     val isRecirculationOn: Boolean = false,
     val isFrontDefrostOn: Boolean = false,
     val isRearDefrostOn: Boolean = false,
     val seatHeatLevel: Int = 0,
+    val passengerSeatHeatLevel: Int = 0,
     val maxSeatHeatLevel: Int = 3,
     val seatVentLevel: Int = 0,
     val maxSeatVentLevel: Int = 3,

@@ -18,3 +18,4 @@ scalable-ui-rro/screenshot*.png
 .externalNativeBuild
 .cxx
 local.properties
+secrets.properties

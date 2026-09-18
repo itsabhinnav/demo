@@ -106,6 +106,7 @@ fun MorphingAirflowSegmentedButton(
                         style = MaterialTheme.typography.labelMedium,
                         color = contentColor,
                         textAlign = TextAlign.Center,
+                        maxLines = 1,
                         modifier = Modifier.padding(top = 2.dp),
                     )
                 }
@@ -120,5 +121,6 @@ private val AirflowMode.icon: Int
         AirflowMode.Face -> ClimateHvacIcons.AirflowFace
         AirflowMode.BiLevel -> ClimateHvacIcons.AirflowBiLevel
         AirflowMode.Feet -> ClimateHvacIcons.AirflowFeet
+        AirflowMode.FeetDefrost -> ClimateHvacIcons.AirflowFeetDefrost
         AirflowMode.Auto -> ClimateHvacIcons.Auto
     }

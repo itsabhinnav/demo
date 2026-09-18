@@ -42,6 +42,7 @@ import com.test.design.theme.carTouchTarget
 fun ClimateComfortControlsCard(
     seatHeatLevel: Int,
     maxSeatHeatLevel: Int,
+    passengerSeatHeatLevel: Int,
     steeringHeatLevel: Int,
     maxSteeringHeatLevel: Int,
     seatVentLevel: Int,
@@ -51,21 +52,26 @@ fun ClimateComfortControlsCard(
     isRecirculationOn: Boolean,
     isSyncEnabled: Boolean,
     isAcEnabled: Boolean,
+    isPowerOn: Boolean,
     onCycleSeatHeat: () -> Unit,
+    onCyclePassengerSeatHeat: () -> Unit,
     onCycleSteeringHeat: () -> Unit,
     onCycleSeatVent: () -> Unit,
     onToggleFrontDefrost: () -> Unit,
     onToggleRearDefrost: () -> Unit,
     onToggleRecirculation: () -> Unit,
     onToggleSync: () -> Unit,
+    onTogglePower: () -> Unit,
     modifier: Modifier = Modifier,
     showSeatHeat: Boolean = true,
+    showPassengerSeatHeat: Boolean = true,
     showSteeringHeat: Boolean = true,
     showSeatVent: Boolean = true,
     showFrontDefrost: Boolean = true,
     showRearDefrost: Boolean = true,
     showRecirculation: Boolean = true,
     showSync: Boolean = true,
+    showPower: Boolean = true,
 ) {
     MorphingDetailSurfaceCard(
         morphExpanded = isAcEnabled,
@@ -81,10 +87,19 @@ fun ClimateComfortControlsCard(
             if (showSeatHeat) {
                 ComfortIconLevelButton(
                     icon = ClimateHvacIcons.SeatHeat,
-                    contentDescription = "Seat heat",
+                    contentDescription = "Driver seat heat",
                     level = seatHeatLevel,
                     maxLevel = maxSeatHeatLevel,
                     onClick = onCycleSeatHeat,
+                )
+            }
+            if (showPassengerSeatHeat) {
+                ComfortIconLevelButton(
+                    icon = ClimateHvacIcons.SeatHeat,
+                    contentDescription = "Passenger seat heat",
+                    level = passengerSeatHeatLevel,
+                    maxLevel = maxSeatHeatLevel,
+                    onClick = onCyclePassengerSeatHeat,
                 )
             }
             if (showSteeringHeat) {
@@ -143,6 +158,14 @@ fun ClimateComfortControlsCard(
                     contentDescription = "Sync zones",
                     active = isSyncEnabled,
                     onClick = onToggleSync,
+                )
+            }
+            if (showPower) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.Power,
+                    contentDescription = "Climate power",
+                    active = isPowerOn,
+                    onClick = onTogglePower,
                 )
             }
         }

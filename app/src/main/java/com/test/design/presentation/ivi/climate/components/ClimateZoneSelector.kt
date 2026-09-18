@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.ClimateZone
@@ -120,11 +125,44 @@ fun FanSpeedBars(
     val barSpacing = if (compact) 4.dp else 8.dp
     val baseHeight = if (compact) 12 else 24
     val heightStep = if (compact) 8 else 14
+    val offActive = fanSpeed <= 0
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = if (offActive) {
+                    "Fan off"
+                } else {
+                    "Fan speed $fanSpeed of $maxFanSpeed"
+                }
+            },
         horizontalArrangement = Arrangement.spacedBy(barSpacing),
         verticalAlignment = Alignment.Bottom,
     ) {
+        val offHeight = (baseHeight + heightStep).dp.coerceAtLeast(if (compact) 36.dp else 48.dp)
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(offHeight)
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    MaterialTheme.colorScheme.primary.copy(alpha = if (offActive) 1f else 0.25f),
+                )
+                .carTouchTarget()
+                .clickable { onSpeedSelected(0) },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(ClimateHvacIcons.FanOff),
+                contentDescription = "Fan off",
+                tint = if (offActive) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.size(if (compact) 18.dp else CarDesignTokens.TertiaryIcon),
+            )
+        }
         repeat(maxFanSpeed) { index ->
             val level = index + 1
             val active = level <= fanSpeed

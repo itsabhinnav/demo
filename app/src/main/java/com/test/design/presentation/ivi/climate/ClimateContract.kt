@@ -6,6 +6,7 @@ enum class AirflowMode(val label: String) {
     Face("Face"),
     BiLevel("Bi-level"),
     Feet("Feet"),
+    FeetDefrost("Feet defrost"),
     Auto("Auto"),
 }
 
@@ -176,14 +177,17 @@ data class ClimateCapabilities(
     val hasFrontDefrost: Boolean = true,
     val hasRearDefrost: Boolean = true,
     val hasSeatHeat: Boolean = true,
+    val hasPassengerSeatHeat: Boolean = true,
     val hasSteeringHeat: Boolean = true,
     val hasSeatVent: Boolean = true,
+    val hasPower: Boolean = true,
     val hasTemperatureUnit: Boolean = false,
 ) {
     val hasAnyHvacControl: Boolean
         get() = hasDriverTemp || hasPassengerTemp || hasFanSpeed || hasFanDirection ||
             hasAuto || hasAc || hasSync || hasRecirculation || hasFrontDefrost ||
-            hasRearDefrost || hasSeatHeat || hasSteeringHeat || hasSeatVent
+            hasRearDefrost || hasSeatHeat || hasPassengerSeatHeat || hasSteeringHeat ||
+            hasSeatVent || hasPower
 
     val hasAirflowControls: Boolean
         get() = hasFanDirection || hasAuto
@@ -194,13 +198,14 @@ data class ClimateCapabilities(
                 add(AirflowMode.Face)
                 add(AirflowMode.BiLevel)
                 add(AirflowMode.Feet)
+                add(AirflowMode.FeetDefrost)
             }
             if (hasAuto) add(AirflowMode.Auto)
         }
 
     val hasComfortControls: Boolean
-        get() = hasSeatHeat || hasSteeringHeat || hasSeatVent || hasFrontDefrost ||
-            hasRearDefrost || hasRecirculation || hasSync
+        get() = hasSeatHeat || hasPassengerSeatHeat || hasSteeringHeat || hasSeatVent ||
+            hasFrontDefrost || hasRearDefrost || hasRecirculation || hasSync || hasPower
 }
 
 data class ClimateUiState(
@@ -222,12 +227,14 @@ data class ClimateUiState(
     val fanSpeed: Int = 3,
     val maxFanSpeed: Int = 5,
     val isAcEnabled: Boolean = true,
+    val isPowerOn: Boolean = true,
     val isSyncEnabled: Boolean = true,
     val isRecirculationOn: Boolean = false,
     val isFrontDefrostOn: Boolean = false,
     val isRearDefrostOn: Boolean = false,
     val activeZone: ClimateZone = ClimateZone.Driver,
     val seatHeatLevel: Int = 1,
+    val passengerSeatHeatLevel: Int = 0,
     val maxSeatHeatLevel: Int = 3,
     val steeringHeatLevel: Int = 0,
     val maxSteeringHeatLevel: Int = 3,
@@ -244,6 +251,7 @@ sealed interface ClimateEvent {
     data class AdjustZoneTemperature(val zone: ClimateZone, val delta: Int) : ClimateEvent
     data class SelectAirflow(val mode: AirflowMode) : ClimateEvent
     data object ToggleAc : ClimateEvent
+    data object TogglePower : ClimateEvent
     data object ToggleSync : ClimateEvent
     data object ToggleRecirculation : ClimateEvent
     data object ToggleFrontDefrost : ClimateEvent
@@ -252,6 +260,7 @@ sealed interface ClimateEvent {
     data class SelectZone(val zone: ClimateZone) : ClimateEvent
     data class SetFanSpeed(val speed: Int) : ClimateEvent
     data object CycleSeatHeat : ClimateEvent
+    data object CyclePassengerSeatHeat : ClimateEvent
     data object CycleSteeringHeat : ClimateEvent
     data object CycleSeatVent : ClimateEvent
     data object IncreaseSeatHeat : ClimateEvent

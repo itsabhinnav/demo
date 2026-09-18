@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.LatLng
 import com.test.design.core.LocalDrivingUxState
 import com.test.design.core.cluster.ClusterUiState
 import com.test.design.presentation.ivi.climate.ClimateEvent
@@ -67,13 +68,12 @@ import com.test.design.presentation.ivi.media.MediaEvent
 import com.test.design.presentation.ivi.media.MediaUiState
 import com.test.design.presentation.ivi.navigation.NavigationUiState
 import com.test.design.presentation.ivi.navigation.components.DefaultMapCenter
-import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
+import com.test.design.presentation.ivi.navigation.components.GoogleMapBackground
 import com.test.design.presentation.ivi.navigation.components.mapChromeLayer
 import com.test.design.presentation.ivi.vehicle.VehicleUiState
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.climateAmbientColor
 import com.test.design.theme.temperatureToFraction
-import org.osmdroid.util.GeoPoint
 
 /** Sidebar takes ~30% of the driving home (map keeps ~70%). */
 private const val SidebarWidthFraction = 0.30f
@@ -114,7 +114,7 @@ fun SharedTransitionScope.DrivingDashboardLayout(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     onOpenWidgetDashboard: (() -> Unit)? = null,
-    mapCenter: GeoPoint? = null,
+    mapCenter: LatLng? = null,
     initialMapZoom: Double = 14.5,
     showMapRoute: Boolean = false,
     @Suppress("UNUSED_PARAMETER") onOpenMain: (() -> Unit)? = null,
@@ -126,8 +126,8 @@ fun SharedTransitionScope.DrivingDashboardLayout(
 
     Box(modifier = modifier.fillMaxSize()) {
         // Map stays full-bleed; SafeBounds / system bars pad overlays only.
-        // mapChromeLayer() keeps Compose chrome above the OsmDroid AndroidView.
-        OsmMapBackground(
+        // mapChromeLayer() keeps Compose chrome above the Maps SDK AndroidView.
+        GoogleMapBackground(
             modifier = Modifier.fillMaxSize(),
             center = mapCenter ?: DefaultMapCenter,
             showRoute = showMapRoute,

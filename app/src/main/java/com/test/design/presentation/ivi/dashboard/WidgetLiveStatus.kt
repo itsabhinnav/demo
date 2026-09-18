@@ -32,8 +32,8 @@ fun DashboardWidget.liveStatus(
                 append(if (state.isAcEnabled) "A/C on" else "A/C off")
             }
             if (state.capabilities.hasFanSpeed) {
-                append(" · Fan ")
-                append(state.fanSpeed)
+                append(" · ")
+                append(if (state.fanSpeed <= 0) "Fan off" else "Fan ${state.fanSpeed}")
             }
         }
     } ?: subtitle

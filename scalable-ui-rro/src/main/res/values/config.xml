@@ -47,7 +47,7 @@
         <item>@xml/nav_bar</item>
     </array>
 
-    <!-- Boot: green Maps placeholder full-bleed + floating Design rail (no OSM). -->
+    <!-- Boot: green Maps placeholder full-bleed + floating Design rail (no in-app map). -->
     <string-array name="config_default_activities" translatable="false">
         <item>map_panel;com.android.car.mapsplaceholder/.MapsPlaceholderActivity</item>
         <item>widget_panel;com.test.design/.presentation.ivi.glanceables.DrivingRailActivity</item>

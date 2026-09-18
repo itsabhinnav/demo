@@ -10,6 +10,7 @@ internal object HvacFanDirection {
     const val FLOOR: Int = 0x2
     const val DEFROST: Int = 0x4
     const val FACE_AND_FLOOR: Int = FACE or FLOOR
+    const val FLOOR_AND_DEFROST: Int = FLOOR or DEFROST
 }
 
 /**

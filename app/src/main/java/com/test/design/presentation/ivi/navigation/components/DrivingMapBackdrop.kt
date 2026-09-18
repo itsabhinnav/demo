@@ -24,8 +24,8 @@ private val MapWater = Color(0xFF15202B)
 
 /**
  * Compose-only night map backdrop for the driving home.
- * Avoids OsmDroid [android.view.View] which paints above Compose siblings on AAOS
- * and left the launch buffer black.
+ * Used when Google Play services is unavailable, and avoids a MapView that can
+ * paint above Compose siblings on AAOS and leave the launch buffer black.
  */
 @Composable
 fun DrivingMapBackdrop(modifier: Modifier = Modifier) {

@@ -43,7 +43,7 @@ import com.test.design.presentation.ivi.dashboard.widgetContentSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetControlsSharedElement
 import com.test.design.presentation.ivi.dashboard.widgetContainerTransform
 import com.test.design.presentation.ivi.map.rememberMapOverlayMetrics
-import com.test.design.presentation.ivi.navigation.components.OsmMapBackground
+import com.test.design.presentation.ivi.navigation.components.GoogleMapBackground
 import com.test.design.presentation.ivi.navigation.components.mapChromeLayer
 import com.test.design.presentation.ivi.navigation.components.FavoriteDestinationsRow
 import com.test.design.presentation.ivi.navigation.components.RouteStepsList
@@ -73,9 +73,9 @@ fun SharedTransitionScope.NavigationScreen(
             modifier = modifier.fillMaxSize(),
         ),
     ) {
-        // Full-bleed OSM map layer — ignores Scalable UI / system safe areas.
+        // Full-bleed Google Map layer — ignores Scalable UI / system safe areas.
         ScreenBackground(modifier = Modifier.fillMaxSize())
-        OsmMapBackground(
+        GoogleMapBackground(
             modifier = Modifier.fillMaxSize(),
             showRoute = true,
             interactive = true,

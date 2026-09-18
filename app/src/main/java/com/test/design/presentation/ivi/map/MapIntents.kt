@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.google.android.gms.maps.model.LatLng
 import com.test.design.MainActivity
-import org.osmdroid.util.GeoPoint
 
 /** Intent action to open the full-bleed map activity from in-app code or Scalable UI actions. */
 const val ACTION_OPEN_MAP = "com.test.design.action.OPEN_MAP"
@@ -29,7 +29,7 @@ const val EXTRA_EXPAND_NAVIGATION = "com.test.design.extra.EXPAND_NAVIGATION"
  * `map_panel;com.test.design/.presentation.ivi.map.MapActivity`
  */
 data class MapLaunchConfig(
-    val center: GeoPoint? = null,
+    val center: LatLng? = null,
     val zoom: Double = 14.5,
     val showRoute: Boolean = false,
     val expandNavigation: Boolean = false,
@@ -44,7 +44,7 @@ object MapIntents {
     fun openMap(
         context: Context,
         showRoute: Boolean = false,
-        center: GeoPoint? = null,
+        center: LatLng? = null,
         zoom: Double = 14.5,
     ): Intent = Intent(context, MapActivity::class.java).apply {
         action = ACTION_OPEN_MAP
@@ -93,7 +93,7 @@ object MapIntents {
         )
     }
 
-    private fun parseGeoCenter(uri: Uri?): GeoPoint? {
+    private fun parseGeoCenter(uri: Uri?): LatLng? {
         if (uri == null || uri.scheme != "geo") return null
 
         val schemeSpecific = uri.schemeSpecificPart ?: return null
@@ -106,16 +106,16 @@ object MapIntents {
         if (latitude == 0.0 && longitude == 0.0) {
             return parseQueryCenter(uri)
         }
-        return GeoPoint(latitude, longitude)
+        return LatLng(latitude, longitude)
     }
 
-    private fun parseQueryCenter(uri: Uri): GeoPoint? {
+    private fun parseQueryCenter(uri: Uri): LatLng? {
         val query = uri.getQueryParameter("q") ?: return null
         val coordinatePart = query.substringBefore("(").trim()
         val parts = coordinatePart.split(",")
         if (parts.size < 2) return null
         val latitude = parts[0].trim().toDoubleOrNull() ?: return null
         val longitude = parts[1].trim().toDoubleOrNull() ?: return null
-        return GeoPoint(latitude, longitude)
+        return LatLng(latitude, longitude)
     }
 }

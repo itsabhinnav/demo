@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.maps.secrets)
 }
 
 android {
@@ -37,7 +38,14 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+}
+
+secrets {
+    // Official Maps SDK setup: MAPS_API_KEY in root local.properties.
+    // CI / checkouts without a key use local.defaults.properties.
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 dependencies {
@@ -63,7 +71,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.osmdroid.android)
+    // Maps SDK for Android — https://developers.google.com/maps/documentation/android-sdk/start
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

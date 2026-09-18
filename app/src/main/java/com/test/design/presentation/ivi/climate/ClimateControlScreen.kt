@@ -248,6 +248,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                                 ClimateComfortControlsCard(
                                     seatHeatLevel = uiState.seatHeatLevel,
                                     maxSeatHeatLevel = uiState.maxSeatHeatLevel,
+                                    passengerSeatHeatLevel = uiState.passengerSeatHeatLevel,
                                     steeringHeatLevel = uiState.steeringHeatLevel,
                                     maxSteeringHeatLevel = uiState.maxSteeringHeatLevel,
                                     seatVentLevel = uiState.seatVentLevel,
@@ -257,20 +258,27 @@ fun SharedTransitionScope.ClimateControlScreen(
                                     isRecirculationOn = uiState.isRecirculationOn,
                                     isSyncEnabled = uiState.isSyncEnabled,
                                     isAcEnabled = uiState.isAcEnabled,
+                                    isPowerOn = uiState.isPowerOn,
                                     onCycleSeatHeat = { onEvent(ClimateEvent.CycleSeatHeat) },
+                                    onCyclePassengerSeatHeat = {
+                                        onEvent(ClimateEvent.CyclePassengerSeatHeat)
+                                    },
                                     onCycleSteeringHeat = { onEvent(ClimateEvent.CycleSteeringHeat) },
                                     onCycleSeatVent = { onEvent(ClimateEvent.CycleSeatVent) },
                                     onToggleFrontDefrost = { onEvent(ClimateEvent.ToggleFrontDefrost) },
                                     onToggleRearDefrost = { onEvent(ClimateEvent.ToggleRearDefrost) },
                                     onToggleRecirculation = { onEvent(ClimateEvent.ToggleRecirculation) },
                                     onToggleSync = { onEvent(ClimateEvent.ToggleSync) },
+                                    onTogglePower = { onEvent(ClimateEvent.TogglePower) },
                                     showSeatHeat = caps.hasSeatHeat,
+                                    showPassengerSeatHeat = caps.hasPassengerSeatHeat,
                                     showSteeringHeat = caps.hasSteeringHeat,
                                     showSeatVent = caps.hasSeatVent,
                                     showFrontDefrost = caps.hasFrontDefrost,
                                     showRearDefrost = caps.hasRearDefrost,
                                     showRecirculation = caps.hasRecirculation,
                                     showSync = caps.hasSync,
+                                    showPower = caps.hasPower,
                                 )
                             }
                         }
