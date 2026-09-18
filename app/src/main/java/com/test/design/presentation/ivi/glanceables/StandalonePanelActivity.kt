@@ -13,6 +13,12 @@ import com.test.design.presentation.ivi.map.MapIntents
  */
 abstract class StandalonePanelActivity : GlanceableActivity() {
 
+    /**
+     * Standalone panels are full-window activities (not SystemUI-sized TaskPanels),
+     * so they must clear CarSystemUI status / dock insets themselves.
+     */
+    override val applySafeDrawingInsets: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         onBackPressedDispatcher.addCallback(
             this,

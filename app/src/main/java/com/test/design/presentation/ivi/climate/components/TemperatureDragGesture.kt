@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.input.pointer.pointerInput
+import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import kotlin.math.abs
 
 /**
@@ -24,6 +25,8 @@ fun Modifier.temperatureVerticalDrag(
     return composed {
         var residual by remember { mutableFloatStateOf(0f) }
         val latestSteps by rememberUpdatedState(onTemperatureSteps)
+        val haptics = rememberClimateHaptics()
+        val latestHaptics by rememberUpdatedState(haptics)
         pointerInput(pixelsPerStep) {
             detectVerticalDragGestures(
                 onDragEnd = { residual = 0f },
@@ -35,7 +38,10 @@ fun Modifier.temperatureVerticalDrag(
                     if (abs(residual) >= pixelsPerStep) {
                         val steps = (residual / pixelsPerStep).toInt()
                         residual -= steps * pixelsPerStep
-                        if (steps != 0) latestSteps(steps)
+                        if (steps != 0) {
+                            latestHaptics.tick()
+                            latestSteps(steps)
+                        }
                     }
                 },
             )

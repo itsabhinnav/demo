@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.AirflowMode
+import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -42,7 +43,8 @@ fun MorphingAirflowSegmentedButton(
     modes: List<AirflowMode> = AirflowMode.entries,
 ) {
     if (modes.isEmpty()) return
-    val selectedIndex = modes.indexOf(selectedMode).coerceAtLeast(0)
+    val haptics = rememberClimateHaptics()
+    val selectedIndex = modes.indexOf(selectedMode)
     val motionSpec = MaterialTheme.motionScheme.slowSpatialSpec<Dp>()
 
     BoxWithConstraints(
@@ -54,25 +56,27 @@ fun MorphingAirflowSegmentedButton(
     ) {
         val segmentWidth = maxWidth / modes.size
         val indicatorOffset by animateDpAsState(
-            targetValue = segmentWidth * selectedIndex,
+            targetValue = if (selectedIndex >= 0) segmentWidth * selectedIndex else 0.dp,
             animationSpec = motionSpec,
             label = "airflow_indicator_offset",
         )
         val indicatorWidth by animateDpAsState(
-            targetValue = segmentWidth,
+            targetValue = if (selectedIndex >= 0) segmentWidth else 0.dp,
             animationSpec = motionSpec,
             label = "airflow_indicator_width",
         )
 
-        Box(
-            modifier = Modifier
-                .offset(x = indicatorOffset)
-                .width(indicatorWidth)
-                .fillMaxHeight()
-                .padding(4.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.primary),
-        )
+        if (selectedIndex >= 0) {
+            Box(
+                modifier = Modifier
+                    .offset(x = indicatorOffset)
+                    .width(indicatorWidth)
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+            )
+        }
 
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -91,7 +95,10 @@ fun MorphingAirflowSegmentedButton(
                         .weight(1f)
                         .fillMaxHeight()
                         .carTouchTarget()
-                        .clickable { onModeSelected(mode) },
+                        .clickable {
+                            if (!isSelected) haptics.confirm()
+                            onModeSelected(mode)
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {

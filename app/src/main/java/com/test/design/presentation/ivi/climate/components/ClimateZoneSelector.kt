@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.ClimateZone
+import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
 
@@ -121,6 +122,7 @@ fun FanSpeedBars(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
+    val haptics = rememberClimateHaptics()
     val motionSpec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
     val barSpacing = if (compact) 4.dp else 8.dp
     val baseHeight = if (compact) 12 else 24
@@ -149,7 +151,10 @@ fun FanSpeedBars(
                     MaterialTheme.colorScheme.primary.copy(alpha = if (offActive) 1f else 0.25f),
                 )
                 .carTouchTarget()
-                .clickable { onSpeedSelected(0) },
+                .clickable {
+                    if (fanSpeed != 0) haptics.tick()
+                    onSpeedSelected(0)
+                },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -180,8 +185,10 @@ fun FanSpeedBars(
                     .background(
                         MaterialTheme.colorScheme.primary.copy(alpha = 0.25f + animatedFraction * 0.75f),
                     )
-                    .carTouchTarget()
-                    .clickable { onSpeedSelected(level) },
+                    .clickable {
+                        if (fanSpeed != level) haptics.tick()
+                        onSpeedSelected(level)
+                    },
             )
         }
     }

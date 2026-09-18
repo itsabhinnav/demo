@@ -6,7 +6,7 @@ enum class AirflowMode(val label: String) {
     Face("Face"),
     BiLevel("Bi-level"),
     Feet("Feet"),
-    FeetDefrost("Feet defrost"),
+    FeetDefrost("Defrost"),
     Auto("Auto"),
 }
 
@@ -200,12 +200,12 @@ data class ClimateCapabilities(
                 add(AirflowMode.Feet)
                 add(AirflowMode.FeetDefrost)
             }
-            if (hasAuto) add(AirflowMode.Auto)
         }
 
     val hasComfortControls: Boolean
         get() = hasSeatHeat || hasPassengerSeatHeat || hasSteeringHeat || hasSeatVent ||
-            hasFrontDefrost || hasRearDefrost || hasRecirculation || hasSync || hasPower
+            hasFrontDefrost || hasRearDefrost || hasRecirculation || hasSync || hasPower ||
+            hasAuto
 }
 
 data class ClimateUiState(
@@ -223,7 +223,7 @@ data class ClimateUiState(
      */
     val minTemperatureFahrenheit: Float? = null,
     val temperatureUnit: TemperatureUnit = TemperatureUnit.Celsius,
-    val airflowMode: AirflowMode = AirflowMode.Auto,
+    val airflowMode: AirflowMode = AirflowMode.Face,
     val fanSpeed: Int = 3,
     val maxFanSpeed: Int = 5,
     val isAcEnabled: Boolean = true,

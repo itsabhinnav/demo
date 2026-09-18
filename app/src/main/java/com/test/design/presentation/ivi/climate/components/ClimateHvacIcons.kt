@@ -21,6 +21,7 @@ object ClimateHvacIcons {
     @DrawableRes val Hvac = R.drawable.ic_hvac_hvac
     @DrawableRes val Ac = R.drawable.ic_hvac_ac
     @DrawableRes val SeatHeat = R.drawable.ic_hvac_seat_heat
+    @DrawableRes val SeatHeatPassenger = R.drawable.ic_hvac_seat_heat_right
     @DrawableRes val SeatVent = R.drawable.ic_hvac_seat_vent
     @DrawableRes val SteeringHeat = R.drawable.ic_hvac_steering_heat
     @DrawableRes val FrontDefrost = R.drawable.ic_hvac_defrost_front

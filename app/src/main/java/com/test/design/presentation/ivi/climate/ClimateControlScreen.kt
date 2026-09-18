@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
@@ -94,6 +97,7 @@ fun SharedTransitionScope.ClimateControlScreen(
         label = "passenger_glow",
     )
     val dialShape = rememberClimateDialShape(acEnabled = uiState.isAcEnabled)
+    val haptics = rememberClimateHaptics()
 
     MaterialTheme(
         colorScheme = dynamicScheme,
@@ -149,6 +153,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
                         .padding(CarDesignTokens.ContentPadding),
                 ) {
                     AdaptiveLayout(modifier = Modifier.fillMaxSize()) { layout ->
@@ -180,7 +185,10 @@ fun SharedTransitionScope.ClimateControlScreen(
                                         )
                                         FilterChip(
                                             selected = true,
-                                            onClick = { onEvent(ClimateEvent.ToggleTemperatureUnit) },
+                                            onClick = {
+                                                haptics.tick()
+                                                onEvent(ClimateEvent.ToggleTemperatureUnit)
+                                            },
                                             label = {
                                                 Text(
                                                     text = uiState.temperatureUnit.shortLabel,
@@ -203,7 +211,10 @@ fun SharedTransitionScope.ClimateControlScreen(
                                             )
                                             Switch(
                                                 checked = uiState.isAcEnabled,
-                                                onCheckedChange = { onEvent(ClimateEvent.ToggleAc) },
+                                                onCheckedChange = { enabled ->
+                                                    haptics.toggle(enabled)
+                                                    onEvent(ClimateEvent.ToggleAc)
+                                                },
                                             )
                                         }
                                     }
@@ -259,6 +270,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                                     isSyncEnabled = uiState.isSyncEnabled,
                                     isAcEnabled = uiState.isAcEnabled,
                                     isPowerOn = uiState.isPowerOn,
+                                    isAutoOn = uiState.airflowMode == AirflowMode.Auto,
                                     onCycleSeatHeat = { onEvent(ClimateEvent.CycleSeatHeat) },
                                     onCyclePassengerSeatHeat = {
                                         onEvent(ClimateEvent.CyclePassengerSeatHeat)
@@ -270,6 +282,14 @@ fun SharedTransitionScope.ClimateControlScreen(
                                     onToggleRecirculation = { onEvent(ClimateEvent.ToggleRecirculation) },
                                     onToggleSync = { onEvent(ClimateEvent.ToggleSync) },
                                     onTogglePower = { onEvent(ClimateEvent.TogglePower) },
+                                    onToggleAuto = {
+                                        val next = if (uiState.airflowMode == AirflowMode.Auto) {
+                                            AirflowMode.Face
+                                        } else {
+                                            AirflowMode.Auto
+                                        }
+                                        onEvent(ClimateEvent.SelectAirflow(next))
+                                    },
                                     showSeatHeat = caps.hasSeatHeat,
                                     showPassengerSeatHeat = caps.hasPassengerSeatHeat,
                                     showSteeringHeat = caps.hasSteeringHeat,
@@ -279,6 +299,7 @@ fun SharedTransitionScope.ClimateControlScreen(
                                     showRecirculation = caps.hasRecirculation,
                                     showSync = caps.hasSync,
                                     showPower = caps.hasPower,
+                                    showAuto = caps.hasAuto,
                                 )
                             }
                         }

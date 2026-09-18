@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.test.design.presentation.ivi.climate.TemperatureUnit
 import com.test.design.presentation.ivi.climate.formatTemperature
+import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import com.test.design.presentation.ivi.climate.toDisplayTemperature
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.carTouchTarget
@@ -240,8 +241,12 @@ fun TemperatureAdjustButton(
     size: Dp = CarDesignTokens.MinTouchTarget,
     iconSize: Dp = CarDesignTokens.PrimaryIcon,
 ) {
+    val haptics = rememberClimateHaptics()
     FilledIconButton(
-        onClick = onClick,
+        onClick = {
+            haptics.tick()
+            onClick()
+        },
         modifier = Modifier
             .size(size)
             .clip(CircleShape)

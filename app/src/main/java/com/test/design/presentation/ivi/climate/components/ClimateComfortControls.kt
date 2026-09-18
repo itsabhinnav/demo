@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import com.test.design.presentation.ivi.common.MorphingDetailSurfaceCard
 import com.test.design.theme.CarDesignTokens
 import com.test.design.theme.ClimateCardActiveRadii
@@ -53,6 +54,7 @@ fun ClimateComfortControlsCard(
     isSyncEnabled: Boolean,
     isAcEnabled: Boolean,
     isPowerOn: Boolean,
+    isAutoOn: Boolean,
     onCycleSeatHeat: () -> Unit,
     onCyclePassengerSeatHeat: () -> Unit,
     onCycleSteeringHeat: () -> Unit,
@@ -62,6 +64,7 @@ fun ClimateComfortControlsCard(
     onToggleRecirculation: () -> Unit,
     onToggleSync: () -> Unit,
     onTogglePower: () -> Unit,
+    onToggleAuto: () -> Unit,
     modifier: Modifier = Modifier,
     showSeatHeat: Boolean = true,
     showPassengerSeatHeat: Boolean = true,
@@ -72,6 +75,7 @@ fun ClimateComfortControlsCard(
     showRecirculation: Boolean = true,
     showSync: Boolean = true,
     showPower: Boolean = true,
+    showAuto: Boolean = true,
 ) {
     MorphingDetailSurfaceCard(
         morphExpanded = isAcEnabled,
@@ -95,7 +99,7 @@ fun ClimateComfortControlsCard(
             }
             if (showPassengerSeatHeat) {
                 ComfortIconLevelButton(
-                    icon = ClimateHvacIcons.SeatHeat,
+                    icon = ClimateHvacIcons.SeatHeatPassenger,
                     contentDescription = "Passenger seat heat",
                     level = passengerSeatHeatLevel,
                     maxLevel = maxSeatHeatLevel,
@@ -168,6 +172,14 @@ fun ClimateComfortControlsCard(
                     onClick = onTogglePower,
                 )
             }
+            if (showAuto) {
+                ComfortIconToggle(
+                    icon = ClimateHvacIcons.Auto,
+                    contentDescription = "Auto climate",
+                    active = isAutoOn,
+                    onClick = onToggleAuto,
+                )
+            }
         }
     }
 }
@@ -180,6 +192,7 @@ private fun ComfortIconLevelButton(
     maxLevel: Int,
     onClick: () -> Unit,
 ) {
+    val haptics = rememberClimateHaptics()
     val active = level > 0
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
     val container by animateColorAsState(
@@ -222,7 +235,10 @@ private fun ComfortIconLevelButton(
                     this.contentDescription =
                         "$contentDescription, ${if (active) "level $level" else "off"}"
                 }
-                .clickable(onClick = onClick),
+                .clickable {
+                    haptics.tick()
+                    onClick()
+                },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -248,6 +264,7 @@ private fun ComfortIconToggle(
     active: Boolean,
     onClick: () -> Unit,
 ) {
+    val haptics = rememberClimateHaptics()
     val motionSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
     val container by animateColorAsState(
         targetValue = if (active) {
@@ -285,7 +302,10 @@ private fun ComfortIconToggle(
                 this.contentDescription =
                     "$contentDescription ${if (active) "on" else "off"}"
             }
-            .clickable(onClick = onClick),
+            .clickable {
+                haptics.toggle(!active)
+                onClick()
+            },
         contentAlignment = Alignment.Center,
     ) {
         Icon(

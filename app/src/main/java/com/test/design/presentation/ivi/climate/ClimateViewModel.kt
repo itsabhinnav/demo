@@ -36,11 +36,8 @@ class ClimateViewModel(
             is ClimateEvent.AdjustZoneTemperature ->
                 adjustZoneTemperature(event.zone, event.delta, live)
             is ClimateEvent.SelectAirflow -> {
-                if (live) {
-                    repository.setAirflowMode(event.mode)
-                } else {
-                    setState { copy(airflowMode = event.mode) }
-                }
+                setState { copy(airflowMode = event.mode) }
+                if (live) repository.setAirflowMode(event.mode)
             }
             ClimateEvent.ToggleAc -> {
                 val next = !_state.value.isAcEnabled

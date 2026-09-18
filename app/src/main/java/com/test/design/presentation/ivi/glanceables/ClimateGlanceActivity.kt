@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.test.design.presentation.ivi.climate.ClimateEvent
@@ -336,7 +337,13 @@ private fun CompactFanBars(
             Box(
                 modifier = Modifier
                     .width(14.dp)
-                    .height((18 + level * 10).dp)
+                    .height(
+                        lerp(
+                            16.dp,
+                            CarDesignTokens.MinTouchTarget - 4.dp,
+                            level / maxFanSpeed.coerceAtLeast(1).toFloat(),
+                        ),
+                    )
                     .clip(RoundedCornerShape(5.dp))
                     .background(activeColor.copy(alpha = 0.25f + fraction * 0.7f))
                     .clickable { onSpeedSelected(level) },

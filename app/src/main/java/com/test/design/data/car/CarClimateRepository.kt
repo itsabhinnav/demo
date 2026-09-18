@@ -151,37 +151,27 @@ class CarClimateRepository(
 
     fun setAirflowMode(mode: AirflowMode) {
         val mgr = propertyManager ?: return
+        val directionAreas = areas.fanDirectionAreas
+        val autoAreas = areas.autoAreas
         when (mode) {
             AirflowMode.Auto -> {
-                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, true) }
-            }
-            AirflowMode.Face -> {
-                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
-                areas.fanDirectionAreas.forEach {
-                    setInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, it, HvacFanDirection.FACE)
+                autoAreas.forEach { area ->
+                    ensurePowerOn(mgr, area)
+                    setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, area, true)
                 }
             }
-            AirflowMode.BiLevel -> {
-                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
-                areas.fanDirectionAreas.forEach {
-                    setInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, it, HvacFanDirection.FACE_AND_FLOOR)
+            else -> {
+                val direction = when (mode) {
+                    AirflowMode.Face -> HvacFanDirection.FACE
+                    AirflowMode.BiLevel -> HvacFanDirection.FACE_AND_FLOOR
+                    AirflowMode.Feet -> HvacFanDirection.FLOOR
+                    AirflowMode.FeetDefrost -> HvacFanDirection.FLOOR_AND_DEFROST
+                    AirflowMode.Auto -> return
                 }
-            }
-            AirflowMode.Feet -> {
-                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
-                areas.fanDirectionAreas.forEach {
-                    setInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, it, HvacFanDirection.FLOOR)
-                }
-            }
-            AirflowMode.FeetDefrost -> {
-                areas.autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
-                areas.fanDirectionAreas.forEach {
-                    setInt(
-                        mgr,
-                        VehiclePropertyIds.HVAC_FAN_DIRECTION,
-                        it,
-                        HvacFanDirection.FLOOR_AND_DEFROST,
-                    )
+                autoAreas.forEach { setBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it, false) }
+                directionAreas.forEach { area ->
+                    ensurePowerOn(mgr, area)
+                    setInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, area, direction)
                 }
             }
         }
@@ -257,11 +247,12 @@ class CarClimateRepository(
         val passengerTemp = preferredSeat(tempAreas, VehicleAreaSeat.SEAT_ROW_1_RIGHT)
             ?: tempAreas.firstOrNull { it != driverTemp }
 
-        val fanSpeedAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_FAN_SPEED))
-        val fanDirectionAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION))
+        val fanSpeedAreas = areaIds(mgr, VehiclePropertyIds.HVAC_FAN_SPEED).toList()
+            .let { cabin -> cabinSeatAreas(cabin.toIntArray()).ifEmpty { cabin } }
+        val fanDirectionAreas = areaIds(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION).toList()
         val acAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_AC_ON))
         val recircAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_RECIRC_ON))
-        val autoAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_AUTO_ON))
+        val autoAreas = areaIds(mgr, VehiclePropertyIds.HVAC_AUTO_ON).toList()
         val powerAreas = cabinSeatAreas(areaIds(mgr, VehiclePropertyIds.HVAC_POWER_ON))
 
         val dualAreas = areaIds(mgr, VehiclePropertyIds.HVAC_DUAL_ON)
@@ -570,15 +561,36 @@ class CarClimateRepository(
                 VehiclePropertyIds.HVAC_AUTO_ON -> {
                     if (area == areas.autoAreas.firstOrNull()) {
                         val auto = value.value as? Boolean ?: false
-                        if (auto) current.copy(airflowMode = AirflowMode.Auto) else current
+                        if (auto) {
+                            current.copy(airflowMode = AirflowMode.Auto)
+                        } else {
+                            val direction = areas.fanDirectionAreas.firstOrNull()?.let { areaId ->
+                                propertyManager?.let { mgr ->
+                                    getInt(mgr, VehiclePropertyIds.HVAC_FAN_DIRECTION, areaId)
+                                }
+                            }
+                            current.copy(
+                                airflowMode = direction?.let { directionToAirflow(it) }
+                                    ?: if (current.airflowMode == AirflowMode.Auto) {
+                                        AirflowMode.Face
+                                    } else {
+                                        current.airflowMode
+                                    },
+                            )
+                        }
                     } else {
                         current
                     }
                 }
                 VehiclePropertyIds.HVAC_FAN_DIRECTION -> {
-                    if (area == areas.fanDirectionAreas.firstOrNull()) {
-                        if (current.airflowMode == AirflowMode.Auto && areas.autoAreas.isNotEmpty()) {
-                            current
+                    if (area in areas.fanDirectionAreas || areas.fanDirectionAreas.isEmpty()) {
+                        val autoOn = areas.autoAreas.firstOrNull()?.let { autoArea ->
+                            propertyManager?.let { mgr ->
+                                getBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, autoArea)
+                            }
+                        } == true
+                        if (autoOn) {
+                            current.copy(airflowMode = AirflowMode.Auto)
                         } else {
                             val direction = (value.value as? Number)?.toInt() ?: return@update current
                             current.copy(airflowMode = directionToAirflow(direction))
