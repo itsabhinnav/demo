@@ -22,14 +22,17 @@ class TemperatureScaleTest {
     }
 
     @Test
-    fun labelsAreSixDegreesApart() {
-        assertTrue(temperatureScaleIsMajorTick(18f))
-        assertTrue(temperatureScaleIsMajorTick(24f))
-        assertTrue(temperatureScaleIsMajorTick(72f))
-        assertFalse(temperatureScaleIsMajorTick(21f))
-        assertFalse(temperatureScaleIsMajorTick(22f))
-        assertFalse(temperatureScaleIsMajorTick(22.5f))
-        assertFalse(temperatureScaleIsMajorTick(73f))
+    fun labelsFollowTheUnit() {
+        assertEquals(4, temperatureScaleLabelGap(TemperatureUnit.Celsius))
+        assertEquals(8, temperatureScaleLabelGap(TemperatureUnit.Fahrenheit))
+        assertTrue(temperatureScaleIsMajorTick(16f, TemperatureUnit.Celsius))
+        assertTrue(temperatureScaleIsMajorTick(20f, TemperatureUnit.Celsius))
+        assertFalse(temperatureScaleIsMajorTick(18f, TemperatureUnit.Celsius))
+        assertFalse(temperatureScaleIsMajorTick(22.5f, TemperatureUnit.Celsius))
+        assertTrue(temperatureScaleIsMajorTick(64f, TemperatureUnit.Fahrenheit))
+        assertTrue(temperatureScaleIsMajorTick(72f, TemperatureUnit.Fahrenheit))
+        assertFalse(temperatureScaleIsMajorTick(68f, TemperatureUnit.Fahrenheit))
+        assertFalse(temperatureScaleIsMajorTick(70f, TemperatureUnit.Fahrenheit))
     }
 
     @Test
@@ -47,6 +50,15 @@ class TemperatureScaleTest {
         assertEquals(1f, center, 0.001f)
         assertTrue(edge < center)
         assertTrue(edge > 0.6f)
+    }
+
+    @Test
+    fun leftOfTheNeedleStaysBrighterThanTheRight() {
+        val left = temperatureScaleSideBrightness(-80f, 200f)
+        val right = temperatureScaleSideBrightness(80f, 200f)
+        assertEquals(1f, left, 0.001f)
+        assertTrue(right < left)
+        assertTrue(right > 0.6f)
     }
 
     @Test

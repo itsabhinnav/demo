@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,8 +28,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -155,6 +159,8 @@ private fun ClimateTemperatureDialContent(
         minFahrenheit = minTemperatureFahrenheit,
         fahrenheitStep = temperatureStepFahrenheit,
     )
+    val canIncrease = temperature < maxTemperature - 0.01f
+    val canDecrease = temperature > minTemperature + 0.01f
     val stepHandler = onTemperatureSteps ?: { steps ->
         repeat(abs(steps)) {
             if (steps > 0) onIncrease() else onDecrease()
@@ -186,6 +192,7 @@ private fun ClimateTemperatureDialContent(
                     icon = Icons.Default.Remove,
                     contentDescription = "Decrease temperature",
                     onClick = onDecrease,
+                    enabled = canDecrease,
                     size = buttonSize,
                     iconSize = iconSize,
                 )
@@ -210,30 +217,61 @@ private fun ClimateTemperatureDialContent(
                     icon = Icons.Default.Add,
                     contentDescription = "Increase temperature",
                     onClick = onIncrease,
+                    enabled = canIncrease,
                     size = buttonSize,
                     iconSize = iconSize,
                 )
             }
         } else {
-            Box(
-                modifier = Modifier
-                    .width(280.dp)
-                    .clip(dialShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
             ) {
-                TemperatureScale(
-                    temperature = temperature,
-                    temperatureLabel = displayLabel,
-                    sortKey = displaySortKey,
-                    minTemperature = minTemperature,
-                    maxTemperature = maxTemperature,
-                    temperatureStepCelsius = temperatureStepCelsius,
-                    temperatureStepFahrenheit = temperatureStepFahrenheit,
-                    minTemperatureFahrenheit = minTemperatureFahrenheit,
-                    temperatureUnit = temperatureUnit,
-                    onTemperatureSteps = stepHandler,
-                    modifier = Modifier.fillMaxWidth(),
+                TemperatureAdjustButton(
+                    icon = Icons.Default.Remove,
+                    contentDescription = "Decrease temperature",
+                    onClick = onDecrease,
+                    enabled = canDecrease,
+                    size = buttonSize,
+                    iconSize = iconSize,
+                )
+                Box(
+                    modifier = Modifier
+                        .offset(y = (-6).dp)
+                        .width(280.dp)
+                        .dropShadow(
+                            shape = dialShape,
+                            shadow = Shadow(
+                                radius = 16.dp,
+                                offset = DpOffset(0.dp, 8.dp),
+                                color = Color.Black.copy(alpha = 0.38f),
+                            ),
+                        )
+                        .clip(dialShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(horizontal = 44.dp, vertical = 8.dp),
+                ) {
+                    TemperatureScale(
+                        temperature = temperature,
+                        temperatureLabel = displayLabel,
+                        sortKey = displaySortKey,
+                        minTemperature = minTemperature,
+                        maxTemperature = maxTemperature,
+                        temperatureStepCelsius = temperatureStepCelsius,
+                        temperatureStepFahrenheit = temperatureStepFahrenheit,
+                        minTemperatureFahrenheit = minTemperatureFahrenheit,
+                        temperatureUnit = temperatureUnit,
+                        onTemperatureSteps = stepHandler,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                TemperatureAdjustButton(
+                    icon = Icons.Default.Add,
+                    contentDescription = "Increase temperature",
+                    onClick = onIncrease,
+                    enabled = canIncrease,
+                    size = buttonSize,
+                    iconSize = iconSize,
                 )
             }
         }
@@ -279,6 +317,7 @@ fun TemperatureAdjustButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     size: Dp = CarDesignTokens.MinTouchTarget,
     iconSize: Dp = CarDesignTokens.PrimaryIcon,
 ) {
@@ -288,6 +327,7 @@ fun TemperatureAdjustButton(
             haptics.tick()
             onClick()
         },
+        enabled = enabled,
         modifier = Modifier
             .size(size)
             .clip(CircleShape)

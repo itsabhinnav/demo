@@ -176,11 +176,19 @@ fun temperatureScaleDragSteps(dragPx: Float, spacingPx: Float): Int {
     return -(dragPx / spacingPx).toInt()
 }
 
-/** Labeled ticks sit on whole degrees, 6° apart. Half-steps stay unmarked. */
-fun temperatureScaleIsMajorTick(displayValue: Float): Boolean {
+/** Degrees between labeled ticks. Fahrenheit numbers are wider, so they sit further apart. */
+fun temperatureScaleLabelGap(unit: TemperatureUnit): Int = when (unit) {
+    TemperatureUnit.Celsius -> 4
+    TemperatureUnit.Fahrenheit -> 8
+}
+
+/** Labeled ticks sit on whole degrees. Half-steps stay unmarked. */
+fun temperatureScaleIsMajorTick(displayValue: Float, unit: TemperatureUnit): Boolean {
     val rounded = displayValue.roundToInt()
     if (kotlin.math.abs(displayValue - rounded) >= 0.05f) return false
-    return rounded % 6 == 0
+    val gap = temperatureScaleLabelGap(unit)
+    if (gap <= 0) return false
+    return rounded % gap == 0
 }
 
 /**
@@ -203,15 +211,30 @@ fun temperatureScaleTickHeightFraction(distanceFromCenter: Float, halfWidth: Flo
 }
 
 /**
+ * Brightness relative to the selected tick. Ticks left of the needle stay
+ * fully lit. Ticks to the right are dimmer, but stay readable.
+ */
+fun temperatureScaleSideBrightness(offsetFromCenter: Float, halfWidth: Float): Float {
+    if (halfWidth <= 0f) return 1f
+    val t = (offsetFromCenter / halfWidth).coerceIn(-1f, 1f)
+    if (t <= 0f) return 1f
+    return (0.78f - t * 0.16f).coerceIn(0.58f, 1f)
+}
+
+/**
  * Sharp through the middle of the scale, then a smooth falloff to nothing
  * at the corners.
  */
-fun temperatureScaleEdgeFade(distanceFromCenter: Float, halfWidth: Float): Float {
+fun temperatureScaleEdgeFade(
+    distanceFromCenter: Float,
+    halfWidth: Float,
+    fadeStart: Float = 0.55f,
+): Float {
     if (halfWidth <= 0f) return 1f
     val t = (distanceFromCenter / halfWidth).coerceIn(0f, 1f)
-    val fadeStart = 0.55f
-    if (t <= fadeStart) return 1f
-    val u = (t - fadeStart) / (1f - fadeStart)
+    val start = fadeStart.coerceIn(0f, 0.98f)
+    if (t <= start) return 1f
+    val u = (t - start) / (1f - start)
     val smooth = u * u * (3f - 2f * u)
     return (1f - smooth).coerceIn(0f, 1f)
 }

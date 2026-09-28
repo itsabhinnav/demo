@@ -21,6 +21,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.test.design.presentation.ivi.climate.TemperatureUnit
 import com.test.design.presentation.ivi.climate.rememberClimateHaptics
 import com.test.design.presentation.ivi.climate.temperatureScaleDragSteps
@@ -35,13 +37,46 @@ import com.test.design.presentation.ivi.climate.temperatureScaleEdgeFade
 import com.test.design.presentation.ivi.climate.temperatureScaleIndex
 import com.test.design.presentation.ivi.climate.temperatureScaleIsMajorTick
 import com.test.design.presentation.ivi.climate.temperatureScaleSegmentStep
+import com.test.design.presentation.ivi.climate.temperatureScaleSideBrightness
 import com.test.design.presentation.ivi.climate.temperatureScaleTickHeightFraction
 import com.test.design.presentation.ivi.climate.toDisplayTemperature
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 
 private val TickSpacing = 12.dp
 private val MaxTickLength = 22.dp
+
+private fun roundedTriangle(
+    apex: Offset,
+    bottomLeft: Offset,
+    bottomRight: Offset,
+    cornerRadius: Float,
+): Path {
+    fun along(from: Offset, to: Offset, distance: Float): Offset {
+        val dx = to.x - from.x
+        val dy = to.y - from.y
+        val length = hypot(dx, dy).coerceAtLeast(1f)
+        val t = (distance / length).coerceIn(0f, 0.45f)
+        return Offset(from.x + dx * t, from.y + dy * t)
+    }
+    val apexToLeft = along(apex, bottomLeft, cornerRadius)
+    val leftFromApex = along(bottomLeft, apex, cornerRadius)
+    val leftToRight = along(bottomLeft, bottomRight, cornerRadius)
+    val rightFromLeft = along(bottomRight, bottomLeft, cornerRadius)
+    val rightToApex = along(bottomRight, apex, cornerRadius)
+    val apexFromRight = along(apex, bottomRight, cornerRadius)
+    return Path().apply {
+        moveTo(apexToLeft.x, apexToLeft.y)
+        lineTo(leftFromApex.x, leftFromApex.y)
+        quadraticBezierTo(bottomLeft.x, bottomLeft.y, leftToRight.x, leftToRight.y)
+        lineTo(rightFromLeft.x, rightFromLeft.y)
+        quadraticBezierTo(bottomRight.x, bottomRight.y, rightToApex.x, rightToApex.y)
+        lineTo(apexFromRight.x, apexFromRight.y)
+        quadraticBezierTo(apex.x, apex.y, apexToLeft.x, apexToLeft.y)
+        close()
+    }
+}
 
 /**
  * Fixed needle, sliding scale. Drag follows the finger: the value under the
@@ -87,8 +122,11 @@ fun TemperatureScale(
         label = "temperature_scale_shift",
     )
     val tickColor = MaterialTheme.colorScheme.primary
-    val labelStyle = MaterialTheme.typography.labelLarge
-    val readoutStyle = MaterialTheme.typography.headlineLarge
+    val labelStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = 20.sp,
+        lineHeight = 24.sp,
+    )
+    val readoutStyle = MaterialTheme.typography.displayMedium
     val textMeasurer = rememberTextMeasurer()
 
     Column(
@@ -126,7 +164,7 @@ fun TemperatureScale(
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(88.dp),
+                .height(100.dp),
         ) {
             val shift = shownShift
             val center = size.width / 2f
@@ -139,8 +177,16 @@ fun TemperatureScale(
                 val x = center + (index - animatedIndex) * spacingPx + shift
                 if (x < -TickSpacing.toPx() || x > size.width + TickSpacing.toPx()) continue
                 val distance = abs(x - center)
-                val fade = temperatureScaleEdgeFade(distance, halfWidth)
-                if (fade <= 0.02f) continue
+                val onLeft = x <= center
+                val fade = temperatureScaleEdgeFade(
+                    distance,
+                    halfWidth,
+                    fadeStart = if (onLeft) 0.9f else 0.82f,
+                )
+                val side = temperatureScaleSideBrightness(x - center, halfWidth)
+                val alpha = fade * side
+                if (alpha <= 0.02f) continue
+                val selected = distance < spacingPx * 0.45f
                 val arc = temperatureScaleTickHeightFraction(distance, halfWidth)
                 val celsius = minTemperature + index * step
                 val display = celsius.toDisplayTemperature(
@@ -150,28 +196,39 @@ fun TemperatureScale(
                     minFahrenheit = minTemperatureFahrenheit,
                     fahrenheitStep = temperatureStepFahrenheit,
                 )
-                val major = temperatureScaleIsMajorTick(display)
-                val tickLen = maxLen * arc
+                val major = temperatureScaleIsMajorTick(display, temperatureUnit)
+                val tickLen = if (selected) maxLen else maxLen * arc
                 val tickTop = baseline - tickLen
-                val blur = (1f - fade) * 8.dp.toPx()
+                val blur = if (selected || onLeft) 0f else (1f - fade) * 4.dp.toPx()
+                val markStroke = when {
+                    selected -> stroke * 2.2f
+                    major -> stroke * 2f
+                    else -> stroke + blur * 0.35f
+                }
+                val markColor = if (selected || x <= center) {
+                    tickColor
+                } else {
+                    val right = ((x - center) / halfWidth).coerceIn(0f, 1f)
+                    lerp(tickColor, Color.Black, 0.1f + right * 0.16f)
+                }
                 if (blur > 0.5f) {
                     val passes = 4
                     for (pass in passes downTo 1) {
                         val spread = blur * pass / passes
                         drawLine(
-                            color = tickColor.copy(alpha = fade * 0.16f),
+                            color = markColor.copy(alpha = alpha * 0.16f),
                             start = Offset(x, tickTop),
                             end = Offset(x, baseline),
-                            strokeWidth = stroke + spread * 2f,
+                            strokeWidth = markStroke + spread * 2f,
                             cap = StrokeCap.Round,
                         )
                     }
                 }
                 drawLine(
-                    color = tickColor.copy(alpha = fade),
+                    color = markColor.copy(alpha = if (selected) 1f else alpha),
                     start = Offset(x, tickTop),
                     end = Offset(x, baseline),
-                    strokeWidth = stroke + blur * 0.35f,
+                    strokeWidth = markStroke,
                     cap = StrokeCap.Round,
                 )
                 if (major) {
@@ -182,21 +239,21 @@ fun TemperatureScale(
                     )
                     drawText(
                         textLayoutResult = layout,
-                        color = tickColor.copy(alpha = fade),
+                        color = markColor.copy(alpha = alpha),
                         topLeft = Offset(x - layout.size.width / 2f, baseline - maxLen - layout.size.height - labelGap),
                     )
                 }
             }
-            val apexY = baseline + 4.dp.toPx()
-            val baseY = apexY + 8.dp.toPx()
-            val half = 6.dp.toPx()
+            val apexY = baseline + 8.dp.toPx()
+            val baseY = apexY + 14.dp.toPx()
+            val half = 11.dp.toPx()
             drawPath(
-                path = Path().apply {
-                    moveTo(center, apexY)
-                    lineTo(center - half, baseY)
-                    lineTo(center + half, baseY)
-                    close()
-                },
+                path = roundedTriangle(
+                    apex = Offset(center, apexY),
+                    bottomLeft = Offset(center - half, baseY),
+                    bottomRight = Offset(center + half, baseY),
+                    cornerRadius = 3.5.dp.toPx(),
+                ),
                 color = tickColor,
             )
         }
