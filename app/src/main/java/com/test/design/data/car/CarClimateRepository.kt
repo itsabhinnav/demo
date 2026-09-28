@@ -122,8 +122,9 @@ class CarClimateRepository(
     fun setSyncEnabled(syncEnabled: Boolean) {
         val mgr = propertyManager ?: return
         val area = areas.dual ?: return
-        // HVAC_DUAL_ON true = independent zones; UI "sync" is the inverse.
-        setBoolean(mgr, VehiclePropertyIds.HVAC_DUAL_ON, area, !syncEnabled)
+        // This VHAL treats HVAC_DUAL_ON as "link all seat temperatures".
+        // True copies a write to every area; false leaves driver and passenger independent.
+        setBoolean(mgr, VehiclePropertyIds.HVAC_DUAL_ON, area, syncEnabled)
         if (syncEnabled) {
             val driverTemp = _connection.value.driverTempCelsius
             areas.passengerTemp?.let {
@@ -430,8 +431,8 @@ class CarClimateRepository(
             autoOn = getBoolean(mgr, VehiclePropertyIds.HVAC_AUTO_ON, it) ?: autoOn
         }
         areas.dual?.let {
-            val dualOn = getBoolean(mgr, VehiclePropertyIds.HVAC_DUAL_ON, it) ?: false
-            sync = !dualOn
+            // true = zones linked (sync). false = each seat keeps its own set-point.
+            sync = getBoolean(mgr, VehiclePropertyIds.HVAC_DUAL_ON, it) ?: false
         }
         areas.frontDefrost?.let {
             frontDefrost = getBoolean(mgr, VehiclePropertyIds.HVAC_DEFROSTER, it) ?: frontDefrost
@@ -544,7 +545,7 @@ class CarClimateRepository(
                 VehiclePropertyIds.HVAC_DUAL_ON -> {
                     if (area == areas.dual) {
                         val dualOn = value.value as? Boolean ?: false
-                        current.copy(isSyncEnabled = !dualOn)
+                        current.copy(isSyncEnabled = dualOn)
                     } else {
                         current
                     }
