@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -43,7 +45,6 @@ import com.test.design.theme.zoneCoolIntensity
 @Composable
 fun ClimateTemperatureSection(
     temperature: Float,
-    isAcEnabled: Boolean,
     dialShape: Shape,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
@@ -70,7 +71,6 @@ fun ClimateTemperatureSection(
     val dialContent: @Composable () -> Unit = {
         ClimateTemperatureDialContent(
             temperature = temperature,
-            isAcEnabled = isAcEnabled,
             dialShape = dialShape,
             onDecrease = onDecrease,
             onIncrease = onIncrease,
@@ -119,7 +119,6 @@ fun ClimateTemperatureSection(
 @Composable
 private fun ClimateTemperatureDialContent(
     temperature: Float,
-    isAcEnabled: Boolean,
     dialShape: Shape,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,
@@ -136,7 +135,8 @@ private fun ClimateTemperatureDialContent(
     coolIntensity: Float,
     modifier: Modifier,
 ) {
-    val dialSize = if (compact) 72.dp else 200.dp
+    val dialWidth = if (compact) 72.dp else 200.dp
+    val dialHeight = if (compact) 72.dp else 268.dp
     val buttonSize = if (compact) 36.dp else CarDesignTokens.MinTouchTarget
     val iconSize = if (compact) 18.dp else CarDesignTokens.PrimaryIcon
     val spacing = if (compact) 4.dp else CarDesignTokens.TouchTargetSpacing
@@ -176,60 +176,101 @@ private fun ClimateTemperatureDialContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TemperatureAdjustButton(
-                icon = Icons.Default.Remove,
-                contentDescription = "Decrease temperature",
-                onClick = onDecrease,
-                size = buttonSize,
-                iconSize = iconSize,
-            )
-            Box(
-                modifier = contentModifier
-                    .size(dialSize)
-                    .clip(dialShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
-                    .temperatureVerticalDrag(
-                        enabled = !compact,
-                        onTemperatureSteps = stepHandler,
-                    ),
-                contentAlignment = Alignment.Center,
+        if (compact) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (!compact) {
-                    CoolSnowflakeOverlay(
-                        coolIntensity = coolIntensity,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                TemperatureAdjustButton(
+                    icon = Icons.Default.Remove,
+                    contentDescription = "Decrease temperature",
+                    onClick = onDecrease,
+                    size = buttonSize,
+                    iconSize = iconSize,
+                )
+                TemperatureDial(
+                    dialWidth = dialWidth,
+                    dialHeight = dialHeight,
+                    dialShape = dialShape,
+                    contentModifier = contentModifier,
+                    dragEnabled = false,
+                    onTemperatureSteps = stepHandler,
+                    coolIntensity = coolIntensity,
+                    showSnow = false,
+                ) {
                     AnimatedTemperatureCounter(
                         temperatureLabel = displayLabel,
-                        compact = compact,
+                        compact = true,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         sortKey = displaySortKey,
                     )
-                    if (!compact) {
-                        Text(
-                            text = if (isAcEnabled) "A/C On" else "A/C Off",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
                 }
+                TemperatureAdjustButton(
+                    icon = Icons.Default.Add,
+                    contentDescription = "Increase temperature",
+                    onClick = onIncrease,
+                    size = buttonSize,
+                    iconSize = iconSize,
+                )
             }
-            TemperatureAdjustButton(
-                icon = Icons.Default.Add,
-                contentDescription = "Increase temperature",
-                onClick = onIncrease,
-                size = buttonSize,
-                iconSize = iconSize,
+        } else {
+            Box(
+                modifier = Modifier
+                    .width(280.dp)
+                    .clip(dialShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                TemperatureScale(
+                    temperature = temperature,
+                    temperatureLabel = displayLabel,
+                    sortKey = displaySortKey,
+                    minTemperature = minTemperature,
+                    maxTemperature = maxTemperature,
+                    temperatureStepCelsius = temperatureStepCelsius,
+                    temperatureStepFahrenheit = temperatureStepFahrenheit,
+                    minTemperatureFahrenheit = minTemperatureFahrenheit,
+                    temperatureUnit = temperatureUnit,
+                    onTemperatureSteps = stepHandler,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemperatureDial(
+    dialWidth: Dp,
+    dialHeight: Dp,
+    dialShape: Shape,
+    contentModifier: Modifier,
+    dragEnabled: Boolean,
+    onTemperatureSteps: (Int) -> Unit,
+    coolIntensity: Float,
+    showSnow: Boolean,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = contentModifier
+            .size(dialWidth, dialHeight)
+            .clip(dialShape)
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f))
+            .temperatureVerticalDrag(
+                enabled = dragEnabled,
+                onTemperatureSteps = onTemperatureSteps,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (showSnow) {
+            CoolSnowflakeOverlay(
+                coolIntensity = coolIntensity,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.fillMaxSize(),
             )
         }
+        content()
     }
 }
 

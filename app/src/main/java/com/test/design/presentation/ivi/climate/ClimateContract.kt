@@ -161,6 +161,61 @@ fun stepTemperature(
     )
 }
 
+/** Index of [celsius] on a scale that starts at [minCelsius] and moves by [step]. */
+fun temperatureScaleIndex(celsius: Float, minCelsius: Float, step: Float): Int {
+    if (step <= 0f) return 0
+    return ((celsius - minCelsius) / step).roundToInt()
+}
+
+/**
+ * Set-point steps for a horizontal scale drag.
+ * Positive [dragPx] means the finger moved right, so a cooler value slides under the needle.
+ */
+fun temperatureScaleDragSteps(dragPx: Float, spacingPx: Float): Int {
+    if (spacingPx <= 0f) return 0
+    return -(dragPx / spacingPx).toInt()
+}
+
+/** Labeled ticks sit on whole degrees, 6° apart. Half-steps stay unmarked. */
+fun temperatureScaleIsMajorTick(displayValue: Float): Boolean {
+    val rounded = displayValue.roundToInt()
+    if (kotlin.math.abs(displayValue - rounded) >= 0.05f) return false
+    return rounded % 6 == 0
+}
+
+/**
+ * Celsius is marked every 0.5°. Fahrenheit is marked in whole degrees,
+ * one tick per VHAL ladder step.
+ */
+fun temperatureScaleSegmentStep(unit: TemperatureUnit, celsiusStep: Float): Float = when (unit) {
+    TemperatureUnit.Celsius -> 0.5f
+    TemperatureUnit.Fahrenheit -> celsiusStep.coerceAtLeast(0.1f)
+}
+
+/**
+ * Tick height across the scale: full height under the needle, shorter toward
+ * the corners, like the edge of a round knob. Returns a fraction in about 0.7–1.
+ */
+fun temperatureScaleTickHeightFraction(distanceFromCenter: Float, halfWidth: Float): Float {
+    if (halfWidth <= 0f) return 1f
+    val nx = (distanceFromCenter / halfWidth).coerceIn(0f, 1f)
+    return kotlin.math.sqrt(1f - nx * nx * 0.5f)
+}
+
+/**
+ * Sharp through the middle of the scale, then a smooth falloff to nothing
+ * at the corners.
+ */
+fun temperatureScaleEdgeFade(distanceFromCenter: Float, halfWidth: Float): Float {
+    if (halfWidth <= 0f) return 1f
+    val t = (distanceFromCenter / halfWidth).coerceIn(0f, 1f)
+    val fadeStart = 0.55f
+    if (t <= fadeStart) return 1f
+    val u = (t - fadeStart) / (1f - fadeStart)
+    val smooth = u * u * (3f - 2f * u)
+    return (1f - smooth).coerceIn(0f, 1f)
+}
+
 /**
  * Which climate controls the vehicle VHAL actually exposes.
  * When [isLive] is false the UI keeps the full simulated surface.
@@ -214,7 +269,7 @@ data class ClimateUiState(
     val minTemperature: Float = 16f,
     val maxTemperature: Float = 30f,
     /** VHAL Celsius increment (configArray[2] / 10), typically 0.5. */
-    val temperatureStepCelsius: Float = 1f,
+    val temperatureStepCelsius: Float = 0.5f,
     /** VHAL Fahrenheit increment (configArray[5] / 10), typically 1. */
     val temperatureStepFahrenheit: Float = 1f,
     /**

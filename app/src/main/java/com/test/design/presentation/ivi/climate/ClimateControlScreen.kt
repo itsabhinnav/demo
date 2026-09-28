@@ -325,7 +325,6 @@ private fun SharedTransitionScope.DualZoneTemperatureBand(
     val driverDial = @Composable { dialModifier: Modifier ->
         ClimateTemperatureSection(
             temperature = uiState.temperatureCelsius,
-            isAcEnabled = uiState.isAcEnabled,
             dialShape = dialShape,
             onDecrease = {
                 onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Driver, -1))
@@ -351,7 +350,6 @@ private fun SharedTransitionScope.DualZoneTemperatureBand(
     val passengerDial = @Composable { dialModifier: Modifier ->
         ClimateTemperatureSection(
             temperature = uiState.passengerTemperatureCelsius,
-            isAcEnabled = uiState.isAcEnabled,
             dialShape = dialShape,
             onDecrease = {
                 onEvent(ClimateEvent.AdjustZoneTemperature(ClimateZone.Passenger, -1))

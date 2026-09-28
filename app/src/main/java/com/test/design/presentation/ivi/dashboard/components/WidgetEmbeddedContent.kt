@@ -247,7 +247,6 @@ private fun SharedTransitionScope.ClimateWidgetEmbedded(
                 if (state.capabilities.hasDriverTemp || state.capabilities.hasPassengerTemp) {
                     ClimateTemperatureSection(
                         temperature = temperature,
-                        isAcEnabled = state.isAcEnabled,
                         dialShape = dialShape,
                         onDecrease = { onEvent(ClimateEvent.DecreaseTemperature) },
                         onIncrease = { onEvent(ClimateEvent.IncreaseTemperature) },

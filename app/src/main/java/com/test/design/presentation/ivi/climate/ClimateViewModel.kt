@@ -145,7 +145,7 @@ class ClimateViewModel(
                 copy(
                     isLive = false,
                     capabilities = ClimateCapabilities(),
-                    temperatureStepCelsius = 1f,
+                    temperatureStepCelsius = 0.5f,
                     temperatureStepFahrenheit = 1f,
                     minTemperatureFahrenheit = null,
                 )
